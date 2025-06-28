@@ -569,7 +569,7 @@ if($sv_efta_in_de==0 OR $sv_sou_in_de==0){
 */
 
 echo '<br><center>';
-echo '<font size="2" color="FF0000"><br>Du bist nicht eingeloggt. Logge Dich bitte &uuml;ber die zentrale Accountverwaltung neu ein.<br><br>';
+echo '<font size="2" color="FF0000"><br>Test .... Du bist nicht eingeloggt. Logge Dich bitte &uuml;ber die zentrale Accountverwaltung neu ein.<br><br>';
 echo '<font size="2" color="00FF00">Du kannst das Fenster/Tab jetzt schlie&szlig;en, oder die zentrale Accountverwaltung <a href="http://login.bgam.es/">&ouml;ffnen</a>';
 
 //////////////////////////////////////////////////////////////
