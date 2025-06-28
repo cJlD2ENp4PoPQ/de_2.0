@@ -28,3 +28,4 @@ jobs:
           remote-user:  ${{ secrets.DEPLOY_USER }}
           ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           remote-path: ${{ secrets.SDE_PATH }}
+          debug: true
