@@ -4,12 +4,14 @@ cache/*.tmp
 cache/creditlogs/*.txt
 cache/toplist/*.tmp
 cache/overview/*.tmp
+cache/botcheck/*.txt
 fonts/
 npcx/
 ranglisten/
 sekretariat/
 soudata/source/sou_showdata.php
 .gitignore
+.user.ini
 dieewigen.code-workspace
 inc/env.inc.php
 inc/sv.inc.php

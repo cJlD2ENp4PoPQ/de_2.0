@@ -3,7 +3,7 @@ include "inc/header.inc.php";
 include 'inc/lang/'.$sv_server_lang.'_userdetails.lang.php';
 include 'functions.php';
 
-$db_daten=mysql_query("SELECT restyp01, restyp02, restyp03, restyp04,  restyp05, score, sector, system, newtrans, newnews FROM de_user_data WHERE user_id='$ums_user_id'",$db);
+$db_daten=mysql_query("SELECT restyp01, restyp02, restyp03, restyp04,  restyp05, score, sector, `system`, newtrans, newnews FROM de_user_data WHERE user_id='$ums_user_id'",$db);
 $row = mysql_fetch_array($db_daten);
 $restyp01=$row[0];$restyp02=$row[1];$restyp03=$row[2];$restyp04=$row[3];$restyp05=$row[4];$punkte=$row["score"];
 $newtrans=$row["newtrans"];$newnews=$row["newnews"];
@@ -16,7 +16,7 @@ $sector=$row["sector"];$system=$row["system"];
 <!doctype html>
 <html>
 <head>
-<title><?php echo $userdetails_lang[title]?></title>
+<title><?php echo $userdetails_lang['title']?></title>
 <?php include "cssinclude.php"; ?>
 <style type="text/css">
 <!--
@@ -61,7 +61,7 @@ if($_REQUEST['save']){
 	
 	mysql_query("UPDATE de_user_info SET ud_all='$ud_all', ud_sector='$ud_sector', ud_ally='$ud_ally' WHERE user_id='$ums_user_id'",$db);
 
-	echo '<div class="info_box text3">'.$userdetails_lang[msg_3].'</div><br><br>';
+	echo '<div class="info_box text3">'.$userdetails_lang['msg_3'].'</div><br><br>';
 }
 
 //Lesen aus der DB
@@ -74,7 +74,7 @@ $ud_ally=$row['ud_ally'];
 
 
 echo '<div class="cell" style="width: 580px;">';
-echo $userdetails_lang[msg_5];
+echo $userdetails_lang['msg_5'];
 echo '</div><br>';
 
 echo "<form action='userdetails.php' method='post' name='details'>";
