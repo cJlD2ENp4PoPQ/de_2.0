@@ -16,3 +16,5 @@ dieewigen.code-workspace
 inc/env.inc.php
 inc/sv.inc.php
 map_analyse.php
+.idea/*
+*.iml
