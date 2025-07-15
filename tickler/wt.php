@@ -14,9 +14,6 @@ if ($sv_debug == 0 && $sv_comserver == 0) {
 }
 
 include_once $directory."inccon.php";
-include_once $directory."inc/db_ls_connect.inc.php";
-//include_once $directory."eftadata/lib/efta_dbconnect.php";
-include_once $directory."soudata/lib/sou_dbconnect.php";
 if ($sv_comserver == 1) {
     include_once $directory.'inc/svcomserver.inc.php';
 }
@@ -848,34 +845,43 @@ if ($doetick == 1) {
                         case 6:
                             //Ress
                             $ressart = mt_rand(0, 3);
+                            $resname = '';
                             switch ($ressart) {
                                 case 0:
                                     //Multiplex
+                                    $resname = 'Multiplex';
                                     $anzahl = $tick * 12;
                                     $rm = $rm + ($tick * 12);
                                     break;
 
                                 case 1:
                                     //Dyharra
+                                    $resname = 'Dyharra';
                                     $anzahl = $tick * 6;
                                     $rd = $rd + ($tick * 6);
                                     break;
 
                                 case 2:
                                     //Iradium
+                                    $resname = 'Iradium';
                                     $anzahl = $tick * 5;
                                     $ri = $ri + ($tick * 5);
                                     break;
 
                                 case 3:
                                     //Eternium
+                                    $resname = 'Eternium';
                                     $anzahl = $tick * 3;
                                     $re = $re + ($tick * 3);
                                     break;
                             }
 
+                            //eine Zufallsnachricht aus der Liste auswählen
                             $zufallsmsg = mt_rand(0, count($ressmsg) - 1);
+
+                            //die Nachricht mit den Werten füllen
                             $nachricht = str_replace("{VALUE1}", $anzahl, $ressmsg[$zufallsmsg]);
+                            $nachricht = str_replace("{VALUE2}", $resname, $nachricht);
                             break;
                     }
 

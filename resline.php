@@ -1,13 +1,6 @@
 <?php
 include 'inc/lang/'.$sv_server_lang.'_resline.lang.php';
 
-//transparenz setzen, wenn sie von 100 abweicht
-if($ums_transparency!=100){
-echo '<style type="text/css">
-td,c,cl,cc,ccg,ccr,ccy,cr,tl,tc,tr,cell,cell1{filter:alpha(opacity='.$ums_transparency.');-moz-opacity: 0.'.$ums_transparency.';}
-</style>';
-}
-
 //tickzeiten laden
 include "cache/lasttick.tmp";
 include "cache/lastmtick.tmp";
@@ -366,7 +359,7 @@ if(!$flag_ang_big_iframe){
 /////////////////////////////////////////////////////////////
 // helper
 /////////////////////////////////////////////////////////////
-if($show_helper==1){
+if($show_helper==1 && !isset($apiDisableHelper)){
 	include 'lib/helper.inc.php';
 }
 
@@ -388,9 +381,11 @@ if($GLOBALS['sv_ang']==1 && $_SESSION['ums_mobi']!=1 && $_SESSION['de_frameset']
 /////////////////////////////////////////////////////////////
 // temporärer Hinweis
 /////////////////////////////////////////////////////////////
+/*
 echo '
 <div class="info_box text3" style="margin-bottom: 5px; font-size: 14px;">
 Die nächste xDE/SDE-Runde startet am 04.07.2025 um ca. 19:00 Uhr.<br><br>
 
 Da es zwischenzeitlich die Info gab, dass DE eingestellt worden ist, bitte ich jeden von euch die Rundenstartinfo möglichst an jeden weiterzuleiten.
 </div>';
+*/

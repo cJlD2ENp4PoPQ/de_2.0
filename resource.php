@@ -155,20 +155,23 @@ $handelssteuersatz = 50;
 //Bonus durch Allianzgebäude
 
 $ally_has_notfallkonverter = false;
+
 //allydaten laden
 $db_daten = mysql_query("SELECT * FROM de_allys WHERE allytag='$ownally'", $db);
 $row = mysql_fetch_array($db_daten);
-$allyid = $row['id'];
-$ownallyid = $allyid;
-
-$db_daten = mysql_query("SELECT * FROM de_allys WHERE id='$allyid'", $db);
 $num = mysql_num_rows($db_daten);
 if ($num == 1) {
-    $row = mysql_fetch_array($db_daten);
+    $allyid = $row['id'];
 
-    if ($row['bldg6'] > 0) {
-        $ally_has_notfallkonverter = true;
-        $handelssteuersatz -= $row['bldg6'];
+    $db_daten = mysql_query("SELECT * FROM de_allys WHERE id='$allyid'", $db);
+    $num = mysql_num_rows($db_daten);
+    if ($num == 1) {
+        $row = mysql_fetch_array($db_daten);
+
+        if ($row['bldg6'] > 0) {
+            $ally_has_notfallkonverter = true;
+            $handelssteuersatz -= $row['bldg6'];
+        }
     }
 }
 
@@ -1271,16 +1274,6 @@ if ($c1 == 0) {
     $bg = 'cell';
 }
 echo '<tr class="'.$bg.'"><td>Tronic</td><td style="text-align: right">'.$tronic_hinweis.number_format(floor($restyp05), 0, ",", ".").'</td></tr>';
-
-//Credits
-if ($c1 == 0) {
-    $c1 = 1;
-    $bg = 'cell1';
-} else {
-    $c1 = 0;
-    $bg = 'cell';
-}
-echo '<tr class="'.$bg.'"><td>Credits</td><td style="text-align: right">'.number_format($pd['credits'], 0, ",", ".").'</td></tr>';
 
 //weitere items aus der DB auslesen
 $sql = "SELECT * FROM de_user_storage LEFT JOIN de_item_data ON(de_user_storage.item_id=de_item_data.item_id) 
