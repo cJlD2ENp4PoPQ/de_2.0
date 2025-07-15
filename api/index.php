@@ -1,6 +1,7 @@
 <?php
 use DieEwigen\Api\Model\GetAllUsers;
 use DieEwigen\Api\Model\UserService;
+use DieEwigen\Api\Model\UserTechs;
 use DieEwigen\Api\Model\ValidateGameFilename;
 
 define("PROJECT_ROOT_PATH", __DIR__ . "/");
@@ -42,24 +43,35 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 if(isset($data['action']) && !empty($data['action'])) {
     header('Content-Type: application/json');
     try {
+        $userService = new UserService();
+        $user_id = $data['user_id'];
         switch ($data['action']) {
             case 'getAllNpcUsers':
                 $userModel = new GetAllUsers();
                 $users = $userModel->getAllNpcUsers();
                 echo json_encode($users);
                 break;
+            case 'getAvailableTechs':
+                if (isset($user_id) && !$userService->isAPIUser($user_id)) {
+                    header('HTTP/1.1 403 Forbidden');
+                    echo json_encode(['message' => 'Unberechtigter Zugriff']);
+                    exit;
+                }
+                $userTechs = new UserTechs();
+                $users = $userTechs->getAvailableTechs($user_id);
+                echo json_encode($users);
+                break;
 
             case 'openPage':
                 //all fields are required
-                if (!isset($data['user_id']) || !isset($data['filename'])) {
+                if (!isset($user_id) || !isset($data['filename'])) {
                     header('HTTP/1.1 400 Bad Request');
                     echo json_encode(['message' => 'Fehlende Parameter: user_id oder filename']);
                     exit;
                 }
                 header('Content-Type: text/html');
                 //is user_id valid
-                $userId = intval($data['user_id']);
-                $userService = new UserService();
+                $userId = intval($user_id);
                 if (!$userService->isAPIUser($userId)) {
                     header('HTTP/1.1 403 Forbidden');
                     echo json_encode(['message' => 'Unberechtigter Zugriff']);
