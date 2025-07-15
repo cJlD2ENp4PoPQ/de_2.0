@@ -2,6 +2,9 @@
 
 namespace DieEwigen\Api\Model;
 
+use DieEwigen\Api\Types\Player;
+use DieEwigen\Api\Types\Resources;
+
 class GetAllUsers
 {
     /**
@@ -9,7 +12,7 @@ class GetAllUsers
      *
      * @return array An array of associative arrays, each representing a user.
      */
-    public function getAllNpcUsers(): Player
+    public function getAllNpcUsers(): array
     {
 
         $result = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_data WHERE npc = 2 ORDER BY sector, `system`;");
