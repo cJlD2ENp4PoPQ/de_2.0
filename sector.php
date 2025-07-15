@@ -18,15 +18,11 @@ $hide_secpics=$row["hide_secpics"];
 
 $secrelcounter=0;
 
-//kopfgeldprozentsatz kann nicht h�her als kollektorklaurate sein
-//if($sv_bounty_rate>$sv_kollie_klaurate)$sv_bounty_rate=$sv_kollie_klaurate;
-
 if ($row["status"]==1){
 	$ownally = $row["allytag"];
 }else{
 	$ownally='';
 }
-
 
 //schauen ob er die whg hat und dann die attgrenze anpassen
 if ($techs[4]==0)$sv_attgrenze_whg_bonus=0;
@@ -58,8 +54,19 @@ $maxcol=$row['maxcol'];
 <html>
 <head>
 <title>Sektor</title>
-<?php include "cssinclude.php"; 
-echo '</head>';
+<?php include "cssinclude.php";
+echo '
+<style type="text/css">
+.user_title {
+	display: inline-block;
+	background-color: rgb(250, 184, 233);
+	width: 10px;
+	height: 10px;
+	margin-left: 5px;
+	transform: rotate(45deg);
+}
+</style>.
+</head>';
 if($_SESSION['ums_mobi']==1){
 	echo '<body>';
 }else{
@@ -150,14 +157,6 @@ echo '</form><br>';
 //schauen ob nah oder fern
 $rzadd=0;
 if ($ownsector<>$sf){
-	//schauen wie viele artefakte man hat, die die nahen sektoren vergr��ern
-	//$db_daten=mysql_query("SELECT id FROM de_user_artefact WHERE id=5 AND user_id='$ums_user_id'",$db);
-	/*
-	$wert = 5;// + mysql_num_rows($db_daten);
-
-	if ($ownsector<$sf+$wert and $ownsector>$sf-$wert) $rzadd=1;
-	else $rzadd=2;
-	*/
 	$rzadd=2;
 }
 
@@ -165,17 +164,26 @@ if ($ownsector<>$sf){
 $db_daten=mysql_query("SELECT * FROM de_sector WHERE sec_id='$sf'",$db);
 $sec_data = mysql_fetch_array($db_daten);
 
+//Hinweis in Sektor 666
+if($sf==666){
+    //hinweistext für npc-sektoren
+	echo '
+	<div class="cell" style="display: flex; width: 597px; border: 1px solid #333333; padding: 4px; margin-bottom: 20px;">
+    	<div style="background-color: #000000; width: 50px; height: 50px;">
+			<img src="'.$ums_gpfad.'g/symbol12.png" border="0" title="Info">
+		</div>
+    
+		<div style="flex-grow: 1; padding: 10px;">
+			In Sektor 666 regten sich vor Äonen die größten Übel der Zeit. Heute schlafen sie und man kann nur hoffen, dass sie nie wieder erwachen. 
+		</div>
+    </div>';
+}
+
+
 if($sec_data['npc']==1){
-	////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////	
 	//npc anzeigen
 	////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////
-	/*
-	if($sv_oscar==1){
-		$sv_min_col_attgrenze=0.2;
-	}
-	*/
 	
 	//kein malus bei aliens
   	$sec_angriffsgrenze=$sv_attgrenze-$sv_attgrenze_whg_bonus;
@@ -190,9 +198,6 @@ if($sec_data['npc']==1){
 		$style='border: 1px solid #444444; background-color: #f05a00; color: #000000; width: 16px; display: inline-block; text-align: center;';
 	}
 	
-	//if($rzadd==1)$style='border: 1px solid #444444; background-color: #f05a00; color: #000000; width: 16px; display: inline-block; text-align: center;';
-	//if($rzadd==2)$style='border: 1px solid #444444; background-color: #DD0000; color: #000000; width: 16px; display: inline-block; text-align: center;';
-	//$sektorinfo='<span title="Reisezeitmalus&Eigener Sektor: kein Malus<br>Naher Sektor: Reisezeit +1 Kampftick<br>Ferne Sektoren: Reisezeit +2 Kampfticks" style="'.$style.'">'.$rzadd.'</span>';
 	$sektorinfo='<span title="Reisezeitmalus&Eigener Sektor: kein Malus<br>Anderer Sektor: Reisezeit +2 Kampftick" style="'.$style.'">'.$rzadd.'</span>';
 	$sektorinfo.='';
 	//rahmen
@@ -249,10 +254,8 @@ if($sec_data['npc']==1){
     echo '</div><br>';
 	
 }else{
-	////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////	
 	//spieler anzeigen
-	////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////
 	//sektorkommandant feststellen
 	$sksystem=issectorcommander();
@@ -416,10 +419,19 @@ if($sec_data['npc']==1){
     	if(strtotime($row["last_click"])+1800 > time() AND $row["lstatus"]==1) $os=' *';else $os='';
     	if ($ownsector==$sf AND $secstatdisable==0) $osown=$os;else $osown='';
     	$csstag='tc1';
-	    $playertooltip='';
-		if($row["werberid"]==$owner_id){$csstag='tc3';$playertooltip=$sec_lang['spielergeworben'];}
+		$userTitle='';
+		$sql="SELECT * FROM ls_user_title LEFT JOIN ls_title ON (ls_user_title.title_id=ls_title.title_id) WHERE ls_user_title.user_id = '".$row['owner_id']."' ORDER BY ls_title.title ASC";
+		$db_datenx=mysqli_query($GLOBALS['dbi_ls'], $sql);
+		if(mysqli_num_rows($db_datenx) > 0){
+			
+			while ($rowx = mysqli_fetch_array($db_datenx)){
+				$userTitle.=$rowx['title'].'<br>';
+			}
+			$userTitle='<div class="user_title" title="'.$userTitle.'"></div>';
+		}
+
 		$output.='<td class="cell tac" style="font-size: 10pt;"><a href="details.php?se='.$sector.'&sy='.$row['system'].'">
-		<span title="'.$playertooltip.'" class="'.$csstag.'">'.$playername.$osown.'</span></a></td>';
+		<span class="'.$csstag.'">'.$playername.$osown.$userTitle.'</span></a></td>';
 		
 		////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////

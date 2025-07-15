@@ -9,9 +9,6 @@ include "issectork.php";
 include 'lib/map_system_defs.inc.php';
 include "lib/map_system.class.php";
 
-
-//$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, col, sector, `system`, newtrans, newnews, allytag, status, hide_secpics, platz, rang, secsort, secstatdisable FROM de_user_data WHERE user_id='$ums_user_id'");
-//$row = mysqli_fetch_array($db_daten);
 $pt = loadPlayerTechs($_SESSION['ums_user_id']);
 $pd = loadPlayerData($_SESSION['ums_user_id']);
 $row = $pd;
@@ -103,15 +100,10 @@ $maxcol = $row['maxcol'];
 $newcss = 1;
 include "cssinclude.php";
 
-/*
-<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-*/
 ?>
-<link rel="stylesheet" href="/js/jquery-ui-1.12.1/jquery-ui.min.css">
-<script src="/js/jquery-3.3.1.min.js"></script>
-<script src="/js/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/js/jquery-ui-1.14.1/jquery-ui.min.css">
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/jquery-ui-1.14.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
 <script>
 $(function() {
@@ -795,7 +787,7 @@ for ($player_sector = 0;$player_sector < $sec_anzahl;$player_sector++) {
             $sektorinfo .= ' <span title="Sektornummer">S:'.$sf.'</span> <span title="Platz in der Sektorwertung">P:'.$sec_data['platz'].'</span>';
             $sektorinfo .= ' <span title="Sektorpunkte">SP:'.number_format($gesamtpunkte, 0, ",", ".");
             if ($sec_data['name'] != '') {
-                $sektorinfo .= ' - '.utf8_decode_fix($sec_data['name']);
+                $sektorinfo .= ' - '.$sec_data['name'];
             }
             $sektorinfo .= '</span>';
         } else {

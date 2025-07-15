@@ -1,9 +1,8 @@
 <?php
 $eftachatbotdefensedisable=1;
-mb_internal_encoding("iso-8859-1");
+mb_internal_encoding("UTF-8");
 
 include "inc/header.inc.php";
-include "soudata/lib/sou_dbconnect.php";
 include 'functions.php';
 
 $chat_sectorcolor='#FFFFFF';
@@ -66,26 +65,22 @@ if(isset($_REQUEST['chatinsert'])){
 	//$outputlib_dontchangetags=1;
 	//include_once('outputlib.php');
   
-	$insert=utf8_encode(trim($_REQUEST['insert']));
-
-	$insert = str_replace('>', '&gt;', $insert);
-	$insert = str_replace('<', '&lt;', $insert);
-
-	$insert = str_replace('\"', '&quot;', $insert);
-	$insert = str_replace('\'', '&acute;', $insert);	
+	$chat_message=trim($_REQUEST['insert']);
+	$chat_message=htmlspecialchars($chat_message, ENT_QUOTES, 'UTF-8');
 
 	//Maruh Joke
-	$insert=str_replace('Maruh', 'Maruh (gepriesen sei der DE-Auserwählte)', $insert);
-	$insert=str_replace('maruh', 'maruh (gepriesen sei der DE-Auserwählte)', $insert);
+	$chat_message=str_replace('Maruh', 'Maruh (gepriesen sei der DE-Auserwählte)', $chat_message);
+	$chat_message=str_replace('maruh', 'maruh (gepriesen sei der DE-Auserwählte)', $chat_message);
 
-	$insert=strip_tags($insert);
-	$insert = umlaut($insert);
+	$chat_message=strip_tags($chat_message);
 	
+	
+
 	$return=0; //0 alles ok, 1=clear
 
 	$time=time();
 
-	$chat_message=$insert;
+
 	$channeltyp=$_SESSION["de_chat_inputchannel"];
 
 	if($chat_message=='/clear'){
@@ -201,20 +196,20 @@ if(isset($_REQUEST['managechat']) && $_REQUEST['managechat']){
 		//server�bergreifend
 		if(isset($_REQUEST['chatidallg'])){
 			$sqlallg="SELECT * FROM de_chat_msg WHERE channeltyp=3 AND id > '".$chatidallg."' AND timestamp > '$cleartime' ORDER BY timestamp ASC";
-			$db_daten=mysql_query($sqlallg,$soudb);
+			$db_daten=mysqli_query($GLOBALS['dbi_ls'], $sqlallg);
 			//ausgeben
 			//$first=1;
-			while ($row = mysql_fetch_array($db_daten)){
+			while ($row = mysqli_fetch_array($db_daten)){
 				$chatdata[]=$row;
 			}
 		}
 	}else{//nur die Meldungen von [SYSTEM] auslesen
 		if(isset($_REQUEST['chatidallg'])){
 			$sqlallg="SELECT * FROM de_chat_msg WHERE owner_id=-1 AND channeltyp=3 AND id > '".$chatidallg."' AND timestamp > '$cleartime' ORDER BY timestamp ASC";
-			$db_daten=mysql_query($sqlallg,$soudb);
+			$db_daten=mysqli_query($GLOBALS['dbi_ls'], $sqlallg);
 			//ausgeben
 			//$first=1;
-			while ($row = mysql_fetch_array($db_daten)){
+			while ($row = mysqli_fetch_array($db_daten)){
 				$chatdata[]=$row;
 			}
 		}
@@ -250,8 +245,8 @@ if(isset($_REQUEST['managechat']) && $_REQUEST['managechat']){
 	//nur die Ignore-Liste laden, wenn es etwas neues im Chat gibt
 	if(count($sorted)>0 && $_SESSION['ums_owner_id']!=1){
 		$sql="SELECT * FROM de_chat_ignore WHERE owner_id='".$_SESSION['ums_owner_id']."' AND ignore_until>'".time()."';";
-		$db_daten=mysql_query($sql,$soudb);
-		while($row = mysql_fetch_array($db_daten)){
+		$db_daten=mysqli_query($GLOBALS['dbi_ls'], $sql);
+		while($row = mysqli_fetch_array($db_daten)){
 			//sich selbst kann man nicht ignorieren
 			if($row['owner_id_ignore']!=$_SESSION['ums_owner_id'] && $row['owner_id_ignore']!=1){
 				$ignore_self[]=$row['owner_id_ignore'];
@@ -262,13 +257,13 @@ if(isset($_REQUEST['managechat']) && $_REQUEST['managechat']){
 	////////////////////////////////////////////////////////////////
 	// Liste der Spieler laden, die wegen zuvielen "Ignores" ignoriert 
 	// werden
-	// gilt f�r: Global, Allgemein
+	// gilt für: Global, Allgemein
 	////////////////////////////////////////////////////////////////	
 	$ignore_global=array();
 	if(count($sorted)>0 && $_SESSION['ums_owner_id']!=1){
 		$sql="SELECT * FROM de_chat_ignore WHERE owner_id=0;";
-		$db_daten=mysql_query($sql,$soudb);
-		while($row = mysql_fetch_array($db_daten)){
+		$db_daten=mysqli_query($GLOBALS['dbi_ls'], $sql);
+		while($row = mysqli_fetch_array($db_daten)){
 			if($row['owner_id_ignore']!=$_SESSION['ums_owner_id'] && $row['owner_id_ignore']!=1){
 				$ignore_global[]=$row['owner_id_ignore'];
 			}
@@ -304,6 +299,7 @@ if(isset($_REQUEST['managechat']) && $_REQUEST['managechat']){
 
 
 	//den output auf sonderzeichen abchecken, die das js-system stören
+	/*
 	$output=umlaut($output);
 	$ws='';
 	for($i=0;$i<strlen($output);$i++)
@@ -316,6 +312,7 @@ if(isset($_REQUEST['managechat']) && $_REQUEST['managechat']){
 	  }
 	}
 	$output=$ws;
+	*/
 	
 	//echo $output;
 	//die();
@@ -343,12 +340,11 @@ function format_chat_output($row){
 	global 	$chat_sectorcolor, $chat_allycolor, $chat_allgemeincolor, $chat_globalcolor, $sv_server_tag;
 
 	$output='';
-	
+
+	/*
 	$row["message"]=utf8_decode_fix($row["message"]);
 
 	$row["message"]=umlaut($row["message"]);
-
-
 
 	//Emoticons
 	$row["message"]=str_replace('%u', "\u", $row["message"]);
@@ -359,11 +355,12 @@ function format_chat_output($row){
 		$value += 0x10000;
 		return "&#$value;";
 	}, $row["message"]);
+	*/
 
 	$zeit=date("H:i", $row["timestamp"]);
 	$datum=date("d.m.Y", $row["timestamp"]);
 
-	$row["spielername"]=utf8_encode_fix($row["spielername"]);
+	$row["spielername"]=$row["spielername"];
 
 	//schauen ob es einen nachricht vom herold ist
 	if($row["spielername"]=='^Der Herold^'){
@@ -387,7 +384,7 @@ function format_chat_output($row){
 		$color=$chat_globalcolor;
 	}
 
-	$row['message']=umlaut($row['message']);
+	//$row['message']=umlaut($row['message']);
 	
 	//schauen ob es ein emote ist
 	if($row["message"][0]=='/' AND $row["message"][1]=='m' AND $row["message"][2]=='e'){
