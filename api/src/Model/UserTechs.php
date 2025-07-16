@@ -8,6 +8,7 @@ use DieEwigen\Api\Types\Technology;
 class UserTechs
 {
     const string FINISHED_USER_TECHS_SQL = 'SELECT tech_id FROM de_user_techs WHERE user_id = ? and de_user_techs.time_finished < ?';
+    const string ALL_TECHS_SQL = 'SELECT tech_id, tech_vor, tech_build_cost from de_tech_data';
 
     /**
      * Return a list of technologies (research + building) which can be built without any precondition
@@ -23,18 +24,18 @@ class UserTechs
         $playerTechsResult = $playerTechsStmt->get_result();
         $finishedTechs = [];
         while ($row = $playerTechsResult->fetch_assoc()) {
-            $finishedTechs[] = (int)$row['tech_id'];
+            $finishedTechs[] = intval($row['tech_id']);
         }
-        $techsStmt = mysqli_query($GLOBALS['dbi'], 'SELECT tech_id, tech_vor, tech_build_cost from de_tech_data');
+        $techsStmt = mysqli_query($GLOBALS['dbi'], self::ALL_TECHS_SQL);
         $availTechs = [];
         while ($tech = $techsStmt->fetch_assoc()) {
-            if (!in_array((int)$tech['tech_id'], $finishedTechs, true)) {
+            if (!in_array(intval($tech['tech_id']), $finishedTechs, true)) {
                 if (!empty($tech['tech_vor'])) {
                     $requirements = explode(';', $tech['tech_vor']);
                     $requiredTechIds = [];
                     for ($j=0; $j < sizeof($requirements); $j++) {
                         if ($requirements[$j][0] == 'T') {
-                            $requiredTechId = (int)str_replace('T', '', $requirements[$j]);
+                            $requiredTechId = intval(str_replace('T', '', $requirements[$j]));
                             if (!in_array($requiredTechId, $finishedTechs, true)) {
                                 $requiredTechIds[] = $requiredTechId;
                             }
@@ -61,8 +62,8 @@ class UserTechs
         $costT = 0;
         for ($i=0; $i<sizeof($costComponents); $i++) {
             $costComponent = $costComponents[$i];
-            $resId = (int)substr($costComponent, 1, 1);
-            $value = (int)substr($costComponent, strpos($costComponent, 'x') + 1);
+            $resId = intval(substr($costComponent, 1, 1));
+            $value = intval(substr($costComponent, strpos($costComponent, 'x') + 1));
             switch ($resId) {
                case 1: $costM = $value; break;
                case 2: $costD = $value; break;
@@ -71,6 +72,6 @@ class UserTechs
                case 5: $costT = $value; break;
             }
         }
-        return new Technology((int)$tech['tech_id'], new Resources($costM, $costD, $costI, $costE, $costT));
+        return new Technology(intval($tech['tech_id']), new Resources($costM, $costD, $costI, $costE, $costT));
     }
 }

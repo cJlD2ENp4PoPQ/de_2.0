@@ -1,5 +1,6 @@
 <?php
 use DieEwigen\Api\Model\GetAllUsers;
+use DieEwigen\Api\Model\GetSectorStatus;
 use DieEwigen\Api\Model\UserService;
 use DieEwigen\Api\Model\UserTechs;
 use DieEwigen\Api\Model\ValidateGameFilename;
@@ -8,6 +9,9 @@ define("PROJECT_ROOT_PATH", __DIR__ . "/");
 require PROJECT_ROOT_PATH.'../inccon.php';
 include_once 'vendor/autoload.php';
 include_once '../inc/sv.inc.php';
+include_once "../functions.php";
+include_once "../tickler/kt_einheitendaten.php";
+
 
 $apiKey = getHeaderValue('X-DE-API-KEY');
 
@@ -61,7 +65,16 @@ if(isset($data['action']) && !empty($data['action'])) {
                 $users = $userTechs->getAvailableTechs($user_id);
                 echo json_encode($users);
                 break;
-
+            case 'getSecStatus':
+                if (isset($user_id) && !$userService->isAPIUser($user_id)) {
+                    header('HTTP/1.1 403 Forbidden');
+                    echo json_encode(['message' => 'Unberechtigter Zugriff']);
+                    exit;
+                }
+                $sectorStatus = new GetSectorStatus();
+                $status = $sectorStatus->getSectorStatus($user_id);
+                echo json_encode($status);
+                break;
             case 'openPage':
                 //all fields are required
                 if (!isset($user_id) || !isset($data['filename'])) {
