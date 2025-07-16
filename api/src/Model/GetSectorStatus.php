@@ -6,7 +6,6 @@ use DieEwigen\Api\Types\SystemFleetStatus;
 
 class GetSectorStatus
 {
-
     const string GET_SECTOR_STATUS_SQL = "SELECT dud_source.user_id AS s_user_id, dud_source.rasse, dud_target.user_id AS t_user_id,
                                     duf.zielsys, duf.hsec, duf.hsys, duf.zeit, duf.fleetsize,
                                     duf.e81, duf.e82, duf.e83, duf.e83, duf.e84, duf.e85, duf.e86, duf.e87, duf.e88, 
@@ -17,9 +16,13 @@ class GetSectorStatus
                                    WHERE zielsec = ?
                                    AND entdecktsec = 1 AND (aktion = 1 OR aktion = 2)";
 
-
-    public function getSectorStatus(int $userId) : array
-    {
+	/**
+	 * Retrieves sector status from the database.
+	 *
+	 * @return array An array of associative arrays, each representing a fleet.
+	 */
+	public function getSectorStatus(int $userId)
+	{
         $userService = new UserService();
         $coordinates = $userService->getCoordinates($userId);
         $stmt = mysqli_prepare($GLOBALS['dbi'],self::GET_SECTOR_STATUS_SQL);

@@ -149,8 +149,7 @@ if ($_SESSION['ums_servid']!=$sv_servid)
 
 //session nach maximal einer zeit X durch den botschutz unterbrechen
 //globale sessiondatei auslesen
-//$botfilename='../div_server_data/botcheck/'.$_SESSION["ums_owner_id"].'.txt';
-$botfilename='cache/botcheck/'.$_SESSION["ums_owner_id"].'.txt';
+$botfilename='../botcheck/'.$_SESSION["ums_owner_id"].'.txt';
 if(file_exists($botfilename)){
 	$botfile = fopen ($botfilename, 'r'); 
 	$bottime=trim(fgets($botfile, 1000));
@@ -204,7 +203,7 @@ if ((($_SESSION['ums_session_start']+$sv_session_lifetime)<time()) && ($eftachat
 	
 	if((isset($thisisefta) && $thisisefta==1) || (isset($thisissou) && $thisissou==1)){//bereich im efta/sou-style ausgeben
 
-		echo '<meta http-equiv="expires" content="0"></head><body><script src="'.$sv_server_lang.'_jssammlung.js" type="text/javascript"></script>';
+		echo '<meta http-equiv="expires" content="0"></head><body><script src="js/'.$sv_server_lang.'_jssammlung.js" type="text/javascript"></script>';
 		
 		echo '<div align="center">';
 		rahmen0_oben();
@@ -243,7 +242,7 @@ if ((($_SESSION['ums_session_start']+$sv_session_lifetime)<time()) && ($eftachat
 		echo '</body></html>';
 	}else{ //bereich im de-style ausgeben
 		echo '<meta http-equiv="expires" content="0">
-		</head><body><script src="jssammlung.js" type="text/javascript"></script>
+		</head><body><script src="js/'.$sv_server_lang.'_jssammlung.js" type="text/javascript"></script>
 		<div align="center">';
 
 		if($GLOBALS['sv_ang']==1){

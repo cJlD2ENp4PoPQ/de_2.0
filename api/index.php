@@ -1,6 +1,8 @@
 <?php
 use DieEwigen\Api\Model\GetAllUsers;
+use DieEwigen\Api\Model\GetUserFleet;
 use DieEwigen\Api\Model\GetSectorStatus;
+use DieEwigen\Api\Model\GetServerData;
 use DieEwigen\Api\Model\UserService;
 use DieEwigen\Api\Model\UserTechs;
 use DieEwigen\Api\Model\ValidateGameFilename;
@@ -75,7 +77,39 @@ if(isset($data['action']) && !empty($data['action'])) {
                 $status = $sectorStatus->getSectorStatus($user_id);
                 echo json_encode($status);
                 break;
-            case 'openPage':
+            case 'getUserFleet':
+            //is user_id valid
+            $userId = intval($data['user_id']);
+            $userService = new UserService();
+            if (!$userService->isAPIUser($userId)) {
+                echo json_encode(['status' => 'error', 'message' => 'Unberechtigter Zugriff']);
+                exit;
+            }
+
+            $userModel = new GetUserFleet();
+            $fleets = $userModel->getUserFleet($userId);
+            echo json_encode(['status' => 'success', 'data' => $fleets]);
+            break;
+
+        case 'getSectorStatus':
+            //is user_id valid
+            $userId = intval($data['user_id']);
+            $userService = new UserService();
+            if (!$userService->isAPIUser($userId)) {
+                echo json_encode(['status' => 'error', 'message' => 'Unberechtigter Zugriff']);
+                exit;
+            }
+
+            $userModel = new GetSectorStatus();
+            $fleets = $userModel->getSectorStatus($userId);
+            echo json_encode(['status' => 'success', 'data' => $fleets]);
+            break;
+
+        case 'getServerData':
+            $serverModel = new GetServerData();
+            $data = $serverModel->getServerData();
+            echo json_encode(['status' => 'success', 'data' => $data]);
+            break;case 'openPage':
                 //all fields are required
                 if (!isset($user_id) || !isset($data['filename'])) {
                     header('HTTP/1.1 400 Bad Request');

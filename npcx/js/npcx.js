@@ -12,6 +12,8 @@ function updateNpcUI(data) {
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'resource.php', {b_col: 1})">baue einen Kollektor</span>`;
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'sector.php')">Sektor</span>`;
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'military.php')">Militär</span>`;
+        div.innerHTML+= ` - <span onclick="getUserFleet(${item.id})">Flotten</span>`;
+        div.innerHTML+= ` - <span onclick="getSectorStatus(${item.id})">Sektorstatus</span>`;
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'missions.php')">Missionen</span>`;
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'production.php')">Produktion</span>`;
         div.innerHTML+= ` - <span onclick="openPage(${item.id}, 'hyperfunk.php')">Hyperfunk</span><br><br>`;
@@ -35,6 +37,51 @@ async function getAllNpcUsers() {
     });
     updateNpcUI(await response.json());
     //return await response.json();
+}
+
+async function getUserFleet(userId) {
+    const response = await fetch('../api/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-DE-API-KEY': env_api_key // API Key
+        },
+        body: JSON.stringify({ action: 'getUserFleet', user_id: userId })
+    });
+
+    const json = await response.json();
+
+    document.getElementById("target_json_output").innerText = JSON.stringify(json, null, 2);
+}
+
+async function getSectorStatus(userId) {
+    const response = await fetch('../api/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-DE-API-KEY': env_api_key // API Key
+        },
+        body: JSON.stringify({ action: 'getSectorStatus', user_id: userId })
+    });
+
+    const json = await response.json();
+
+    document.getElementById("target_json_output").innerText = JSON.stringify(json, null, 2);
+}
+
+async function getServerData() {
+    const response = await fetch('../api/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-DE-API-KEY': env_api_key // API Key
+        },
+        body: JSON.stringify({ action: 'getServerData'})
+    });
+
+    const json = await response.json();
+
+    document.getElementById("target_json_output").innerText = JSON.stringify(json, null, 2);
 }
 
 async function openPage(user_id, filename, requestData=Array()) {
