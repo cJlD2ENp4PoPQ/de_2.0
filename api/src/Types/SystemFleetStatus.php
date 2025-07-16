@@ -23,38 +23,6 @@ class SystemFleetStatus implements JsonSerializable {
         $this->fp = $fp;
     }
 
-    public function getSourcePlayerId(): int
-    {
-        return $this->sourcePlayerId;
-    }
-
-    public function getSourcePlayerSector(): int
-    {
-        return $this->sourcePlayerSector;
-    }
-
-    public function getSourcePlayerSystem(): int
-    {
-        return $this->sourcePlayerSystem;
-    }
-
-    public function getEta(): int
-    {
-        return $this->eta;
-    }
-
-    public function getAmount(): int
-    {
-        return $this->amount;
-    }
-
-    public function getFp(): int
-    {
-        return $this->fp;
-    }
-
-
-
     public function jsonSerialize(): array
     {
         return [ 'sPlayerId' => $this->sourcePlayerId, 'sPlayerSec' => $this->sourcePlayerSector,

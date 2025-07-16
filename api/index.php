@@ -50,7 +50,7 @@ if(isset($data['action']) && !empty($data['action'])) {
     header('Content-Type: application/json');
     try {
         $userService = new UserService();
-        $user_id = $data['user_id'];
+        $userId = intval($data['user_id']);
         switch ($data['action']) {
             case 'getAllNpcUsers':
                 $userModel = new GetAllUsers();
@@ -58,28 +58,27 @@ if(isset($data['action']) && !empty($data['action'])) {
                 echo json_encode($users);
                 break;
             case 'getAvailableTechs':
-                if (isset($user_id) && !$userService->isAPIUser($user_id)) {
+                if (isset($user_id) && !$userService->isAPIUser($userId)) {
                     header('HTTP/1.1 403 Forbidden');
                     echo json_encode(['message' => 'Unberechtigter Zugriff']);
                     exit;
                 }
                 $userTechs = new UserTechs();
-                $users = $userTechs->getAvailableTechs($user_id);
+                $users = $userTechs->getAvailableTechs($userId);
                 echo json_encode($users);
                 break;
             case 'getSecStatus':
-                if (isset($user_id) && !$userService->isAPIUser($user_id)) {
+                if (isset($userId) && !$userService->isAPIUser($userId)) {
                     header('HTTP/1.1 403 Forbidden');
                     echo json_encode(['message' => 'Unberechtigter Zugriff']);
                     exit;
                 }
                 $sectorStatus = new GetSectorStatus();
-                $status = $sectorStatus->getSectorStatus($user_id);
+                $status = $sectorStatus->getSectorStatus($userId);
                 echo json_encode($status);
                 break;
             case 'getUserFleet':
             //is user_id valid
-            $userId = intval($data['user_id']);
             $userService = new UserService();
             if (!$userService->isAPIUser($userId)) {
                 echo json_encode(['status' => 'error', 'message' => 'Unberechtigter Zugriff']);
@@ -93,7 +92,6 @@ if(isset($data['action']) && !empty($data['action'])) {
 
         case 'getSectorStatus':
             //is user_id valid
-            $userId = intval($data['user_id']);
             $userService = new UserService();
             if (!$userService->isAPIUser($userId)) {
                 echo json_encode(['status' => 'error', 'message' => 'Unberechtigter Zugriff']);
@@ -118,7 +116,6 @@ if(isset($data['action']) && !empty($data['action'])) {
                 }
                 header('Content-Type: text/html');
                 //is user_id valid
-                $userId = intval($user_id);
                 if (!$userService->isAPIUser($userId)) {
                     header('HTTP/1.1 403 Forbidden');
                     echo json_encode(['message' => 'Unberechtigter Zugriff']);

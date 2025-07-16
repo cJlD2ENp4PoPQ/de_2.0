@@ -1,4 +1,5 @@
 <?php
+
 namespace DieEwigen\Api\Model;
 
 use DieEwigen\Api\Types\SectorSystemStatus;
@@ -16,68 +17,70 @@ class GetSectorStatus
                                    WHERE zielsec = ?
                                    AND entdecktsec = 1 AND (aktion = 1 OR aktion = 2)";
 
-	/**
-	 * Retrieves sector status from the database.
-	 *
-	 * @return array An array of associative arrays, each representing a fleet.
-	 */
-	public function getSectorStatus(int $userId)
-	{
+    /**
+     * Retrieves sector status from the database.
+     *
+     * @return array the sector status array of given user, one item represent the status of one system.
+     */
+    public function getSectorStatus(int $userId) : array
+    {
         $userService = new UserService();
         $coordinates = $userService->getCoordinates($userId);
-        $stmt = mysqli_prepare($GLOBALS['dbi'],self::GET_SECTOR_STATUS_SQL);
+        $stmt = mysqli_prepare($GLOBALS['dbi'], self::GET_SECTOR_STATUS_SQL);
         $stmt->bind_param("i", $coordinates[0]);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_all(MYSQLI_BOTH);
-        $groupedFleetsBySystem = $this->groupFleetByTarget($result);
-        return $this->createSystemStatus($groupedFleetsBySystem, $coordinates[0]);
+        $groupedFleetsByTarget = $this->groupFleetByTarget($result);
+        return $this->createSystemStatus($groupedFleetsByTarget, $coordinates[0]);
     }
 
-    private function filterAttFleets($row) : bool
+    private function filterAttFleets($row): bool
     {
         return $row['aktion'] === 1;
     }
 
-    private function filterDefFleets($row) : bool
+    private function filterDefFleets($row): bool
     {
         return $row['aktion'] === 2;
     }
 
-    private function calculateFp($row) : int
+    private function calculateFp($row): int
     {
         $race = $row['rasse'];
         $fp = 0;
-        for ($s=81; $s<=90; $s++){
-            $fp=$fp + $GLOBALS['unit'][$race-1][$s-81][4] * $row['e'.$s];
+        for ($s = 81; $s <= 90; $s++) {
+            $fp = $fp + $GLOBALS['unit'][$race - 1][$s - 81][4] * $row['e' . $s];
         }
         return $fp;
     }
 
-    private function createSystemStatus($SectorFleetStatusRows, $targetSector) : array
+    private function createSystemStatus($sectorFleetStatusRows, $targetSector): array
     {
         $systemStatus = array();
-        foreach ($SectorFleetStatusRows as $targetStr => $systemFleetStatusRow) {
+        foreach ($sectorFleetStatusRows as $targetStr => $systemFleetStatusRow) {
             $attackFleetRows = array_filter($systemFleetStatusRow, array($this, 'filterAttFleets'));
             $defendFleetRows = array_filter($systemFleetStatusRow, array($this, 'filterDefFleets'));
             $attackFleets = array_map(array($this, 'createFleetStatus'), $attackFleetRows);
             $defendFleets = array_map(array($this, 'createFleetStatus'), $defendFleetRows);
-            $target = explode("-",$targetStr); //system-userId
+            $target = explode("-", $targetStr); //system-userId
             $systemStatus[] = new SectorSystemStatus($targetSector, intval($target[0]), intval($target[1]),
                 $attackFleets, $defendFleets);
         }
         return $systemStatus;
     }
 
-    private function createFleetStatus($fleetRow) : SystemFleetStatus {
+    private function createFleetStatus($fleetRow): SystemFleetStatus
+    {
         return new SystemFleetStatus($fleetRow['s_user_id'], $fleetRow['hsec'], $fleetRow['hsys'], $fleetRow['zeit'],
             $fleetRow['fleetsize'], $this->calculateFp($fleetRow));
 
     }
 
-    private function groupFleetByTarget(array $rows) : array {
+    private function groupFleetByTarget(array $rows): array
+    {
         $result = array();
         foreach ($rows as $row) {
-            $result[$row['zielsys'].'-'.$row['t_user_id']][] = $row;
+            $result[$row['zielsys'] . '-' . $row['t_user_id']][] = $row;
         }
         return $result;
     }

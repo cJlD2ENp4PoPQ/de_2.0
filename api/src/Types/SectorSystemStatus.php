@@ -20,7 +20,6 @@ class SectorSystemStatus implements JsonSerializable {
         $this->defFleets = $defFleets;
     }
 
-
     public function jsonSerialize(): array
     {
         return ['tSec' => $this->targetSector, 'tSys' => $this->targetSystem, 'tPlayerId' => $this->targetPlayerId,
