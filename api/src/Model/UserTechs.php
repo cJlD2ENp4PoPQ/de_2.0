@@ -2,6 +2,9 @@
 
 namespace DieEwigen\Api\Model;
 
+include_once "../../../functions.php";
+include_once "../../../tickler/kt_einheitendaten.php";
+
 use DieEwigen\Api\Types\Resources;
 use DieEwigen\Api\Types\Technology;
 

@@ -20,7 +20,7 @@ for ($i=0;$i<=59;$i++)$kticks[$i]="0";
 //echo $wticks;
 
 if(isset($_REQUEST['settickzeiten'])){
-	//zuerst das verzeichnis auslesen wohin man muß
+	//zuerst das verzeichnis auslesen wohin man muï¿½
 	$filename="../tickler/runtick.sh";
 	$cachefile = fopen ($filename, 'r');
 	$xticks=trim(fgets($cachefile, 1024));
@@ -159,9 +159,9 @@ echo '<td width="300" align="center">Handel</td>';
 if ($trade_active==1) $str='Aktiv';else $str='Inaktiv';
 echo '<td width="100" align="center"><a href="'.$PHP_SELF.'?sw=5">'.$str.'</a></td>';
 echo '</tr></table>';
-//select felder für die ticks generieren
+//select felder fï¿½r die ticks generieren
 $z=0;
-echo '<br><b>Zu welchen Minuten sollen die Wirtschaftsticks ausgeführt werden?<br><br></b>';
+echo '<br><b>Zu welchen Minuten sollen die Wirtschaftsticks ausgefï¿½hrt werden?<br><br></b>';
 echo '<table><tr>';
 for ($i=0;$i<5;$i++)
 {
@@ -179,7 +179,7 @@ echo '</table>';
 
 
 $z=0;
-echo '<br><b>Zu welchen Minuten sollen die Kampfticks ausgeführt werden?<br><br></b>';
+echo '<br><b>Zu welchen Minuten sollen die Kampfticks ausgefï¿½hrt werden?<br><br></b>';
 echo '<table><tr>';
 for ($i=0;$i<5;$i++)
 {

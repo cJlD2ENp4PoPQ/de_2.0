@@ -35,6 +35,6 @@ class Player implements JsonSerializable {
     {
         return [ 'id' => $this->id, 'sector' => $this->sector, 'system' => $this->system, 'name' => $this->name,
             'points' => $this->points, 'fpoints' => $this->fleetPoints, 'res' => $this->resources, 'cols' => $this->collectors,
-            'allyId' => $this->allyId];
+            'allyId' => $this->allyId, 'race' => $this->race];
     }
 }
