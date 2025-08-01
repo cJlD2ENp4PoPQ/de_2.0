@@ -170,7 +170,7 @@ function quest($fleet_id, $zsec, $zsys){
 		//man kann die einheiten nur in npc-systeme schicken
 		$zsec=(int)$zsec;
 		$zsys=(int)$zsys;
-		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT user_id FROM de_user_data WHERE sector='$zsec' and system='$zsys' AND npc=1");
+		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT user_id FROM de_user_data WHERE sector='$zsec' and `system`='$zsys' AND npc=1");
 		$num = mysqli_num_rows($db_daten);
 
 		if($num==1){//die koordinaten stimmen
@@ -512,7 +512,7 @@ function rangok($zscore, $rang_nr, $sector, $system, $zcol, $kriegsgegner, $coun
 		return(0);
 	}
 	
-	//�berpr�fen ob es evtl. der eigene sektor ist
+	//überprüfen ob es evtl. der eigene sektor ist
 	if($sector==$ownsector){
 		return(0);
 	}
@@ -632,7 +632,7 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 		  $zk=$zsec.':'.$zsys;
 		  $ak=$sector.':'.$system;
 		  if ($zk==$ak) $zsec=0;
-		  $db_daten=mysqli_query($GLOBALS['dbi'],"SELECT user_id, score, col, techs, status, allytag, rang, npc FROM de_user_data WHERE sector='$zsec' and system='$zsys'");
+		  $db_daten=mysqli_query($GLOBALS['dbi'],"SELECT user_id, score, col, techs, status, allytag, rang, npc FROM de_user_data WHERE sector='$zsec' and `system`='$zsys'");
 		  $num = mysqli_num_rows($db_daten);
 
 		  if($num==1){//die koordinaten stimmen
@@ -866,7 +866,7 @@ function recall($fleet_id, $sector, $system, $db){
 				$ge=$ge+$erg;
 			}
 
-			$db_datenz=mysqli_query($GLOBALS['dbi'],"SELECT user_id FROM de_user_data WHERE sector='$zsec' and system='$zsys'");
+			$db_datenz=mysqli_query($GLOBALS['dbi'],"SELECT user_id FROM de_user_data WHERE sector='$zsec' and `system`='$zsys'");
 			if(mysqli_num_rows($db_datenz)>0){
 				$rowz = mysqli_fetch_array($db_datenz);
 				$uid=$rowz['user_id'];

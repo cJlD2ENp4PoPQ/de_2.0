@@ -13,5 +13,7 @@ dieewigen.code-workspace
 inc/env.inc.php
 inc/sv.inc.php
 map_analyse.php
+.claude
+claude.MD
 .idea/*
 *.iml
