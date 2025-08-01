@@ -13,10 +13,10 @@ if ($ergebnis == md5('night'.$_REQUEST['nummer'].'fall')) {
     //die sessionzeit aktualisieren
     $_SESSION['ums_session_start'] = time();
     //f�r den server�bergreifenden botschutz den wert in eine datei schreiben
-    $botfilename = '../botcheck/'.$_SESSION["ums_owner_id"].'.txt';
-    $botfile = fopen($botfilename, 'w');
-    fputs($botfile, $_SESSION['ums_session_start']);
-    fclose($botfile);
+//    $botfilename = '../botcheck/'.$_SESSION["ums_owner_id"].'.txt';
+//    $botfile = fopen($botfilename, 'w');
+//    fputs($botfile, $_SESSION['ums_session_start']);
+//    fclose($botfile);
 
     //das ergebnis aus sicherheitsgr�nden l�schen
     $_SESSION['loginzahl'] = md5(mt_rand(1000000, 2000000));
