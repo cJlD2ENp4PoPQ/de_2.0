@@ -1,5 +1,6 @@
 <?php
 include('inc/header.inc.php');
+include('lib/transactioni.lib.php');
 include('outputlib.php');
 require_once('lib/phpmailer/class.phpmailer.php');
 require_once('lib/phpmailer/class.smtp.php');
