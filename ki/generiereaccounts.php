@@ -139,8 +139,8 @@ if ($anzahl > 0) {
         mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_fleet (user_id) VALUES (?)", [$fleet_id]);
 
         //de_user_info
-        $sql = "INSERT INTO de_user_info (user_id, vorname, nachname, strasse, plz, ort, land, telefon, tag, monat, jahr, geschlecht, kommentar)
-      VALUES (?, '', '', '', 0, '', '', '', 0, 0, 0, 0, '')";
+        $sql = "INSERT INTO de_user_info (user_id, vorname, nachname, strasse, plz, ort, land, telefon, tag, monat, jahr, geschlecht, kommentar, ud_all, ud_sector, ud_ally)
+      VALUES (?, '', '', '', 0, '', '', '', 0, 0, 0, 0, '','','','')";
         mysqli_execute_query($GLOBALS['dbi'], $sql, [$user_id]);
 
     }
