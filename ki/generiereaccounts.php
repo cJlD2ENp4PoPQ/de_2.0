@@ -116,7 +116,7 @@ if ($anzahl > 0) {
         $newpass_crypt = password_hash($reg_mail, PASSWORD_DEFAULT);
         mysqli_execute_query($GLOBALS['dbi_ls'], "INSERT INTO ls_user (loginname, reg_mail, pass, register, last_login, acc_status, last_ip)
       VALUES (?, ?, ?, NOW(), NOW(), 1, '127.0.0.1')", [$loginname, $reg_mail, $newpass_crypt ]);
-        $user_id = mysqli_insert_id($GLOBALS['dbi']);
+        $user_id = mysqli_insert_id($GLOBALS['dbi_ls']);
 
         //de_user_data
         mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_data (user_id, spielername, restyp01, restyp02, techs,
@@ -139,8 +139,8 @@ if ($anzahl > 0) {
         mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_fleet (user_id) VALUES (?)", [$fleet_id]);
 
         //de_user_info
-        $sql = "INSERT INTO de_user_info (user_id, vorname, nachname, strasse, plz, ort, land, telefon, tag, monat, jahr, geschlecht)
-      VALUES (?, '', '', '', 0, '', '', '', 0, 0, 0, 0)";
+        $sql = "INSERT INTO de_user_info (user_id, vorname, nachname, strasse, plz, ort, land, telefon, tag, monat, jahr, geschlecht, kommentar)
+      VALUES (?, '', '', '', 0, '', '', '', 0, 0, 0, 0, '')";
         mysqli_execute_query($GLOBALS['dbi'], $sql, [$user_id]);
 
     }
