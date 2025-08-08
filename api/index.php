@@ -80,6 +80,8 @@ if(isset($data['action']) && !empty($data['action'])) {
                 echo json_encode($fleets);
                 break;
             case 'getSecStatus':
+                include_once "../functions.php";
+                include_once "../tickler/kt_einheitendaten.php";
                 if (isset($userId) && !$userService->isAPIUser($userId)) {
                     header('HTTP/1.1 403 Forbidden');
                     echo json_encode(['message' => 'Unberechtigter Zugriff']);

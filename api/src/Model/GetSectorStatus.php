@@ -34,16 +34,6 @@ class GetSectorStatus
         return $this->createSystemStatus($groupedFleetsByTarget, $coordinates[0]);
     }
 
-    private function filterAttFleets($row): bool
-    {
-        return $row['aktion'] === 1;
-    }
-
-    private function filterDefFleets($row): bool
-    {
-        return $row['aktion'] === 2;
-    }
-
     private function calculateFp($row): int
     {
         $race = $row['rasse'];
@@ -58,8 +48,8 @@ class GetSectorStatus
     {
         $systemStatus = array();
         foreach ($sectorFleetStatusRows as $targetStr => $systemFleetStatusRow) {
-            $attackFleetRows = array_filter($systemFleetStatusRow, array($this, 'filterAttFleets'));
-            $defendFleetRows = array_filter($systemFleetStatusRow, array($this, 'filterDefFleets'));
+            $attackFleetRows =  $this->filterByStatus($systemFleetStatusRow, 1);
+            $defendFleetRows = $this->filterByStatus($systemFleetStatusRow, 2);
             $attackFleets = array_map(array($this, 'createFleetStatus'), $attackFleetRows);
             $defendFleets = array_map(array($this, 'createFleetStatus'), $defendFleetRows);
             $target = explode("-", $targetStr); //system-userId
@@ -81,6 +71,17 @@ class GetSectorStatus
         $result = array();
         foreach ($rows as $row) {
             $result[$row['zielsys'] . '-' . $row['t_user_id']][] = $row;
+        }
+        return $result;
+    }
+
+    private function filterByStatus($rows, int $status): array
+    {
+        $result = array();
+        foreach ($rows as $row) {
+            if ($row['aktion'] === $status) {
+                $result[] = $row;
+            }
         }
         return $result;
     }
