@@ -99,7 +99,7 @@ if(isset($data['action']) && !empty($data['action'])) {
                     exit;
                 }
                 $playerAttackInfo = new GetPlayerAttackInfo();
-                $status = $playerAttackInfo->getPlayerAttackInfo($userId, $data['playerId'] );
+                $status = $playerAttackInfo->getPlayerAttackInfo($userId, $data['player_id'] );
                 echo json_encode($status);
                 break;
             case 'getActiveBuilds':
