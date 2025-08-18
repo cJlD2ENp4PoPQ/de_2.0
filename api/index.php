@@ -1,5 +1,6 @@
 <?php
 use DieEwigen\Api\Model\GetAllUsers;
+use DieEwigen\Api\Model\GetPlayerAttackInfo;
 use DieEwigen\Api\Model\GetUserFleet;
 use DieEwigen\Api\Model\GetSectorStatus;
 use DieEwigen\Api\Model\GetServerData;
@@ -89,6 +90,16 @@ if(isset($data['action']) && !empty($data['action'])) {
                 }
                 $sectorStatus = new GetSectorStatus();
                 $status = $sectorStatus->getSectorStatus($userId);
+                echo json_encode($status);
+                break;
+            case 'getPlayerAttackInfo':
+                if (isset($userId) && !$userService->isAPIUser($userId)) {
+                    header('HTTP/1.1 403 Forbidden');
+                    echo json_encode(['message' => 'Unberechtigter Zugriff']);
+                    exit;
+                }
+                $playerAttackInfo = new GetPlayerAttackInfo();
+                $status = $playerAttackInfo->getPlayerAttackInfo($userId, $data['playerId'] );
                 echo json_encode($status);
                 break;
             case 'getActiveBuilds':
