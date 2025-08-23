@@ -99,8 +99,17 @@ if(isset($data['action']) && !empty($data['action'])) {
                     exit;
                 }
                 $playerAttackInfo = new GetPlayerAttackInfo();
-                $status = $playerAttackInfo->getPlayerAttackInfo($userId, $data['player_id'] );
-                echo json_encode($status);
+                if (isset($data['player_id'])) {
+                    $status = $playerAttackInfo->getPlayerAttackInfo($userId, $data['player_id']);
+                    echo json_encode($status);
+                } elseif (isset($data['sector']) && isset($data['system'])) {
+                    $status = $playerAttackInfo->getPlayerAttackInfoByCoords($userId, $data['sector'], $data['system']);
+                    echo json_encode($status);
+                } else {
+                    header('HTTP/1.1 400 Bad Request');
+                    echo json_encode(['message' => 'Fehlende Parameter: player_id oder sector und system']);
+                    exit;
+                }
                 break;
             case 'getActiveBuilds':
                 if (isset($userId) && !$userService->isAPIUser($userId)) {
