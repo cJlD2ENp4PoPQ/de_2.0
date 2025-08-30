@@ -1,6 +1,7 @@
 <?php
 use DieEwigen\Api\Model\GetAllUsers;
 use DieEwigen\Api\Model\GetPlayerAttackInfo;
+use DieEwigen\Api\Model\GetTopPlayers;
 use DieEwigen\Api\Model\GetUserFleet;
 use DieEwigen\Api\Model\GetSectorStatus;
 use DieEwigen\Api\Model\GetServerData;
@@ -124,6 +125,12 @@ if(isset($data['action']) && !empty($data['action'])) {
                 $serverModel = new GetServerData();
                 $data = $serverModel->getServerData();
                 echo json_encode($data);
+                break;
+            case 'getTopList':
+                $sortType = $data['sortType'] ?? 'score';
+                $topList = new GetTopPlayers();
+                $status = $topList->getTopList($sortType);
+                echo json_encode($status);
                 break;
             case 'openPage':
                     //all fields are required
