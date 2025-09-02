@@ -28,7 +28,8 @@ class GetTopPlayers
         $rows = mysqli_fetch_all($result, MYSQLI_BOTH);
         $result = [];
         foreach ($rows as $row) {
-            $result[] = new ToplistEntry($row['user_id'], $row['score'], $row['fleetscore'], $row['col'], $row['ehscore']);
+            $result[] = new ToplistEntry($row['user_id'], $row['score'], $row['fleetscore'], $row['col'], $row['ehscore'],
+            $row['sector'], $row['system']);
         }
         return $result;
     }
