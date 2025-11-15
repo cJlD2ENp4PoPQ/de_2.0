@@ -18,7 +18,7 @@ $db_daten = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, 
             `system`, newtrans, newnews, ally_id, allytag, status, spielername 
      FROM de_user_data WHERE user_id = ?",
-    [$ums_user_id]
+    [$_SESSION['ums_user_id']]
 );
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01=$row['restyp01'];
@@ -45,9 +45,9 @@ if($row['ally_id'] > 0 && $row['status'] == 1){
 <title><?php echo $allycoleader_lang['title'];?></title>
 <?php include('cssinclude.php'); ?>
 </head>
-<body>
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+
 /*
 	Die Function getSelect($leaderid, $select_name, $co, $ally) erzeugt die zur
 	Auswahl der Co-Leader benötigten Auswahlboxen. Der aktuell belegte Coleader
@@ -140,7 +140,7 @@ if ($isleader && $ally_id > 0 ){
 	if (isset($coleader1) && isset($coleader2)){
 		if (($coleader1 == $coleader2) && (($coleader1 != -1) && ($coleader2 != -1))){
 			echo $allycoleader_lang['msg_3'];
-		}elseif (($ums_user_id == $coleader1) || ($ums_user_id == $coleader2) || ($ums_user_id == $coleader3)){
+		}elseif (($_SESSION['ums_user_id'] == $coleader1) || ($_SESSION['ums_user_id'] == $coleader2) || ($_SESSION['ums_user_id'] == $coleader3)){
 			echo $allycoleader_lang['msg_4'];
 		}else{
 			$leadername=$_POST['leadername'];
@@ -187,7 +187,7 @@ if ($isleader && $ally_id > 0 ){
 					$fcname1, $fcname2,
 					$tacticname1, $tacticname2,
 					$membername1, $membername2,
-					$ums_user_id
+					$_SESSION['ums_user_id']
 				]
 			);
 			if ($result_update){
@@ -236,15 +236,15 @@ if ($isleader && $ally_id > 0 ){
 
 
 	//Generieren der Auswahlboxen
-	$select_coleader1 = getSelect($ums_user_id, "coleader1", $coleaderid1, $ally_id);
-	$select_coleader2 = getSelect($ums_user_id, "coleader2", $coleaderid2, $ally_id);
-	$select_coleader3 = getSelect($ums_user_id, "coleader3", $coleaderid3, $ally_id);
-	$select_fc1 = getSelect($ums_user_id, "fc1", $fleetcommander1, $ally_id);
-	$select_fc2 = getSelect($ums_user_id, "fc2", $fleetcommander2, $ally_id);
-	$select_tactic1 = getSelect($ums_user_id, "tactic1", $tacticalofficer1, $ally_id);
-	$select_tactic2 = getSelect($ums_user_id, "tactic2", $tacticalofficer2, $ally_id);
-	$select_member1 = getSelect($ums_user_id, "member1", $memberofficer1, $ally_id);
-	$select_member2 = getSelect($ums_user_id, "member2", $memberofficer2, $ally_id);
+	$select_coleader1 = getSelect($_SESSION['ums_user_id'], "coleader1", $coleaderid1, $ally_id);
+	$select_coleader2 = getSelect($_SESSION['ums_user_id'], "coleader2", $coleaderid2, $ally_id);
+	$select_coleader3 = getSelect($_SESSION['ums_user_id'], "coleader3", $coleaderid3, $ally_id);
+	$select_fc1 = getSelect($_SESSION['ums_user_id'], "fc1", $fleetcommander1, $ally_id);
+	$select_fc2 = getSelect($_SESSION['ums_user_id'], "fc2", $fleetcommander2, $ally_id);
+	$select_tactic1 = getSelect($_SESSION['ums_user_id'], "tactic1", $tacticalofficer1, $ally_id);
+	$select_tactic2 = getSelect($_SESSION['ums_user_id'], "tactic2", $tacticalofficer2, $ally_id);
+	$select_member1 = getSelect($_SESSION['ums_user_id'], "member1", $memberofficer1, $ally_id);
+	$select_member2 = getSelect($_SESSION['ums_user_id'], "member2", $memberofficer2, $ally_id);
 
 
 	//Ausgabe des Formulars
@@ -256,7 +256,7 @@ if ($isleader && $ally_id > 0 ){
 				<tr><td><hr></td></tr>
 				<tr><td>
 					<table width="600">
-						<tr><td width="100" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['funktion'].'</strong></td><td width="200" align="center" bgcolor=#1c1c1c"><strong>'.$allycoleader_lang['besondererechte'].'</strong></td><td width="150" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['postenbezeichnung'].'</strong></td><td width="150" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['vergebenanmitglied'].'</strong></td></tr>
+						<tr><td width="100" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['funktion'].'</strong></td><td width="200" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['besondererechte'].'</strong></td><td width="150" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['postenbezeichnung'].'</strong></td><td width="150" align="center" bgcolor="#1c1c1c"><strong>'.$allycoleader_lang['vergebenanmitglied'].'</strong></td></tr>
 						<tr><td align="center" bgcolor="#222222">'.$allycoleader_lang['allianzleader'].'</td><td align="center" bgcolor="#222222">Leader</td><td align="center" bgcolor="#222222"><input type="text" name="leadername" value="'.$leadername.'" style="width:150px;height:20px"></td><td align="center" bgcolor="#222222">'.$spielername.'</td></tr>
 						<tr><td align="center" bgcolor="#222222">'.$allycoleader_lang['coleader'].'</td><td align="center" bgcolor="#222222">Co-Leader</td><td align="center" bgcolor="#222222"><input type="text" name="coleadername1" value="'.$coleadername1.'" style="width:150px;height:20px"></td><td align="center" bgcolor="#222222">'.$select_coleader1.'</td></tr>
 						<tr><td align="center" bgcolor="#222222">'.$allycoleader_lang['coleader'].'</td><td align="center" bgcolor="#222222">Co-Leader</td><td align="center" bgcolor="#222222"><input type="text" name="coleadername2" value="'.$coleadername2.'" style="width:150px;height:20px"></td><td align="center" bgcolor="#222222">'.$select_coleader2.'</td></tr>
@@ -284,7 +284,7 @@ else
 
 ?>
 <?php include('ally/ally.footer.inc.php'); ?>
-<?php include('fooban.php'); ?>
+
 
 </body>
 </html>

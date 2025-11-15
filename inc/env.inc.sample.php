@@ -27,18 +27,6 @@ $GLOBALS['env_db_dieewigen_user']='';
 $GLOBALS['env_db_dieewigen_password']='';
 $GLOBALS['env_db_dieewigen_database']='';
 
-//EFTA
-$GLOBALS['env_db_efta_host']='';
-$GLOBALS['env_db_efta_user']='';
-$GLOBALS['env_db_efta_password']='';
-$GLOBALS['env_db_efta_database']='';
-
-//SOU/EA
-$GLOBALS['env_db_sou_host']='';
-$GLOBALS['env_db_sou_user']='';
-$GLOBALS['env_db_sou_password']='';
-$GLOBALS['env_db_sou_database']='';
-
 //SMTP-Postfach
 $GLOBALS['env_mail_server']='';
 $GLOBALS['env_mail_user']='';
@@ -59,5 +47,4 @@ $GLOBALS['webhooks']['xDE']=			'';
 $GLOBALS['env_rpc_authcode']='';
 
 // API Key for external services
-$GLOBALS['env_api_key']='
-?>
+$GLOBALS['env_api_key']='';

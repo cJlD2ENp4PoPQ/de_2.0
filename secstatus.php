@@ -5,7 +5,7 @@ include "inc/lang/".$sv_server_lang."_secstatus.lang.php";
 include "functions.php";
 include "tickler/kt_einheitendaten.php";
 
-$db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, `system`, newtrans, newnews, secstatdisable, status, allytag FROM de_user_data WHERE user_id=?", [$ums_user_id]);
+$db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, `system`, newtrans, newnews, secstatdisable, status, allytag FROM de_user_data WHERE user_id=?", [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01 = $row["restyp01"];
 $restyp02 = $row["restyp02"];
@@ -81,13 +81,7 @@ mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_fleet SET entdecktsec = 1 
 <head>
 <title><?php echo $ss_lang['title']?></title>
 <?php include "cssinclude.php"; ?>
-<script type="text/javascript" src="js/de_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/de_fn.js');?>"></script>
 <script>
-<!--
-<?php
-//farben c0=schwarz, c1=koordinaten, c2=eta, c3=atter, c4=deffer
-//t=t+c0+"ETA:"+c2+" "+a1[j]+" "+c0+"INC:"+c3+" "+a1[j+1]+" "+c0+"DEF:"+c4+" "+a1[j+2]+" "+a1[j+3]+" "+c0+"DEF(3):"+c4+" "+a1[j+4]+" "+a1[j+5]+lb;
-?>
 function deirc(f,se,sy,a1,a2,a3) {
 	var lb="\n";
 	var t="<?php echo $ss_lang['systemstatusvon']?> "+se+":"+sy+lb;var j=0;
@@ -105,11 +99,10 @@ function deirc(f,se,sy,a1,a2,a3) {
 		document.getElementById("k"+se+"_"+sy).select();
 	}
 }
-//-->
 </script>
 </head>
-<body>
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 //wurde ein button gedrueckt??
 //stelle die ressourcenleiste dar
@@ -162,7 +155,7 @@ if ($_SESSION['ums_mobi'] == 1) {
 <td><div class="cell"><?php echo $ss_lang['status'];?></div></td>
 <td><div class="cell"><?php echo $ss_lang['zeit'];?></div></td>
 <td><div class="cell"><?php echo $ss_lang['schiffe'];?></div></td>
-<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo $ums_gpfad.'g/'.$ums_rasse;?>_hilfe.gif"></div></td>
+<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo 'gp/'.'g/'.$_SESSION['ums_rasse'];?>_hilfe.gif"></div></td>
 <td><div class="cell"><?php echo $ss_lang['aktion'];?></div></td>
 </tr>
 
@@ -340,7 +333,7 @@ for ($i = 0; $i < $fa; $i++) {
     $zally = '';
     $hv = explode("-", $user_id);
     $uid = $hv[0]; //so stellt man die user_id der flotte fest, einfach splitten
-    if ($uid != $ums_user_id) {
+    if ($uid != $_SESSION['ums_user_id']) {
         //allygegner/-verb�ndete
         //allytag des deffers/atters auslesen
         $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT allytag, rasse, status FROM de_user_data WHERE user_id=?", [$uid]);
@@ -362,7 +355,7 @@ for ($i = 0; $i < $fa; $i++) {
 
         //geheimdienst
         //daten aus der db holen, wenn es nicht der spieler selbst ist
-        $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT rasse, allytag FROM de_user_scan WHERE user_id=? AND zuser_id=?", [$ums_user_id, $uid]);
+        $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT rasse, allytag FROM de_user_scan WHERE user_id=? AND zuser_id=?", [$_SESSION['ums_user_id'], $uid]);
         $scan_vorhanden = mysqli_num_rows($db_daten);
         if ($scan_vorhanden == 1) {
             $row = mysqli_fetch_assoc($db_daten);
@@ -378,16 +371,19 @@ for ($i = 0; $i < $fa; $i++) {
 
     $rasse = '&nbsp;';
     if ($rasse_id == 1) {
-        $rasse = '<img src="'.$ums_gpfad.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
+        $rasse = '<img src="'.'gp/'.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
     }
     if ($rasse_id == 2) {
-        $rasse = '<img src="'.$ums_gpfad.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
+        $rasse = '<img src="'.'gp/'.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
     }
     if ($rasse_id == 3) {
-        $rasse = '<img src="'.$ums_gpfad.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
+        $rasse = '<img src="'.'gp/'.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
     }
     if ($rasse_id == 4) {
-        $rasse = '<img src="'.$ums_gpfad.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
+        $rasse = '<img src="'.'gp/'.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
+    }
+    if ($rasse_id == 5) {
+        $rasse = '<img src="'.'gp/'.'g/r/raceD.png" title="DX61a23" width="16px" height="16px">';
     }
 
     //die Flottenpunkte zusammenrechnen, wobei feindliche Z-Zerren nicht erkannt werden können
@@ -604,7 +600,7 @@ if (count($sc) > 0) {
                     //db updaten
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET show_ally_secstatus=? WHERE sector=? AND `system`=?", [$show_ally_secstatus, $sector, $sc[$i][1][0]]);
                     //eintrag im allianzchat
-                    $chattext = '<font color="#ff0101">Status&uuml;bermittlung von ('.$sector.':'.$sc[$i][1][0].') durch '.$ums_spielername.'</font>';
+                    $chattext = '<font color="#ff0101">Status&uuml;bermittlung von ('.$sector.':'.$sc[$i][1][0].') durch '.$_SESSION['ums_spielername'].'</font>';
                     insert_chat_msg($ally_id, 1, '', $chattext);
 
 
@@ -629,7 +625,7 @@ if (count($sc) > 0) {
         echo '<td width="100" class="tc"><b>'.$ss_lang['inc'].'</td>';
         echo '<td width="100" class="tc"><b>'.$ss_lang['def'].'</td>';
         //echo '<td width="90" class="tc"><b>'.$ss_lang['def'].'(3)</td>';
-        echo '<td width="180" colspan="2" class="tc" title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet.">FP <img id="info" style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
+        echo '<td width="180" colspan="2" class="tc" title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet.">FP <img id="info" style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
         echo '<td width="80" class="tc"><b>'.$ss_lang['angreifer'].'</td>';
         echo '<td width="80" class="tc"><b>'.$ss_lang['verteidiger'].'</td>';
         echo '</tr>';
@@ -826,7 +822,7 @@ if (count($sc) > 0) {
 <td><div class="cell"><?php echo $ss_lang['status']?></div></td>
 <td><div class="cell"><?php echo $ss_lang['zeit']?></div></td>
 <td><div class="cell"><?php echo $ss_lang['schiffe']?></div></td>
-<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten werden mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo $ums_gpfad.'g/'.$ums_rasse;?>_hilfe.gif"></div></td>
+<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten werden mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo 'gp/'.'g/'.$_SESSION['ums_rasse'];?>_hilfe.gif"></div></td>
 </tr>
 
 
@@ -904,7 +900,7 @@ for ($i = 0; $i < $fa; $i++) {
 
     $hv = explode("-", $row_fleet["user_id"]);
     $uid = $hv[0]; //so stellt man die user_id der flotte fest, einfach splitten
-    if ($uid != $ums_user_id) {
+    if ($uid != $_SESSION['ums_user_id']) {
         $sql = "SELECT allytag, rasse, status FROM de_user_data WHERE user_id=?";
         $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$uid]);
         $row = mysqli_fetch_assoc($db_daten);
@@ -975,6 +971,8 @@ for ($i = 0; $i < $fa; $i++) {
 $sql = "SELECT zielsec, sec_id, aktion, aktzeit, zeit, e2 FROM de_sector WHERE aktion<>0 AND sec_id=?";
 $flotten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$sector]);
 $fa = mysqli_num_rows($flotten);
+// Variablen initialisieren um Warnings zu vermeiden
+$zsys1 = 0;
 for ($i = 0; $i < $fa; $i++) {
     $row_sector = mysqli_fetch_assoc($flotten);
     $zsec1 = $row_sector["zielsec"];
@@ -1080,7 +1078,7 @@ if ($ownally != '') {
 <td><div class="cell"><?php echo $ss_lang['status'];?></div></td>
 <td><div class="cell"><?php echo $ss_lang['zeit'];?></div></td>
 <td><div class="cell"><?php echo $ss_lang['schiffe'];?></div></td>
-<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo $ums_gpfad.'g/'.$ums_rasse;?>_hilfe.gif"></div></td>
+<td title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet."><div class="cell">FP <img id="info" style="vertical-align: middle;" src="<?php echo 'gp/'.'g/'.$_SESSION['ums_rasse'];?>_hilfe.gif"></div></td>
 <td><div class="cell"><?php echo $ss_lang['aktion'];?></div></td>
 </tr>
 
@@ -1142,6 +1140,10 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
 
             //angreiferliste
             if ($a1 == 1) {
+                // Sicherstellen, dass Zähler und String existieren
+                if (!isset($sc[$ssc][0][$eta][0])) { $sc[$ssc][0][$eta][0] = 0; }
+                if (!isset($sc[$ssc][0][$eta][2])) { $sc[$ssc][0][$eta][2] = ''; }
+
                 $sc[$ssc][0][$eta][0] += $ge;//atter
 
                 $pos = strpos($sc[$ssc][0][$eta][2], $hsec.':'.$hsys);
@@ -1152,10 +1154,13 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
                     $sc[$ssc][0][$eta][2] .= $hsec.':'.$hsys;
                 }
             } else { //defferliste
+                if (!isset($sc[$ssc][0][$eta][1])) { $sc[$ssc][0][$eta][1] = 0; }
+                if (!isset($sc[$ssc][0][$eta][3])) { $sc[$ssc][0][$eta][3] = ''; }
                 $sc[$ssc][0][$eta][1] += $ge;//deffer
 
                 //deffer3 liste
                 for ($j = 0;$j <= $at1;$j++) {
+                    if (!isset($sc[$ssc][0][$eta + $j][4])) { $sc[$ssc][0][$eta + $j][4] = 0; }
                     $sc[$ssc][0][$eta + $j][4] += $ge;
                     if ($eta + $j > $sc[$ssc][1][1]) {
                         $sc[$ssc][1][1] = $eta + $j;
@@ -1181,9 +1186,11 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
             $sss = '<a href="military.php?se='.$zsec1.'&sy='.$zsys1.'" title="Milit&auml;r">'.$zsec1.':'.$zsys1.'</a>';
             $eta = $t1;
             if ($a1 == 1) {
+                if (!isset($sc[$ssc][0][$eta][0])) { $sc[$ssc][0][$eta][0] = 0; }
                 $sc[$ssc][0][$eta][0] = $ge;
             }//atter
             if ($a1 == 2) {
+                if (!isset($sc[$ssc][0][$eta][1])) { $sc[$ssc][0][$eta][1] = 0; }
                 $sc[$ssc][0][$eta][1] = $ge;
             }//deffer
             $sc[$ssc][1][0] = $zsys1;//system
@@ -1198,10 +1205,13 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
                 $sc[$ssc][1][1] = $eta;//maxeta
             }
             if ($a1 == 1) {
+                if (!isset($sc[$ssc][0][$eta][2])) { $sc[$ssc][0][$eta][2] = ''; }
                 $sc[$ssc][0][$eta][2] = $hsec.':'.$hsys;
             } else { //defferliste
+                if (!isset($sc[$ssc][0][$eta][3])) { $sc[$ssc][0][$eta][3] = ''; }
                 $sc[$ssc][0][$eta][3] = $hsec.':'.$hsys;
                 for ($j = 0;$j <= $at1;$j++) {
+                    if (!isset($sc[$ssc][0][$eta + $j][4])) { $sc[$ssc][0][$eta + $j][4] = 0; }
                     $sc[$ssc][0][$eta + $j][4] += $ge;
                     if ($eta + $j > $sc[$ssc][1][1]) {
                         $sc[$ssc][1][1] = $eta + $j;
@@ -1243,7 +1253,7 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
         $zally = '';
         $hv = explode("-", $user_id);
         $uid = $hv[0]; //so stellt man die user_id der flotte fest, einfach splitten
-        if ($uid != $ums_user_id) {
+        if ($uid != $_SESSION['ums_user_id']) {
             //allygegner/-verb�ndete
             //allytag des deffers/atters auslesen
             $sql = "SELECT allytag, rasse, status FROM de_user_data WHERE user_id=?";
@@ -1267,7 +1277,7 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
             //geheimdienst
             //daten aus der db holen, wenn es nicht der spieler selbst ist
             $sql = "SELECT rasse, allytag FROM de_user_scan WHERE user_id=? AND zuser_id=?";
-            $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id, $uid]);
+            $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id'], $uid]);
 
             $scan_vorhanden = mysqli_num_rows($db_daten);
             if ($scan_vorhanden == 1) {
@@ -1284,17 +1294,21 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
 
         $rasse = '&nbsp;';
         if ($rasse_id == 1) {
-            $rasse = '<img src="'.$ums_gpfad.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
+            $rasse = '<img src="'.'gp/'.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
         }
         if ($rasse_id == 2) {
-            $rasse = '<img src="'.$ums_gpfad.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
+            $rasse = '<img src="'.'gp/'.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
         }
         if ($rasse_id == 3) {
-            $rasse = '<img src="'.$ums_gpfad.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
+            $rasse = '<img src="'.'gp/'.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
         }
         if ($rasse_id == 4) {
-            $rasse = '<img src="'.$ums_gpfad.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
+            $rasse = '<img src="'.'gp/'.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
         }
+        if ($rasse_id == 5) {
+            $rasse = '<img src="'.'gp/'.'g/r/raceD.png" title="DX61a23" width="16px" height="16px">';
+        }
+
 
         //die Flottenpunkte zusammenrechnen, wobei feindliche Z-Zerren nicht erkannt werden können
         $fp = 0;
@@ -1434,7 +1448,7 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
             echo '<td width="100" class="tc"><b>'.$ss_lang['inc'].'</td>';
             echo '<td width="100" class="tc"><b>'.$ss_lang['def'].'</td>';
             //echo '<td width="90" class="tc"><b>'.$ss_lang['def'].'(3)</td>';
-            echo '<td width="180" colspan="2" class="tc" title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet.">FP <img id="info" style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
+            echo '<td width="180" colspan="2" class="tc" title="Dieser Wert sind die Flottenpunkte. Getarnte Einheiten der Angreifer, wie die Z-Zerst&ouml;rer, werden nicht mit eingerechnet.">FP <img id="info" style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
             echo '<td width="80" class="tc"><b>'.$ss_lang['angreifer'].'</td>';
             echo '<td width="80" class="tc"><b>'.$ss_lang['verteidiger'].'</td>';
             echo '</tr>';
@@ -1466,6 +1480,10 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
                         $sc[$i][0][$j][6] = 0;
                     }
 
+
+                    if(!isset($sc[$i][0][$j][0])) {
+                        $sc[$i][0][$j][0] = 0;
+                    }
 
                     if ($sc[$i][0][$j][0] > 0) {
                         $sc[$i][0][$j][5] = $sc[$i][0][$j][1] / $sc[$i][0][$j][0];
@@ -1637,6 +1655,6 @@ ORDER BY de_user_fleet.zielsec, de_user_fleet.zielsys, de_user_fleet.zeit, de_us
 }
 ?>
 </div>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

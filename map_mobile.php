@@ -18,20 +18,17 @@ $mysc2=$row["sc2"];
 $gr01=$restyp01;$gr02=$restyp02;$gr03=$restyp03;$gr04=$restyp04;$gr05=$restyp05;
 $spec1=$row['spec1'];$spec3=$row['spec3'];
 ?>
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
 <title>Vergessene Systeme</title>
 <?php 
-//$newcss=1;
 include "cssinclude.php";
 ?>
 <script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
-<script type="text/javascript" src="js/de_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/de_fn.js');?>"></script>
 </head>
-<body>
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 if(isset($sv_deactivate_vsystems) && $sv_deactivate_vsystems==1){
 	include "resline.php";
@@ -53,7 +50,7 @@ if(!hasTech($pt,25)){
 	rahmen_oben('Fehlende Technologie');
 	echo '<table width="572" border="0" cellpadding="0" cellspacing="0">';
 	echo '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=28" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_25.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=28" target="_blank"><img src="gp/g/t/'.$_SESSION['ums_rasse'].'_25.jpg" border="0"></a></td>
 	<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'],$_SESSION['ums_rasse']).'</td>
 	</tr>';
 	echo '</table>';
@@ -135,7 +132,7 @@ if(!hasTech($pt,25)){
 			<option value="10">10</option>
 		  </select>		  
 
-		  <img src="g/close_icon.png" style="height: 26px; width: auto; margin-left: 30px; margin-bottom: -7px;" onclick="vs_filter(0);" title="Filter zur&uuml;cksetzen">
+		  <img src="gp/g/close_icon.png" style="height: 26px; width: auto; margin-left: 30px; margin-bottom: -7px;" onclick="vs_filter(0);" title="Filter zur&uuml;cksetzen">
 		  <script>
 		  $(document).ready(function() {
 			vs_filter_init();
@@ -263,33 +260,18 @@ if(!hasTech($pt,25)){
 		
 		$output='';
 
-		/*
-		if(in_array($row['id'], $erforschte_systeme)){
-			$bg_image=$ums_gpfad.'s/p'.$planet_id.'.png';
-			$system_name=$data->getSystemName().' (#'.$row['id'].')';
-			
-			$planet_id++;
-			if($planet_id>20){
-				$planet_id=1;
-			}
-			//$erforschte_systeme_koordinaten[$row['id']]=array($alienpos_x, $alienpos_y);
-		}else{
-			$bg_image=$ums_gpfad.'g/derassenlogo0.png';
-			$system_name='Unerforschtes System (#'.$row['id'].')';
-		}*/
 		$filter_class_unsy='';
 		if(in_array($row['id'], $erforschte_systeme) || in_array($row['id'],$immer_sichtbare_systeme)){
-			//$system_name=$data->getSystemName().' (#'.$row['id'].') - Stufe '.$data->getSystemLevel();
 			$system_name='#'.$row['id'].' - '.$data->getSystemName();
 
 			if(in_array($row['id'],$immer_sichtbare_systeme)){
-				$bg_image=$ums_gpfad.'s/sym3.png';
+				$bg_image='gp/g/s/sym3.png';
 			}else{
-				$bg_image=$ums_gpfad.'s/p'.$planet_id.'.png';
+				$bg_image='gp/g/s/p'.$planet_id.'.png';
 
 			}
 		}else{
-			$bg_image=$ums_gpfad.'g/derassenlogo0.png';
+			$bg_image='gp/g/derassenlogo0.png';
 			//$system_name='Unerforschtes System (#'.$row['id'].') - Stufe '.$data->getSystemLevel();
 			$system_name='Unerforschtes System (#'.$row['id'].')';
 			$filter_class_unsy =' f_unsy';
@@ -438,19 +420,10 @@ if(!hasTech($pt,25)){
 						if($filename_nr<10){
 							$filename_nr='0'.$filename_nr;
 						}
-						$output.='<div style="text-align:center; padding-left: 10px; font-weight: bold; font-size: 20px;"><img style="width: 40px; border-radius: 5px;'.$border.'" src="'.$ums_gpfad.'g/ele'.$filename_nr.'.gif" title="'.$GLOBALS['map_field_typ'][$data->fields[$i][0]]['name'].'">'.$stufeninfo.'</div>';
+						$output.='<div style="text-align:center; padding-left: 10px; font-weight: bold; font-size: 20px;"><img style="width: 40px; border-radius: 5px;'.$border.'" src="gp/g/ele'.$filename_nr.'.gif" class="rounded-borders" title="'.$GLOBALS['map_field_typ'][$data->fields[$i][0]]['name'].'">'.$stufeninfo.'</div>';
 					}else{
 						//Keine Rohstoffe, es könnte aber eine Fabrik&Co vorhanden sein
 						if(isset($bldg[$row['id']][$i]['bldg_id']) && isset($GLOBALS['map_buildings'][$bldg[$row['id']][$i]['bldg_id']]['factory_id'])){
-
-							//$GLOBALS['greek_chars']
-							/*
-							$output.='
-							<div style="text-align:center; margin-right: 1px; font-size: 10px; line-height: 10px;">
-								<img style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 5px;'.$border.'" src="'.$ums_gpfad.'g/r/'.$GLOBALS['map_buildings'][$bldg[$row['id']][$i]['bldg_id']]['factory_id'].'_g.gif" title="'.$GLOBALS['map_buildings'][$bldg[$row['id']][$i]['bldg_id']]['name'].'">
-								'.$stufeninfo.'
-							</div>';
-							*/
 
 							$output.='
 							<div style="font-size: 20px; line-height: 10px; text-align:center; margin-left: 10px;">
@@ -460,7 +433,7 @@ if(!hasTech($pt,25)){
 
 
 						}else{
-							$output.='<div title="keine Rohstoffe" style="margin-left: 10px; line-height: 40px; width: 40px; height: 40px; background-color: #666666; text-align: center; border-radius: 5px;'.$border.'">-</div>';
+							$output.='<div title="keine Rohstoffe" class="rounded-borders" style="margin-left: 10px; line-height: 40px; width: 40px; height: 40px; background-color: #666666; text-align: center;">-</div>';
 						}
 
 					}
@@ -475,12 +448,6 @@ if(!hasTech($pt,25)){
 
 
 				}
-
-
-				//$output.='</div>';
-
-				//Test auf Loot
-
 			}
 		}
 		
@@ -491,7 +458,6 @@ if(!hasTech($pt,25)){
 		</tr>
 		';
 	
-		//if($row['user_id']<1 && $data->always_visible==0){
 		if(!in_array($row['id'], $sichtbare_systeme)){
 			$output='';
 		}
@@ -508,6 +474,5 @@ if(!hasTech($pt,25)){
 ?>
 
 <br>
-<?php include "fooban.php"; ?>
 </body>
 </html>

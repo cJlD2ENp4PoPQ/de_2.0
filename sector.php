@@ -2,10 +2,9 @@
 include "inc/header.inc.php";
 include 'inc/lang/'.$sv_server_lang.'_sector.lang.php';
 include "functions.php";
-include "issectork.php";
 
 $sql = "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, col, sector, `system`, newtrans, newnews, allytag, status, hide_secpics, platz, rang, secsort, secstatdisable FROM de_user_data WHERE user_id=?";
-$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id]);
+$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01=$row["restyp01"];$restyp02=$row["restyp02"];$restyp03=$row["restyp03"];$restyp04=$row["restyp04"];
 $restyp05=$row["restyp05"];$punkte=$row["score"];$newtrans=$row["newtrans"];$newnews=$row["newnews"];
@@ -29,7 +28,7 @@ if ($techs[4]==0)$sv_attgrenze_whg_bonus=0;
 
 //owner id auslesen
 $sql = "SELECT owner_id FROM de_login WHERE user_id=?";
-$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id]);
+$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $owner_id=intval($row["owner_id"]);
 
@@ -37,7 +36,7 @@ if(isset($_REQUEST["sso"])){
 	$sso=intval($_REQUEST["sso"]);
 	$sso--;
 	$sql = "UPDATE de_user_data SET secsort=? WHERE user_id=?";
-	mysqli_execute_query($GLOBALS['dbi'], $sql, [$sso, $ums_user_id]);
+	mysqli_execute_query($GLOBALS['dbi'], $sql, [$sso, $_SESSION['ums_user_id']]);
 	$secsort=$sso;
 }
 
@@ -59,21 +58,11 @@ $maxcol=$row['maxcol'];
 <title>Sektor</title>
 <?php include "cssinclude.php";
 echo '
-<style type="text/css">
-.user_title {
-	display: inline-block;
-	background-color: rgb(250, 184, 233);
-	width: 10px;
-	height: 10px;
-	margin-left: 5px;
-	transform: rotate(45deg);
-}
-</style>.
 </head>';
 if($_SESSION['ums_mobi']==1){
-	echo '<body>';
+	echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 }else{
-	echo '<body onload="javascript:document.secform.sf.focus();document.secform.sf.select();">';
+	echo '<body onload="javascript:document.secform.sf.focus();document.secform.sf.select();" class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 }
 
 //stelle die ressourcenleiste dar
@@ -137,13 +126,10 @@ echo '<form action="sector.php" name="secform" method="POST">';
 echo '<table><tr align="center"><td>';
 
 if($_SESSION['ums_mobi']==1){
-	echo '<a style="float:left;" href="sector.php?sf='.($sf-2).'"><div class="mobilebtn" style="float:left; margin-bottom: 5px; width: 80px; margin-top: 5px;">&lt;-2</div></a>';
 	echo '<a style="float:left;" href="sector.php?sf='.($sf-1).'"><div class="mobilebtn" style="float:left; margin-bottom: 5px; margin-left: 10px; width: 80px; margin-top: 5px;">&lt;</div></a>';
 	echo '<input class="mobilebtn" style="float:left; margin-bottom: 5px; margin-left: 10px; width: 80px; margin-top: 5px;" type="text" name="sf" value="'.$sf.'" size="4" maxlength="5" autocomplete="off">';
 	echo '<a class="mobilebtn" style="float:left; margin-bottom: 5px; margin-left: 10px; width: 80px; margin-top: 5px;" href="javascript:document.secform.submit();">OK</a>';
 	echo '<a style="float:left;" href="sector.php?sf='.($sf+1).'"><div class="mobilebtn" style="float:left; margin-bottom: 5px; margin-left: 10px; width: 80px; margin-top: 5px;">&gt;</div></a>';
-	echo '<a style="float:left;" href="sector.php?sf='.($sf+2).'"><div class="mobilebtn" style="float:left; margin-bottom: 5px; margin-left: 10px; width: 80px; margin-top: 5px;">+2 &gt;</div></a>';	
-	
 }else{
 	echo '<a href="sector.php?sf='.($sf-2).'" class="secbutton1"></a><a href="sector.php?sf='.($sf-1).'" class="secbutton2">&nbsp;</a><span class="secbutton3"><input type="text" name="sf" value="'.$sf.'" size="4" maxlength="5" class="secbutton3" autocomplete="off"></span><a href="javascript:document.secform.submit();" class="secbutton4"></a><a href="sector.php?sf='.($sf+1).'" class="secbutton5"></a><a href="sector.php?sf='.($sf+2).'" class="secbutton6"></a>';	
 }
@@ -167,7 +153,7 @@ if($sf==666){
 	echo '
 	<div class="cell" style="display: flex; width: 597px; border: 1px solid #333333; padding: 4px; margin-bottom: 20px;">
     	<div style="background-color: #000000; width: 50px; height: 50px;">
-			<img src="'.$ums_gpfad.'g/symbol12.png" border="0" title="Info">
+			<img src="'.'gp/'.'g/symbol12.png" border="0" title="Info">
 		</div>
     
 		<div style="flex-grow: 1; padding: 10px;">
@@ -242,11 +228,11 @@ if($sec_data['npc']==1){
     //hinweistext für npc-sektoren
 	echo '<div class="cell" style="position: relative; width: 590px; border: 1px solid #333333; padding: 4px;">';
     echo '<div style="background-color: #000000; width: 50px; height: 50px; position: relative; float: left;">
-      <img src="'.$ums_gpfad.'g/symbol12.png" border="0" title="Info">
+      <img src="'.'gp/'.'g/symbol12.png" border="0" title="Info">
     </div>';    
     
     echo '<div style="width: 540px; height: 70px; position: relative;">'.
-    $sec_lang['npsecinfo1'].' '.$sec_lang['npsecinfo2'].get_free_artefact_places($ums_user_id).'<br>'.$sec_lang['npsecinfo3'].
+    $sec_lang['npsecinfo1'].' '.$sec_lang['npsecinfo2'].get_free_artefact_places($_SESSION['ums_user_id']).'<br>'.$sec_lang['npsecinfo3'].
     '<br>'.$sec_lang['npsecinfo4'].'
     </div>';    
     echo '</div><br>';
@@ -261,7 +247,7 @@ if($sec_data['npc']==1){
 	//die scandaten des spielers auslesen
 	unset($scandaten);
     $sql = "SELECT zuser_id, rasse, allytag, ps FROM de_user_scan WHERE user_id=?";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id']]);
     $index=0;
 	while($row = mysqli_fetch_assoc($db_daten))
 	{
@@ -357,7 +343,7 @@ if($sec_data['npc']==1){
 	if($sf==1 && !isset($_REQUEST['showall'])){
 		$sql = "SELECT de_user_data.spielername, de_login.owner_id, de_login.status AS lstatus, de_login.delmode, 
 		de_login.last_login, de_login.last_click, de_login.user_id, de_user_data.score, de_user_data.col, de_user_data.`system`, de_user_data.rasse, de_user_data.allytag, 
-		de_user_data.status, de_user_data.votefor, de_user_data.rang, de_user_data.werberid, 
+		de_user_data.status, de_user_data.votefor, de_user_data.rang, de_user_data.npc, 
 		de_user_data.kg01, de_user_data.kg02,  de_user_data.kg03,  de_user_data.kg04 
 		FROM de_login left join de_user_data on(de_login.user_id = de_user_data.user_id)WHERE de_login.status=1 AND de_user_data.sector=? ORDER BY $orderby ASC";
 		$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$sf]);
@@ -365,7 +351,7 @@ if($sec_data['npc']==1){
 		//alles anzeigen
 		$sql = "SELECT de_user_data.spielername, de_login.owner_id, de_login.status AS lstatus, de_login.delmode, 
 		de_login.last_login, de_login.last_click, de_login.user_id, de_user_data.score, de_user_data.col, de_user_data.`system`, de_user_data.rasse, de_user_data.allytag, 
-		de_user_data.status, de_user_data.votefor, de_user_data.rang, de_user_data.werberid, 
+		de_user_data.status, de_user_data.votefor, de_user_data.rang, de_user_data.npc, 
 		de_user_data.kg01, de_user_data.kg02,  de_user_data.kg03,  de_user_data.kg04 
 		FROM de_login left join de_user_data on(de_login.user_id = de_user_data.user_id)WHERE de_user_data.sector=? ORDER BY $orderby ASC";
 		$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$sf]);
@@ -404,19 +390,24 @@ if($sec_data['npc']==1){
 		//rang
 		////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////
-    	$rang="<img src='".$ums_gpfad.'g/r/'.$row['rang']."_g.gif' title='".$rangnamen1[$row['rang']]."'>";
+		$rang='';
+		if($row['npc']==0){
+			$rang="<img src='".'gp/'.'g/r/'.$row['rang']."_g.gif' title='".$rangnamen1[$row['rang']]."'>";
+		}
+    	
 		$output.='<td class="cell tac">'.$rang.'</td>';
 		
 		
 		////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////
-		//spielername, geworben, details, im sektor online
+		//spielername, Spielertitel, details, im sektor online
 		////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////
     	$playername=utf8_encode_fix(umlaut($row['spielername']));
     	if(strtotime($row["last_click"])+1800 > time() AND $row["lstatus"]==1) $os=' *';else $os='';
     	if ($ownsector==$sf AND $secstatdisable==0) $osown=$os;else $osown='';
     	$csstag='tc1';
+		
 		$userTitle='';
 		$sql="SELECT * FROM ls_user_title LEFT JOIN ls_title ON (ls_user_title.title_id=ls_title.title_id) WHERE ls_user_title.user_id = '".$row['owner_id']."' ORDER BY ls_title.title ASC";
 		$db_datenx=mysqli_query($GLOBALS['dbi_ls'], $sql);
@@ -460,10 +451,11 @@ if($sec_data['npc']==1){
 		
 		if($knowrasse==1)
 		{
-			if($row['rasse']==1)$rasse='<img src="'.$ums_gpfad.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
-			if($row['rasse']==2)$rasse='<img src="'.$ums_gpfad.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
-			if($row['rasse']==3)$rasse='<img src="'.$ums_gpfad.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
-			if($row['rasse']==4)$rasse='<img src="'.$ums_gpfad.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
+			if($row['rasse']==1)$rasse='<img src="'.'gp/'.'g/r/raceE.png" title="Die Ewigen" width="16px" height="16px">';
+			if($row['rasse']==2)$rasse='<img src="'.'gp/'.'g/r/raceI.png" title="Ishtar" width="16px" height="16px">';
+			if($row['rasse']==3)$rasse='<img src="'.'gp/'.'g/r/raceK.png" title="K&#180;Tharr" width="16px" height="16px">';
+			if($row['rasse']==4)$rasse='<img src="'.'gp/'.'g/r/raceZ.png" title="Z&#180;tah-ara" width="16px" height="16px">';
+			if($row['rasse']==5)$rasse='<img src="'.'gp/'.'g/r/raceD.png" title="Z&#180;tah-ara" width="16px" height="16px">';
 		}
 		
 		$output.='<td class="cell tac">'.$rasse.'</td>';
@@ -566,7 +558,7 @@ if($sec_data['npc']==1){
 		////////////////////////////////////////////////////////////////////////
 		
 		$aktion='<a href="secret.php?a=s&zsec1='.$sector.'&zsys1='.$row['system'].'" title="Sonde starten">S</a> <a href="secret.php?a=a&zsec2='.$sector.'&zsys2='.$row['system'].'" title="Agenteneinsatz">A</a> <a href="military.php?se='.$sector.'&sy='.$row['system'].'" title="Flotteneinsatz">F</a> ';
-		$aktion.='<a href="secret.php?a=d&zsec1='.$sector.'&zsys1='.$row['system'].'"><img src="'.$ums_gpfad.'g/ps_'.$playerstatus.'.gif" border="0" title="Geheimdienstinformationen"></a>';
+		$aktion.='<a href="secret.php?a=d&zsec1='.$sector.'&zsys1='.$row['system'].'"><img src="'.'gp/'.'g/ps_'.$playerstatus.'.gif" border="0" title="Geheimdienstinformationen"></a>';
 		
 		$output.='<td class="cell tac" style="font-size: 10pt;">'.$aktion.'</td>';
 		
@@ -648,7 +640,7 @@ if($sec_data['npc']==1){
       
     $atip[$c] = '<font color=#'.$row["color"].'>'.$row["artname"].'</font>&'.$desc;
       
-    $artstr.='<a href="help.php?a=1" target="_blank" title="'.$atip[$c].'"><img src="'.$ums_gpfad.'g/sa'.$row["picid"].'.gif" border="0"></a>&nbsp;';
+    $artstr.='<a href="help.php?a=1" target="_blank" title="'.$atip[$c].'"><img src="'.'gp/'.'g/sa'.$row["picid"].'.gif" border="0"></a>&nbsp;';
     $c++;
   }
   if($artstr=='')$artstr='&nbsp;';
@@ -663,7 +655,7 @@ if($sec_data['npc']==1){
   	if($sec_data['techs'][5]>0)$srbstr.='<br>- '.$sec_lang['sekbldg4'];
   	
   	$stip = $sec_lang['sektorraumbasis'].'&'.$srbstr;
-    $basestr='<a href="'.$ums_gpfad.'g/big/'.strtoupper($bn).'" target="_blank"><img border="0" src="'.$ums_gpfad.'g/'.$bn.'" name="sb" title="'.$stip.'"></a>';
+    $basestr='<a href="'.'gp/'.'g/big/'.strtoupper($bn).'" target="_blank"><img border="0" src="'.'gp/'.'g/'.$bn.'" name="sb" title="'.$stip.'"></a>';
     //wenn es keine sektorraumbasis gibt string mit einem leerzeichen belegen
     if($bed=='000')$basestr='&nbsp;';
    }
@@ -733,6 +725,6 @@ if($sec_data['npc']==1){
 ?>
 </div>
 </form>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

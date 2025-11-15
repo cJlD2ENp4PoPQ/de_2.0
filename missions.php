@@ -47,7 +47,7 @@ function fk2frachter($fk, $ship_fk){
 ////////////////////////////////////////////////////////////////////////////////
 //userartefakte auslesen
 ////////////////////////////////////////////////////////////////////////////////
-$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT id, level FROM de_user_artefact WHERE id=11 AND user_id='$ums_user_id'");
+$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT id, level FROM de_user_artefact WHERE id=11 AND user_id='".$_SESSION['ums_user_id']."';");
 $artbonus_duration=0;
 while($row = mysqli_fetch_array($db_daten)){
 	$artbonus_duration=$artbonus_duration+$ua_werte[$row["id"]-1][$row["level"]-1][0];
@@ -289,7 +289,7 @@ $md[$md_index]['time']=27000*$duration_factor;
 $md[$md_index]['need_agents']=0;
 $md[$md_index]['storage_capacity']=$res_bezahlen*10;
 
-//Handel - 	 man zahlt Palenium und erhält Tronic
+//Handel - ARES - man zahlt Palenium und erhält Tronic
 $md_index++;
 $md[$md_index]['typ']=2;
 $md[$md_index]['subtyp']=1;//Ares
@@ -317,6 +317,8 @@ $md[$md_index]['storage_capacity']=$res_bezahlen*10;
 $md[$md_index]['special_system_phase_need']=array(4,1);
 $md[$md_index]['ally_mission_counter_id']=2;
 
+//Handel - HADES - man zahlt Verteidigungsanlagen BNG 9000 und erhält Sektorkollektoren
+
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -325,12 +327,11 @@ $md[$md_index]['ally_mission_counter_id']=2;
 
 <script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
 <?php 
-//$newcss=1;
 include "cssinclude.php";
 ?>
 </head>
-<body>
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 if(isset($sv_deactivate_missions) && $sv_deactivate_missions==1){
 	include "resline.php";
@@ -353,7 +354,7 @@ if(!hasTech($pt,29)){
 	$content.='
 	<table width="572" border="0" cellpadding="0" cellspacing="0">
 		<tr align="left" class="cell">
-			<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=29" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_29.jpg" border="0"></a></td>
+			<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=29" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_29.jpg" border="0"></a></td>
 			<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'],$_SESSION['ums_rasse']).'</td>
 		</tr>
 	</table>';
@@ -373,7 +374,7 @@ if(!hasTech($pt,29)){
 	}
 
 	//Missionen anzeigen
-	$content.=rahmen_oben('Missionen <img style="margin-bottom: 2px;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="ACHTUNG: Missionen k&ouml;nnen nicht abgebrochen werden.<br><br>Eingesetzte Agenten sind während der Mission nicht verfügbar. Nach der Beendiung der Mission werden diese jedoch wieder zurückerstattet.">',false);
+	$content.=rahmen_oben('Missionen <img style="margin-bottom: 2px;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="ACHTUNG: Missionen k&ouml;nnen nicht abgebrochen werden.<br><br>Eingesetzte Agenten sind während der Mission nicht verfügbar. Nach der Beendiung der Mission werden diese jedoch wieder zurückerstattet.">',false);
 	$content.='<div style="width: 572px;">';
 
 	///////////////////////////////////////////////////////////
@@ -744,8 +745,7 @@ if(!hasTech($pt,29)){
 							<div style="margin-right: 10px;"><a href="javascript: void(0)" onclick="show_mission(2)" class="btn">W-Handel</a></div>
 						</div>
 						
-
-						<span id="trade_menu" style="display: none">
+						<div id="trade_menu" style="display: none; margin-bottom: 10px;">
 							Ich ben&ouml;tige 
 							<select name="res_need" id="res_need" onchange="javascript: show_mission_trade();">
 								<option value="-1" selected>alles</option>
@@ -763,10 +763,8 @@ if(!hasTech($pt,29)){
 								<option value="2">Dyharra</option>
 								<option value="3">Iradium</option>
 								<option value="4">Eternium</option>
-							</select>.
-				
-
-						</span>
+							</select>
+						</div>
 					</div>
 
 					<script>
@@ -874,14 +872,11 @@ if(!hasTech($pt,29)){
 					if(!isset($um[$m]) || ($um[$m]['end_time']<time() && $um[$m]['get_reward']==1)){
 						$belohnung.=generateMissionReward($md[$m]['reward']);
 					}else{
-						$belohnung.=generateMissionReward($um[$m]['reward'], $um[$m]['reward_percentage']);
-						/*
-						if($_SESSION['ums_user_id']==1){
-							$belohnung.='<br>'.print_r($um[$m],true).'<br>A: '.$um[$m]['reward_percentage'].'<br>';
-							//138.874
-							//1.000.257.696
-						}
-						*/
+							// Absicherung: Falls einzelne Keys (reward / reward_percentage) im laufenden Missions-Datensatz fehlen,
+							// auf Missions-Definition ($md) bzw. Standard 100% zurückfallen, um PHP-Warnings zu vermeiden.
+							$mission_reward_array = (isset($um[$m]['reward']) && is_array($um[$m]['reward'])) ? $um[$m]['reward'] : (isset($md[$m]['reward']) ? $md[$m]['reward'] : array());
+							$mission_reward_percent = isset($um[$m]['reward_percentage']) ? (int)$um[$m]['reward_percentage'] : 100;
+							$belohnung.=generateMissionReward($mission_reward_array, $mission_reward_percent);
 					}
 				}
 
@@ -904,7 +899,7 @@ if(!hasTech($pt,29)){
 				if($md[$m]['typ']==1){
 					$tradescore=$md[$m]['time']*$GLOBALS['tech_build_time_faktor'];
 					//$belohnung_tradescore=number_format($tradescore, 0,"",".").' Handelspunkte';
-					$belohnung_tradescore='<img src="g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
+					$belohnung_tradescore='<img src="gp/g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
 				}else{
 					$belohnung_tradescore='';
 				}
@@ -992,7 +987,7 @@ if(!hasTech($pt,29)){
 
 							$tradescore=$md[$m]['time']*$GLOBALS['tech_build_time_faktor']*$p/100;
 							//$belohnung_tradescore=number_format($tradescore, 0,"",".").' Handelspunkte';					
-							$belohnung_tradescore='<img src="g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
+							$belohnung_tradescore='<img src="gp/g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
 
 
 							$kosten_fleet=generateMissionReward($md[$m]['cost'],$fleet_fk_percent);
@@ -1060,7 +1055,7 @@ if(!hasTech($pt,29)){
 
 							$tradescore=$md[$m]['time']*$GLOBALS['tech_build_time_faktor'];
 							//$belohnung_tradescore=number_format($tradescore, 0,"",".").' Handelspunkte';					
-							$belohnung_tradescore='<img src="g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
+							$belohnung_tradescore='<img src="gp/g/icon11.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="Handelspunkte"> <div style="display: inline-block; margin-bottom: 5px;">'.number_format($tradescore, 0,"",".").'</div><br>';
 
 
 							$kosten_fleet=generateMissionReward($md[$m]['cost'],100);
@@ -1148,6 +1143,6 @@ echo $content;
 ?>
 
 <br>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

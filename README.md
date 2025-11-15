@@ -17,23 +17,16 @@ Voraussetzung: MySQL / MariaDB Datenbanksystem installiert
 	- Schritt 1: Datenbank erstellen (eine pro Server) z.B. tde
 	- Schritt 2: Datenbankschema / Datenbank durch die.sql files unter https://github.com/dieewigen/de_2.0/tree/master/database erstellen.
 	- Schritt 3: de.sql Datei für die Hauptspieldatenbank verwenden
-	- Schritt 4: ea.zip entpacken und ea.sql für EA-Datenbankverwenden
-	- Schritt 5: efta.zip entpacken und efta.sql für EFTA Datenbank verwenden
-
-
 
 ### Parameter setzen und DBs verlinken
 
 Extrem viele der Spiel-Parameter können in den files in https://github.com/dieewigen/de_2.0/tree/master/inc gesetzt werden.
 
-Insbesondere für für eine laufenden Server ist es aber wichtig die Datenbank Zugangsdaten und Adressen zu setzen dies ist in inc/env.inc.sample.php zu machen.
-
+Insbesondere für für eine laufenden Server ist es aber wichtig die Datenbank Zugangsdaten und Adressen zu setzen dies ist in inc/env.inc.php zu machen, eine Beispieldatei findet man unter inc/env.inc.sample.php.
 
 
 ### Generiere Accounts
-NPC-Accounts kann man mit ki/generiereaccounts.php anlegen - wenn man dann in der DB in db_user_data manuell  npc auf 1 setzt und rasse auf 1-4 wird es ein normaler Spieleraccount
-
-
+Im Ordner ki ist das Script: generiereaccounts.php Dort die Anzahl von NPC 1 festlegen, die in Sektor 2 landen sollen. Wichtig ist dabei, dass in der sv.inc.php der Wert $sv_maxsystem groß genug ist um alle Aliens in Sektor 2 unterbringen zu können, sonst landet er in einer Endlosschleife.
 
 ### Tickscripts starten
 Die Ticks werden über cronjobs gesteuert, die jede Minute die shell scripts (.sh files) in https://github.com/dieewigen/de_2.0/tree/master/tickler/ aufrufen
@@ -56,8 +49,26 @@ Man kann sich an tickler/wt_auto_reset.php orientieren
 
 
 ## Verfügbare Repositories
-	- Das eigentliche Spiel an sich incl. EA+EFTA: https://github.com/dieewigen/de_2.0
+	- Das eigentliche Spiel an sich: https://github.com/dieewigen/de_2.0
 	- Techtree Editor für DE: https://github.com/dieewigen/techtree_editor
 	- Editor um die initiale Karte des VS - Vergessenen Systeme Spieles zu erstellen 
 	https://github.com/dieewigen/vs_starmap_editor
-	- Toolsammlung die bei der Erstellung der EA verwendet worden ist. https://github.com/dieewigen/ea_tools
+
+
+## Nutzung von composer
+### Composer Dependencies installieren:###
+   ```bash
+   composer install
+   ```
+### Was passiert bei der Installation
+
+- Alle in `composer.json` definierten Pakete werden heruntergeladen
+- Das `vendor/` Verzeichnis wird erstellt
+- Der Autoloader wird generiert (`vendor/autoload.php`)
+
+### Bibliotheken aktualisieren
+
+Um alle Pakete auf die neuesten Versionen zu aktualisieren:
+```bash
+composer update
+```

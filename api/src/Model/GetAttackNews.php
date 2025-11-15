@@ -3,7 +3,6 @@
 namespace DieEwigen\Api\Model;
 
 use DieEwigen\Api\Types\NewsEntry;
-use DieEwigen\Api\Types\ToplistEntry;
 
 class GetAttackNews
 {
@@ -12,16 +11,16 @@ class GetAttackNews
     const string GET_NEWS = "SELECT typ, time, text FROM de_user_news WHERE user_id like ? and typ in (51, 52, 53, 54)";
 
     /**
-     * Get the attack news.
+     * Fetch news of a targeting player.
      *
      * @param int $playerId the ID of the player which news should be retrieved.
      * @param int $npcId the ID of the NPC attacking the player.
-     * @return array An array of associative arrays, each representing a value.
+     * @return array an array of news entry containing attacking, defending and recalling fleets
      */
-    public function getAttackNews(int $playerId, int $npcId)
+    public function getAttackNews(int $playerId, int $npcId): array
     {
         $userService = new UserService();
-        $playerCoords = $userService->getCoordinates($playerId);
+        $playerCoords = $userService->getPlayerData($playerId);
         $playerCheckResult = mysqli_execute_query($GLOBALS['dbi'], $this::GET_FLEET_STATUS,["$npcId-%", $playerCoords[0], $playerCoords[1]]);
         $isAttackedByNpc = mysqli_num_rows($playerCheckResult);
         if ($isAttackedByNpc < 1) {

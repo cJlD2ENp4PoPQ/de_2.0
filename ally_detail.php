@@ -20,7 +20,7 @@ include_once 'functions.php';
 $result = mysqli_execute_query($GLOBALS['dbi'], 
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, `system`, newtrans, newnews, allytag, status 
      FROM de_user_data WHERE user_id=?",
-    [$ums_user_id]);
+    [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_array($result);
 $restyp01=$row[0];$restyp02=$row[1];$restyp03=$row[2];$restyp04=$row[3];$restyp05=$row[4];$punkte=$row["score"];
 $newtrans=$row["newtrans"];$newnews=$row["newnews"];$sector=$row["sector"];$system=$row["system"];
@@ -32,11 +32,9 @@ $allytag=$row["allytag"];$status=$row["status"];
 <title><?php echo $allydetail_lang['title']?></title>
 <?php include "cssinclude.php"; ?>
 </head>
-<body>
-
-
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+
 function formatString($string)
 {
 	$allowed_tags="<br><i></i><b></b><strong></strong><u></u><ul></ul><li></li><p></p><font></font>";
@@ -47,8 +45,8 @@ function formatString($string)
 include "resline.php";
 include ("ally/ally.menu.inc.php");
 
-$allytag=$_REQUEST['allytag'];
-$allyid=$_REQUEST['allyid'];
+$allytag=$_REQUEST['allytag'] ?? '';
+$allyid=$_REQUEST['allyid'] ?? '';
 
 $result = mysqli_execute_query($GLOBALS['dbi'], 
     "SELECT * FROM de_allys WHERE id=? OR allytag=? LIMIT 0,1",
@@ -83,19 +81,19 @@ if($num==1)
 	print("<br>");
 	rahmen_oben('Allianzinformationen');
 	echo '<div align="center"><table width="574px">';
-	//print("<tr class=\"cell\"><td><h2>$allydetail_lang[willkommen], $ums_spielername</h2></td></tr>");
+	//print("<tr class=\"cell\"><td><h2>$allydetail_lang[willkommen], $_SESSION['ums_spielername']</h2></td></tr>");
 	print("<tr><td>
 			<table border=\"0\" width=\"100%\" cellspacing=\"1\" cellpadding=\"0\">
 	    		<tr>
-	      			<td width=100% height=21 colspan=2 class=\"cellu\"><h3>$allydetail_lang[info] ".utf8_encode($clanname)." ($clankuerzel):</h3></td>
+	      			<td width=100% height=21 colspan=2 class=\"cellu\"><h3>$allydetail_lang[info] ".$clanname." ($clankuerzel):</h3></td>
 	    		</tr>
 	    		<tr class=cl>
 	      			<td height=21>$allydetail_lang[allyname]:</td>
-	      			<td height=21><b>".utf8_encode($clanname)."</b></td>
+	      			<td height=21><b>".$clanname."</b></td>
 	    		</tr>
 	    		<tr class=cl>
 	      			<td height=21>$allydetail_lang[allytag]:</td>
-	      			<td height=21><b>".utf8_encode($clankuerzel)."</b></td>
+	      			<td height=21><b>".$clankuerzel."</b></td>
 	    		</tr>");
 	//allyleader inkl. hf-möglichkeit 
 	$result = mysqli_execute_query($GLOBALS['dbi'], 
@@ -127,7 +125,7 @@ if($num==1)
 	    		</tr>
 	 			<tr class=cl>
 	      			<td height=21>$allydetail_lang[politischeausrichtung]:</td>
-	      			<td height=21><b>".utf8_encode($ausrichtung)."</b></td>
+	      			<td height=21><b>".$ausrichtung."</b></td>
 	    		</tr>
 	    		<tr class=cl>
 	      			<td height=21>$allydetail_lang[mitglieder]:</td>
@@ -147,13 +145,13 @@ if($num==1)
 	      			<td height=21 colspan=2 class=cellu><h3>$allydetail_lang[allianzbiografie]:</h3></td>
 	    		</tr>
 	    		<tr>
-	      			<td class=cl height=21 colspan=2>".utf8_encode($bio)."</td>
+	      			<td class=cl height=21 colspan=2>".nl2br(htmlspecialchars($bio, ENT_QUOTES, 'UTF-8'))."</td>
 	    		</tr>
 	    		<tr>
 	      			<td height=21 colspan=2 class=cellu><h3>$allydetail_lang[bewerberinfo]:</h3></td>
 	    		</tr>
 	    		<tr>
-	      			<td class=cl height=21 colspan=2>".utf8_encode($bewerberinfo)."</td>
+	      			<td class=cl height=21 colspan=2>".$bewerberinfo."</td>
 	    		</tr>
 	    		<tr>
 	      			<td height=21 colspan=2><hr></td>
@@ -183,6 +181,6 @@ else echo '<div class="info_box text2">Diese Allianz konnte nicht gefunden werde
 ?>
 <br>
 <?php include("ally/ally.footer.inc.php") ?>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

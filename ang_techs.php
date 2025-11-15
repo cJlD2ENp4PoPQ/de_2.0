@@ -8,22 +8,15 @@ include 'functions.php';
 <html>
 <head>
 	<title>Technologien</title>
-
-	<script type="text/javascript" src="js/jquery.min.js"></script>
-	<script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
-	<script type="text/javascript" src="js/de_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/de_fn.js');?>"></script>
-
-	<link rel="stylesheet" href="js/jquery-ui.min-1.12.0.css">
-	<link rel="stylesheet" href="g/style.css?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/g/style.css');?>">
-
 <?php
-//include "cssinclude.php";
+include "cssinclude.php";
 ?>
+<script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
 </head>
-<body style="margin: 0; padding:0; color: #FFFFFF;">
-	<div style="position: absolute; background-color: rgba(10,10,10,0.95); height: 100%; width: 100%; min-width: 100%; overflow:auto;">	
-		
 <?php
+echo '<body style="margin: 0; padding:0; color: #FFFFFF;" class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+echo '<div style="position: absolute; background-color: rgba(10,10,10,0.95); height: 100%; width: 100%; min-width: 100%; overflow:auto;">';
+
 $content='';
 
 if(!isset($sv_deactivate_vsystems)){
@@ -115,7 +108,7 @@ if(setLock($_SESSION['ums_user_id'])){
 
 	$flag_ang_big_iframe=true;
 
-	include "cssinclude.php";
+	//include "cssinclude.php";
 	
 	$deactivate_touch_menu=0;
 	if($_SESSION['ums_mobi']==1 && $tech_anordnung==0){
@@ -124,13 +117,13 @@ if(setLock($_SESSION['ums_user_id'])){
 
 	//close-button
 	if($_SESSION['ums_mobi']!=1 && $_SESSION['desktop_version']==0){
-		$content.='<img onclick="closeIframeMain();" src="g/close_icon.png" style="position: absolute; right: 1px; height: 26px; margin-top: 2px; width: auto; cursor: pointer;" alt="Fenster schlie&szlig;en" title="Fenster schlie&szlig;en">';
+		$content.='<img onclick="closeIframeMain();" src="gp/g/close_icon.png" style="position: absolute; right: 1px; height: 26px; margin-top: 2px; width: auto; cursor: pointer;" alt="Fenster schlie&szlig;en" title="Fenster schlie&szlig;en">';
 	}
 
 	$class='';
 
 	$content.='
-		<div id="tech_config" class="invisible" style="z-index: 100; position: fixed; top: 20px; left: 3px; background-color: #000000; width: 400px; border: 1px solid #EEEEEE; color: #EEEEEE; padding: 5px;">
+		<div id="tech_config" class="invisible" style="z-index: 100; position: fixed; top: 40px; left: 3px; background-color: #000000; width: 400px; border: 1px solid #EEEEEE; color: #EEEEEE; padding: 5px;">
 			<table style="width: 100%;">
 			<tr>
 				<td>Anordnung:</td>
@@ -173,7 +166,7 @@ if(setLock($_SESSION['ums_user_id'])){
 	//Konfiguration und laufende Technologien
 	$content.='
 	<div style="display: flex; min-height: 32px; margin-top: 5px; margin-bottom: 8px;">
-		<div><img onclick="$(\'#tech_config\').toggleClass(\'invisible\');" src="g/button_config.png" style="margin-left: 8px; margin-right: 8px; height: 32px; width: auto; cursor: pointer;"></div>
+		<div><img onclick="$(\'#tech_config\').toggleClass(\'invisible\');" src="gp/g/button_config.png" style="margin-left: 8px; margin-right: 8px; height: 32px; width: auto; cursor: pointer;"></div>
 	';		
 
 	///////////////////////////////////////////////////////////////////
@@ -818,7 +811,7 @@ if(setLock($_SESSION['ums_user_id'])){
 	';
 
 
-	$erg = releaseLock($ums_user_id); //L&ouml;sen des Locks und Ergebnisabfrage
+	$erg = releaseLock($_SESSION['ums_user_id']); //L&ouml;sen des Locks und Ergebnisabfrage
 	if ($erg){
 		  //print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
 	}else{

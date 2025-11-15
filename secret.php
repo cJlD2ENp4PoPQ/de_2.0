@@ -91,7 +91,7 @@ $row     = mysqli_fetch_array($result);
 $maxroundtick = $row["tick"];
 
 //userartefakte auslesen
-$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=3 AND user_id='$ums_user_id'");
+$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=3 AND user_id='".$_SESSION['ums_user_id']."'");
 $artbonusatt = 0;
 $artbonusdeff = 0;
 while ($row = mysqli_fetch_array($db_daten)) {
@@ -99,14 +99,14 @@ while ($row = mysqli_fetch_array($db_daten)) {
 }
 
 //userartefakte auslesen
-$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=4 AND user_id='$ums_user_id'");
+$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=4 AND user_id='".$_SESSION['ums_user_id']."'");
 $artbonusdeff = 0;
 while ($row = mysqli_fetch_array($db_daten)) {
     $artbonusdeff = $artbonusdeff + $ua_werte[$row["id"] - 1][$row["level"] - 1][0];
 }
 
 //userartefakte auslesen
-$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=5 AND user_id='$ums_user_id'");
+$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=5 AND user_id='".$_SESSION['ums_user_id']."'");
 $artbonusbuild = 0;
 while ($row = mysqli_fetch_array($db_daten)) {
     $artbonusbuild = $artbonusbuild + $ua_werte[$row["id"] - 1][$row["level"] - 1][0];
@@ -200,7 +200,7 @@ $angreifer_verlust_win_max[$index] = 2;
 <title><?php echo $secret_lang['geheimdienst'];?></title>
 <?php include "cssinclude.php";
 echo '<script type="text/javascript">var ab='.$artbonusbuild.';</script>';
-echo '<script src="js/produktion'.$ums_rasse.'.js" type="text/javascript"></script>';
+echo '<script src="js/produktion'.$_SESSION['ums_rasse'].'.js" type="text/javascript"></script>';
 echo '<script language="javascript">';
 echo 'var eb = new Array();';
 
@@ -240,8 +240,8 @@ function insertsonde(sec,sys)
 }
 </script>
 </head>
-<body>
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 $zsec1 = isset($_REQUEST['zsec1']) ? $_REQUEST['zsec1'] : '';
 $zsys1 = isset($_REQUEST['zsys1']) ? $_REQUEST['zsys1'] : '';
@@ -256,7 +256,7 @@ $copy_zsec2 = $zsec2;
 if (hasTech($pt, 9)) {
     if (isset($_POST["b110"]) || isset($_POST["b111"])) {//ja, es wurde ein button gedrueckt
         //transaktionsbeginn
-        if (setLock($ums_user_id)) {
+        if (setLock($_SESSION['ums_user_id'])) {
             for ($i = 110; $i <= 111; $i++) {
                 $h = intval($_POST['b'.$i]);
                 if ($h >= 1) { //es wurde ein wert eingegeben und er ist ok h=anzahl des auftrags
@@ -292,26 +292,9 @@ if (hasTech($pt, 9)) {
 
                     //gibt $z sonden/agenten in auftrag
                     if ($z > 0) {
-                        mysqli_query($GLOBALS['dbi'], "INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit) VALUES ($ums_user_id, $i, $z, $tech_ticks)");
+                        mysqli_query($GLOBALS['dbi'], "INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit) VALUES (".$_SESSION['ums_user_id'].", $i, $z, $tech_ticks)");
                         write2agentlog($_SESSION['ums_user_id'], 'build', $z);
                     }
-
-                    /*
-                    $sql="SELECT anzahl FROM de_user_build WHERE user_id = '$ums_user_id' AND tech_id='$i' AND verbzeit='$tech_ticks'";
-                    //echo $sql;
-                    $result = mysqli_query($GLOBALS['dbi'],$sql);
-                    $row = mysqli_fetch_array($result);
-                    if ($z>0){
-                        if ($row[0]==0){ //es gibt keine schiffe mit tech_ticks laenge in der queue
-                            mysqli_query($GLOBALS['dbi'], "INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit) VALUES ($ums_user_id, $i, $z, $tech_ticks)");
-                            write2agentlog($_SESSION['ums_user_id'], 'build', $z);
-                        }else{
-                            mysqli_query($GLOBALS['dbi'], "update de_user_build set anzahl = anzahl + $z WHERE user_id = '$ums_user_id' AND tech_id=$i AND verbzeit=$tech_ticks ");
-                            write2agentlog($_SESSION['ums_user_id'], 'build', $z);
-                        }
-                        //echo "Schiffe in Auftrag gegeben: ".$z."<br>";
-                    }
-                    */
                 }
             }
 
@@ -322,10 +305,10 @@ if (hasTech($pt, 9)) {
             $gr04 = $gr04 - $restyp04;
             mysqli_query($GLOBALS['dbi'], "update de_user_data set restyp01 = restyp01 - $gr01,
 			 restyp02 = restyp02 - $gr02, restyp03 = restyp03 - $gr03,
-			 restyp04 = restyp04 - $gr04 WHERE user_id = '$ums_user_id'");
+			 restyp04 = restyp04 - $gr04 WHERE user_id = '".$_SESSION['ums_user_id']."'");
 
             //transaktionsende
-            $erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+            $erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
             if ($erg) {
                 //print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
             } else {
@@ -367,7 +350,7 @@ if (!hasTech($pt, 9)) {
     rahmen_oben('Fehlende Technologie');
     echo '<table width="572" border="0" cellpadding="0" cellspacing="0">';
     echo '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=9" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_9.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=9" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_9.jpg" border="0"></a></td>
 	<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'], $_SESSION['ums_rasse']).'</td>
 	</tr>';
     echo '</table>';
@@ -413,7 +396,7 @@ if (!hasTech($pt, 9)) {
             $row = mysqli_fetch_array($db_daten);
             $uid = $row["user_id"]; //hole die user_id des users um die daten anfordern zu k�nnen
             //db updaten
-            mysqli_query($GLOBALS['dbi'], "UPDATE de_user_scan SET ps='$ps' WHERE user_id='$ums_user_id' AND zuser_id='$uid'");
+            mysqli_query($GLOBALS['dbi'], "UPDATE de_user_scan SET ps='$ps' WHERE user_id='".$_SESSION['ums_user_id']."' AND zuser_id='$uid'");
             //nach dem update die scanhistory anzeigen
             $showscanhistory = 1;
         }
@@ -442,11 +425,11 @@ if (!hasTech($pt, 9)) {
             $spielername = $row["spielername"];
             $zrasse = $row["rasse"];
             //scandaten aus der db holen
-            $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_scan WHERE user_id='$ums_user_id' AND zuser_id='$uid'");
+            $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_scan WHERE user_id='".$_SESSION['ums_user_id']."' AND zuser_id='$uid'");
             $num = mysqli_num_rows($db_daten);
             if ($num != 1) {//datensatz vorhanden, falls nicht einen anlegen und es nochmal versuchen
-                mysqli_query($GLOBALS['dbi'], "INSERT INTO de_user_scan SET user_id='$ums_user_id', zuser_id='$uid'");
-                $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_scan WHERE user_id='$ums_user_id' AND zuser_id='$uid'");
+                mysqli_query($GLOBALS['dbi'], "INSERT INTO de_user_scan SET user_id='".$_SESSION['ums_user_id']."', zuser_id='$uid'");
+                $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_scan WHERE user_id='".$_SESSION['ums_user_id']."' AND zuser_id='$uid'");
             }
             $row = mysqli_fetch_array($db_daten);
             //playerstatus
@@ -939,7 +922,7 @@ if (!hasTech($pt, 9)) {
                         mysqli_query($GLOBALS['dbi'], "update de_user_data set newnews = 1 where user_id = $uid");
                     }
                     //eine sonde abziehen
-                    mysqli_query($GLOBALS['dbi'], "UPDATE de_user_data SET sonde = sonde - 1 WHERE user_id = $ums_user_id");
+                    mysqli_query($GLOBALS['dbi'], "UPDATE de_user_data SET sonde = sonde - 1 WHERE user_id = ".$_SESSION['ums_user_id']."");
                     $sonde = $sonde - 1;
                     $zsec2 = $zsec1;
                     $zsys2 = $zsys1;
@@ -1042,6 +1025,8 @@ if (!hasTech($pt, 9)) {
                 $ok = 2;
             }
 
+            //$ok= 1; //debug
+
             //überprüfen auf sabotagemöglichkeit
             if ($ok == 2) {
                 echo '<div class="info_box text2">'.$secret_lang['einsatzfehlerhaft'].'</div><br>';
@@ -1068,83 +1053,83 @@ if (!hasTech($pt, 9)) {
 
 
                 //rassenboni-mali verteilen
-                if ($ums_rasse == 1 and $rasse == 1) {
+                if ($_SESSION['ums_rasse'] == 1 and $rasse == 1) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 1 and $rasse == 2) {
+                if ($_SESSION['ums_rasse'] == 1 and $rasse == 2) {
                     $bomalus = 5;
                 }
-                if ($ums_rasse == 1 and $rasse == 3) {
+                if ($_SESSION['ums_rasse'] == 1 and $rasse == 3) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 1 and $rasse == 4) {
+                if ($_SESSION['ums_rasse'] == 1 and $rasse == 4) {
                     $bomalus = -5;
                 }
-                if ($ums_rasse == 1 and $rasse == 5) {
+                if ($_SESSION['ums_rasse'] == 1 and $rasse == 5) {
                     $bomalus = -10;
                 }
 
-                if ($ums_rasse == 2 and $rasse == 1) {
+                if ($_SESSION['ums_rasse'] == 2 and $rasse == 1) {
                     $bomalus = -5;
                 }
-                if ($ums_rasse == 2 and $rasse == 2) {
+                if ($_SESSION['ums_rasse'] == 2 and $rasse == 2) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 2 and $rasse == 3) {
+                if ($_SESSION['ums_rasse'] == 2 and $rasse == 3) {
                     $bomalus = -5;
                 }
-                if ($ums_rasse == 2 and $rasse == 4) {
+                if ($_SESSION['ums_rasse'] == 2 and $rasse == 4) {
                     $bomalus = -10;
                 }
-                if ($ums_rasse == 2 and $rasse == 5) {
+                if ($_SESSION['ums_rasse'] == 2 and $rasse == 5) {
                     $bomalus = -10;
                 }
 
-                if ($ums_rasse == 3 and $rasse == 1) {
+                if ($_SESSION['ums_rasse'] == 3 and $rasse == 1) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 3 and $rasse == 2) {
+                if ($_SESSION['ums_rasse'] == 3 and $rasse == 2) {
                     $bomalus = 5;
                 }
-                if ($ums_rasse == 3 and $rasse == 3) {
+                if ($_SESSION['ums_rasse'] == 3 and $rasse == 3) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 3 and $rasse == 4) {
+                if ($_SESSION['ums_rasse'] == 3 and $rasse == 4) {
                     $bomalus = -5;
                 }
-                if ($ums_rasse == 3 and $rasse == 5) {
+                if ($_SESSION['ums_rasse'] == 3 and $rasse == 5) {
                     $bomalus = -10;
                 }
 
-                if ($ums_rasse == 4 and $rasse == 1) {
+                if ($_SESSION['ums_rasse'] == 4 and $rasse == 1) {
                     $bomalus = 5;
                 }
-                if ($ums_rasse == 4 and $rasse == 2) {
+                if ($_SESSION['ums_rasse'] == 4 and $rasse == 2) {
                     $bomalus = 10;
                 }
-                if ($ums_rasse == 4 and $rasse == 3) {
+                if ($_SESSION['ums_rasse'] == 4 and $rasse == 3) {
                     $bomalus = 5;
                 }
-                if ($ums_rasse == 4 and $rasse == 4) {
+                if ($_SESSION['ums_rasse'] == 4 and $rasse == 4) {
                     $bomalus = 0;
                 }
-                if ($ums_rasse == 4 and $rasse == 5) {
+                if ($_SESSION['ums_rasse'] == 4 and $rasse == 5) {
                     $bomalus = -10;
                 }
 
-                if ($ums_rasse == 5 and $rasse == 1) {
+                if ($_SESSION['ums_rasse'] == 5 and $rasse == 1) {
                     $bomalus = 10;
                 }
-                if ($ums_rasse == 5 and $rasse == 2) {
+                if ($_SESSION['ums_rasse'] == 5 and $rasse == 2) {
                     $bomalus = 10;
                 }
-                if ($ums_rasse == 5 and $rasse == 3) {
+                if ($_SESSION['ums_rasse'] == 5 and $rasse == 3) {
                     $bomalus = 10;
                 }
-                if ($ums_rasse == 5 and $rasse == 4) {
+                if ($_SESSION['ums_rasse'] == 5 and $rasse == 4) {
                     $bomalus = 10;
                 }
-                if ($ums_rasse == 5 and $rasse == 5) {
+                if ($_SESSION['ums_rasse'] == 5 and $rasse == 5) {
                     $bomalus = 10;
                 }
 
@@ -1294,7 +1279,7 @@ if (!hasTech($pt, 9)) {
                             echo '</tr>';
 
                             //lade einheitentypen
-                            unset($fleetpoints);
+                            $fleetpoints = array();
                             $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT  tech_id, tech_name FROM de_tech_data WHERE tech_id>80 AND tech_id<100");
                             while ($row = mysqli_fetch_array($db_daten)) { //jeder gefundene datensatz wird geprueft
                                 echo '<tr>';
@@ -1303,6 +1288,11 @@ if (!hasTech($pt, 9)) {
                                 echo '<td class="cc">'.number_format($schiffe[1][$row["tech_id"] - 81], 0, "", ".")."</td>";
                                 echo '<td class="cc">'.number_format($schiffe[2][$row["tech_id"] - 81], 0, "", ".")."</td>";
                                 echo '<td class="cc">'.number_format($schiffe[3][$row["tech_id"] - 81], 0, "", ".")."</td>";
+
+                                if (!isset($fleetpoints[0])) $fleetpoints[0] = 0;
+                                if (!isset($fleetpoints[1])) $fleetpoints[1] = 0;
+                                if (!isset($fleetpoints[2])) $fleetpoints[2] = 0;
+                                if (!isset($fleetpoints[3])) $fleetpoints[3] = 0;
 
                                 $fleetpoints[0] += $schiffe[0][$row["tech_id"] - 81] * $unit[$zrasse - 1][$row["tech_id"] - 81][4];
                                 $fleetpoints[1] += $schiffe[1][$row["tech_id"] - 81] * $unit[$zrasse - 1][$row["tech_id"] - 81][4];
@@ -1315,12 +1305,12 @@ if (!hasTech($pt, 9)) {
                             //Flottenpunktewert
 
                             echo '<tr class="cc">
-				<td><i>'.$secret_lang['flottenpunktewert'].'</i></td>
-				<td>'.number_format($fleetpoints[0], 0, "", ".").'</td>
-				<td>'.number_format($fleetpoints[1], 0, "", ".").'</td>
-				<td>'.number_format($fleetpoints[2], 0, "", ".").'</td>
-				<td>'.number_format($fleetpoints[3], 0, "", ".").'</td>
-				</tr>';
+                            <td><i>'.$secret_lang['flottenpunktewert'].'</i></td>
+                            <td>'.number_format($fleetpoints[0], 0, "", ".").'</td>
+                            <td>'.number_format($fleetpoints[1], 0, "", ".").'</td>
+                            <td>'.number_format($fleetpoints[2], 0, "", ".").'</td>
+                            <td>'.number_format($fleetpoints[3], 0, "", ".").'</td>
+                            </tr>';
 
                             echo '</table>';
                             break;
@@ -1446,7 +1436,7 @@ if (!hasTech($pt, 9)) {
                             $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT e100, e101, e102, e103, e104 FROM de_user_data WHERE user_id=?", [$uid]);
                             $row = mysqli_fetch_array($db_daten);
                             $str = '';
-                            for ($i = 100;$i <= 109;$i++) {
+                            for ($i = 100;$i <= 104;$i++) {
                                 $str = $str."\$ec$i=\$ec$i+\$row[\"e$i\"];";
                             }
                             eval($str);
@@ -1457,8 +1447,9 @@ if (!hasTech($pt, 9)) {
                                 $save_uid = $savelist[$i];
 
                                 mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_scan SET dtime=UNIX_TIMESTAMP(),
-					e100='$row[e100]', e101='$row[e101]', e102='$row[e102]', e103='$row[e103]', e104='$row[e104]'
-					WHERE user_id='$save_uid' AND zuser_id='$uid'", $db);
+                                    e100=?, e101=?, e102=?, e103=?, e104=?
+                                    WHERE user_id=? AND zuser_id=?", 
+                                    [$row['e100'], $row['e101'], $row['e102'], $row['e103'], $row['e104'], $save_uid, $uid]);
                             }
 
                             //ueberschrift ausgeben
@@ -1480,7 +1471,7 @@ if (!hasTech($pt, 9)) {
                                 $gespunkte += $ec * $unit[$rasse - 1][$row["tech_id"] - 90][4];
 
                                 echo '<tr>';
-                                echo '<td class="cc" width="70%" align="left">'.utf8_encode(getTechNameByRasse($row["tech_name"], $zrasse))."</td>";
+                                echo '<td class="cc" width="70%" align="left">'.getTechNameByRasse($row["tech_name"], $zrasse)."</td>";
                                 echo '<td class="cc" width="30%" align="right">'.number_format($ec, 0, "", ".")."</td>";
                                 echo '</tr>';
 
@@ -1534,7 +1525,7 @@ if (!hasTech($pt, 9)) {
                                         echo '<td class="cl">'.$time.'</td>';
                                         echo '</tr>';
                                         echo '<tr>';
-                                        echo '<td class="cc">'.utf8_encode(showkampfberichtV1($row["text"], $rasse, $zname, $zsec2, $zsys2, $schiffspunkte)).'</td>';
+                                        echo '<td class="cc">'.showkampfberichtV1($row["text"], $rasse, $zname, $zsec2, $zsys2, $schiffspunkte).'</td>';
                                         echo '</tr>';
                                         break;
                                     case 70:
@@ -1542,7 +1533,7 @@ if (!hasTech($pt, 9)) {
                                         echo '<td class="cl">'.$time.'</td>';
                                         echo '</tr>';
                                         echo '<tr>';
-                                        echo '<td class="cc">'.utf8_encode(showkampfberichtBG($row["text"])).'</td>';
+                                        echo '<td class="cc">'.showkampfberichtBG($row["text"]).'</td>';
                                         echo '</tr>';
                                         break;
                                     default:
@@ -1681,9 +1672,9 @@ if (!hasTech($pt, 9)) {
                             $time=strftime("%Y%m%d%H%M%S");
                             if($enttarnt>0){
                                 if($enttarnt>1){
-                                    $msg='Bei einem feindlichen Agenteneinsatz von '.$ums_spielername.' ('.$sector.':'.$system.') wurden '.number_format($enttarnt, 0,",",".").' Agenten enttarnt und arbeiten jetzt als Z&ouml;llner.';
+                                    $msg='Bei einem feindlichen Agenteneinsatz von '.$_SESSION['ums_spielername'].' ('.$sector.':'.$system.') wurden '.number_format($enttarnt, 0,",",".").' Agenten enttarnt und arbeiten jetzt als Z&ouml;llner.';
                                 }else{
-                                    $msg='Bei einem feindlichen Agenteneinsatz von '.$ums_spielername.' ('.$sector.':'.$system.') wurde '.number_format($enttarnt, 0,",",".").' Agente enttarnt und arbeitet jetzt als Z&ouml;llner.';
+                                    $msg='Bei einem feindlichen Agenteneinsatz von '.$_SESSION['ums_spielername'].' ('.$sector.':'.$system.') wurde '.number_format($enttarnt, 0,",",".").' Agente enttarnt und arbeitet jetzt als Z&ouml;llner.';
                                 }
                                 mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_news (user_id, typ, time, text) VALUES (?, 5, ?, ?)", [$uid, $time, $msg]);
                                 mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET newnews = 1, agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$enttarnt, $enttarnt, $uid]);
@@ -1691,7 +1682,7 @@ if (!hasTech($pt, 9)) {
 
                             //eigene agenten abziehen
                             if($eigene_verluste>0){
-                                mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$eigene_verluste, $eigene_verluste, $ums_user_id]);
+                                mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$eigene_verluste, $eigene_verluste, $_SESSION['ums_user_id']]);
                                 $agent=$agent-$eigene_verluste;
                             }
 
@@ -1715,7 +1706,7 @@ if (!hasTech($pt, 9)) {
                                         $aze = $zagent;
                                     }
                                     //eigene agenten abziehen
-                                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $ums_user_id]);
+                                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $_SESSION['ums_user_id']]);
                                     write2agentlog($_SESSION['ums_user_id'], 'saboteage-lost', $aze);
 
                                     $agent = $agent - $aze;
@@ -1767,7 +1758,7 @@ if (!hasTech($pt, 9)) {
                                             $aze = $zagent;
                                         }
                                         //eigene agenten abziehen
-                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost = agent_lost + ? WHERE user_id = ?", [$aze, $aze, $ums_user_id]);
+                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost = agent_lost + ? WHERE user_id = ?", [$aze, $aze, $_SESSION['ums_user_id']]);
                                         write2agentlog($_SESSION['ums_user_id'], 'saboteage-lost', $aze);
                                         $agent = $agent - $aze;
 
@@ -1823,7 +1814,7 @@ if (!hasTech($pt, 9)) {
                                             $aze = $zagent;
                                         }
                                         //eigene agenten abziehen
-                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $ums_user_id]);
+                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $_SESSION['ums_user_id']]);
                                         write2agentlog($_SESSION['ums_user_id'], 'saboteage-lost', $aze);
                                         $agent = $agent - $aze;
 
@@ -1879,7 +1870,7 @@ if (!hasTech($pt, 9)) {
                                             $aze = $zagent;
                                         }
                                         //eigene agenten abziehen
-                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost = agent_lost + ? WHERE user_id = ?", [$aze, $aze, $ums_user_id]);
+                                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost = agent_lost + ? WHERE user_id = ?", [$aze, $aze, $_SESSION['ums_user_id']]);
                                         write2agentlog($_SESSION['ums_user_id'], 'saboteage-lost', $aze);
                                         $agent = $agent - $aze;
 
@@ -1935,9 +1926,9 @@ if (!hasTech($pt, 9)) {
                     }
                     echo '<table width="600"><tr align="center"><td><div class="cell">'.$secret_lang['einsatzgescheitert'].$aze.$secret_lang['einsatzgescheitert2'].'</div></td></tr></table><br>';
                     if ($aze == 1) {
-                        $msg = $secret_lang['einsatzentdeckt'].$ums_spielername.' ('.$sector.':'.$system.$secret_lang['einsatzentdeckt2'].$aze.$secret_lang['einsatzentdeckt3'];
+                        $msg = $secret_lang['einsatzentdeckt'].$_SESSION['ums_spielername'].' ('.$sector.':'.$system.$secret_lang['einsatzentdeckt2'].$aze.$secret_lang['einsatzentdeckt3'];
                     } else {
-                        $msg = $secret_lang['einsatzentdeckt'].$ums_spielername.' ('.$sector.':'.$system.$secret_lang['einsatzentdeckt2'].$aze.$secret_lang['einsatzentdeckt4'];
+                        $msg = $secret_lang['einsatzentdeckt'].$_SESSION['ums_spielername'].' ('.$sector.':'.$system.$secret_lang['einsatzentdeckt2'].$aze.$secret_lang['einsatzentdeckt4'];
                     }
                     //msg um die eigenen verlust erweitern
                     /*
@@ -1952,7 +1943,7 @@ if (!hasTech($pt, 9)) {
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET newnews = 1, agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$zagentabz, $zagentabz, $uid]);
 
                     //eigene agenten abziehen
-                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $ums_user_id]);
+                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET agent = agent - ?, agent_lost=agent_lost + ? WHERE user_id = ?", [$aze, $aze, $_SESSION['ums_user_id']]);
                     write2agentlog($_SESSION['ums_user_id'], 'saboteage-lost', $aze);
                     $agent = $agent - $aze;
 
@@ -1969,38 +1960,42 @@ if (!hasTech($pt, 9)) {
                 //Scanhistorie anlegen
                 if ($scanhistory == "") {
                     $entry = $copy_zsec2.':'.$copy_zsys2.':'.$zname.'|';
-                    $entry = utf8_decode($entry);
-                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET scanhistory=? WHERE user_id = ?", [$entry, $ums_user_id]);
+                    mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET scanhistory=? WHERE user_id = ?", [$entry, $_SESSION['ums_user_id']]);
                 } else { //Scanhistorie updaten
                     $drin = 0;
                     $i = 0;
-                    $einsaetze = array(array(),);
-                    $scanhis = explode("|", $scanhistory);
+                    $einsaetze = array(array());
+                    // Einträge zerlegen; leere Elemente entfernen um Warnungen zu vermeiden
+                    $scanhis = array_filter(explode("|", $scanhistory), 'strlen');
                     while ($i < Count($scanhis)) {
-                        $daten = explode(":", $scanhis[$i]);
-                        $einsaetze[$i][0] = $daten[0];
-                        $einsaetze[$i][1] = $daten[1];
-                        $einsaetze[$i][2] = $daten[2];
+                        $daten = explode(":", $scanhis[$i]); // FIX: $daten aus $scanhis[$i] extrahieren
+                        // Sicherstellen, dass fehlende Teile nicht zu Undefined-Index-Warnungen führen
+                        $einsaetze[$i][0] = $daten[0] ?? '';
+                        $einsaetze[$i][1] = $daten[1] ?? '';
+                        $einsaetze[$i][2] = $daten[2] ?? '';
                         $i++;
                     }
                     $i = 0;
                     while ($i < Count($einsaetze)) {
                         if (($einsaetze[$i][0] == $copy_zsec2) && ($einsaetze[$i][1] == $copy_zsys2)) {
                             $drin = 1;
+                            break; // Wenn gefunden, Schleife verlassen
                         }
                         $i++;
                     }
-                    $entry = $copy_zsec2.':'.$copy_zsys2.':'.$zname.'|';
-                    $i = 0;
+                    
                     if ($drin == "0") {
-                        while ($i < Count($einsaetze) - 1) {
-                            if ($i < 4) {
-                                $entry = $entry.''.$einsaetze[$i][0].':'.$einsaetze[$i][1].':'.$einsaetze[$i][2].'|';
+                        // Neue Entry an den Anfang setzen
+                        $entry = $copy_zsec2.':'.$copy_zsys2.':'.$zname.'|';
+                        // Alte Einträge bis maximal 4 weitere hinzufügen
+                        $i = 0;
+                        while ($i < Count($einsaetze) && $i < 4) {
+                            if (!empty($einsaetze[$i][0])) { // Nur gültige Einträge hinzufügen
+                                $entry = $entry.$einsaetze[$i][0].':'.$einsaetze[$i][1].':'.$einsaetze[$i][2].'|';
                             }
                             $i++;
                         }
-                        $entry = utf8_decode($entry);
-                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET scanhistory=? WHERE user_id = ?", [$entry, $ums_user_id]);
+                        mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET scanhistory=? WHERE user_id = ?", [$entry, $_SESSION['ums_user_id']]);
                     }
                 }
             }
@@ -2052,7 +2047,7 @@ if (!hasTech($pt, 9)) {
 
         $bg = 'cell';
         echo '<tr align="center">';
-        echo '<td class="'.$bg.'">'.number_format($agent, 0, "", ".").' <img style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$secret_lang['boni'].'&'.$bstr.'"></td>';
+        echo '<td class="'.$bg.'">'.number_format($agent, 0, "", ".").' <img style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$secret_lang['boni'].'&'.$bstr.'"></td>';
         echo '<td class="'.$bg.'"><input type="text" name="az" value="'.$agenten_einsetzen.'" size="5" maxlength="10" autocomplete="off"></td>';
 
         echo '<td class="'.$bg.'"><select name="etyp" size="0" onChange="sei(this.options[this.selectedIndex].value)">';
@@ -2209,7 +2204,7 @@ if (!hasTech($pt, 9)) {
     '<table border="0" cellpadding="0" cellspacing="0">
 	<tr height="37">
 	<td width="13" height="37" class="rol">&nbsp;</td>
-	<td width="208" class="ro"><div class="cellu">&nbsp;&nbsp;'.$secret_lang['sondenundaggis'].': <img style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$buildstatus.'"></div></td>
+	<td width="208" class="ro"><div class="cellu">&nbsp;&nbsp;'.$secret_lang['sondenundaggis'].': <img style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$buildstatus.'"></div></td>
 	<td width="50" align="center" class="ro"><div class="cellu">M</div></td>
 	<td width="50" align="center" class="ro"><div class="cellu">D</div></td>
 	<td width="50" align="center" class="ro"><div class="cellu">I</div></td>
@@ -2240,7 +2235,7 @@ if (!hasTech($pt, 9)) {
 	<?php
       $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_tech_data WHERE tech_id>=110 AND tech_id<=111 ORDER BY tech_id", []);
 
-    $ergebnis = mysqli_execute_query($GLOBALS['dbi'], "SELECT sonde, agent FROM de_user_data WHERE user_id=?", [$ums_user_id]);
+    $ergebnis = mysqli_execute_query($GLOBALS['dbi'], "SELECT sonde, agent FROM de_user_data WHERE user_id=?", [$_SESSION['ums_user_id']]);
     $rowe = mysqli_fetch_array($ergebnis);
 
     //Check f�r Echtzeitrechner
@@ -2335,9 +2330,9 @@ if (!hasTech($pt, 9)) {
 	';
 
     //aktive Bauaufträge
-    $sql = "SELECT SUM(de_user_build.anzahl) AS anzahl, de_user_build.verbzeit, de_tech_data$ums_rasse.tech_name FROM de_user_build LEFT JOIN de_tech_data$ums_rasse on(de_user_build.tech_id = de_tech_data$ums_rasse.tech_id) WHERE user_id=? AND de_user_build.tech_id > 109 AND de_user_build.tech_id < 120 GROUP BY de_user_build.tech_id, de_user_build.verbzeit ORDER BY de_user_build.verbzeit ASC";
+    $sql = "SELECT SUM(de_user_build.anzahl) AS anzahl, de_user_build.verbzeit, de_tech_data".$_SESSION['ums_rasse'].".tech_name FROM de_user_build LEFT JOIN de_tech_data".$_SESSION['ums_rasse']." on(de_user_build.tech_id = de_tech_data".$_SESSION['ums_rasse'].".tech_id) WHERE user_id=? AND de_user_build.tech_id > 109 AND de_user_build.tech_id < 120 GROUP BY de_user_build.tech_id, de_user_build.verbzeit ORDER BY de_user_build.verbzeit ASC";
     //echo $sql;
-    $result = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id]);
+    $result = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id']]);
     $num = mysqli_num_rows($result);
 
     if ($num > 0) {
@@ -2460,7 +2455,7 @@ if (!hasTech($pt, 9)) {
 
 function sabotageallowed($zuid)
 {
-    global $ums_user_id, $ownsector, $ownally, $db;
+    global $ownsector, $ownally;
 
     $sabotageallowed = 1;
 
@@ -2521,6 +2516,6 @@ function sabotageallowed($zuid)
 ?>
 </div>
 </form>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

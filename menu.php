@@ -1,167 +1,205 @@
 <?php
 //fix um das men� von der botabfrage unabh�ngig zu machen, gleichzeitig darf man aber keine credits bekommmen
-$eftachatbotdefensedisable=1;
-//include "inc/sv.inc.php";
-//include "inc/session.inc.php";
+$eftachatbotdefensedisable = 1;
 include 'inc/header.inc.php';
 include 'inc/lang/'.$sv_server_lang.'_menu.lang.php';
 include 'inc/'.$sv_server_lang.'_links.inc.php';
 include 'functions.php';
 
-//�berpr�fen ob es der 1. login ist, in dem fall den beitritt im allgemeinen chat hinterlegen
-$db_daten=mysqli_execute_query($GLOBALS['dbi'], 
-  "SELECT logins FROM de_login WHERE user_id=?", 
-  [$ums_user_id]);
-$row = mysqli_fetch_assoc($db_daten);
-if($row['logins']==1){
-	insert_chat_msg(0, 2, $ums_spielername, ' <font color="#FFFF00">Ich habe mich '.$sv_server_tag.' angeschlossen.</font>');
-	mysqli_execute_query($GLOBALS['dbi'], 
-	  "UPDATE de_login SET logins=logins+1 WHERE user_id=?", 
-	  [$ums_user_id]);
-}
-
-@ob_start("ob_gzhandler");
-
-if ($ums_gpfad!='')$url=$ums_gpfad.'g/m/';// else $url='http://ewiges-lager.de/de/g/m/';
-if ($ums_gpfad!='')$bgurl=$ums_gpfad.'g/';// else $bgurl='http://ewiges-lager.de/de/g/';
-
 //test auf mobile version
-if($_SESSION['ums_mobi']==1){
-	echo '<!DOCTYPE HTML>
-<HEAD>
-<TITLE>Menu</TITLE></head>
+if ($_SESSION['ums_mobi'] == 1) {
+
+    // Akzentfarbe je Rasse (optional anpassen)
+    $accentMap = [
+        1 => '#3399FF',
+        2 => '#A6A6A6',
+        3 => '#DE3939',
+        4 => '#ED951E',
+    ];
+    $accent = $accentMap[$_SESSION['ums_rasse'] ?? 1];
+
+    echo '<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Menu</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body {background-color: #000000;}
-a{color: #FFFFFF;}
-.btn{border: 2px solid #666666; padding: 0px; margin-bottom: 5px; font-size: 40px; background-color: #111111; color: #FFFFFF; text-decoration: none; white-space:nowrap;}
+:root{
+  --accent: '.$accent.';
+  --bg-panel: #0d1218;
+  --bg-panel-grad: linear-gradient(145deg,#161f29,#0d1218 60%);
+  --panel-border: rgba(160,200,255,0.18);
+  --txt: #d8e9ff;
+  --danger: #ff4a4a;
+  --scan: rgba(255,255,255,0.04);
+  --glow: 0 0 8px color-mix(in srgb,var(--accent) 60%, transparent),0 0 18px color-mix(in srgb,var(--accent) 35%, transparent);
+  font-family: system-ui,Segoe UI,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;min-height:100dvh;background:
+  repeating-linear-gradient(0deg,var(--scan) 0 2px,transparent 2px 6px),
+  radial-gradient(circle at 18% 25%,#091019 0%,#030405 70%);
+  color:var(--txt);
+  -webkit-font-smoothing:antialiased;
+}
+.menu-wrap{max-width:960px;margin:0 auto;padding:clamp(12px,3vw,30px);}
+.menu-title{
+  margin:0 0 18px;
+  font-size:clamp(1.3rem,4.2vw,2.1rem);
+  letter-spacing:.08em;
+  font-weight:600;
+  text-transform:uppercase;
+  background:linear-gradient(90deg,var(--accent),#fff);
+  -webkit-background-clip:text;
+  color:transparent;
+  filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 55%, transparent));
+}
+.menu-grid{
+  display:grid;
+  gap:12px;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+}
+@media(max-width:560px){
+  .menu-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+}
+.menu-btn{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  text-decoration:none;
+  padding:14px 14px 12px;
+  background:var(--bg-panel-grad);
+  border:1px solid var(--panel-border);
+  border-radius:12px;
+  color:var(--txt);
+  font-size:.92rem;
+  letter-spacing:.04em;
+  line-height:1.25;
+  overflow:hidden;
+  isolation:isolate;
+  transition:border-color .25s, color .25s, transform .18s, background .4s, box-shadow .25s;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04),0 2px 6px rgba(0,0,0,.65);
+}
+.menu-btn::before{
+  content:attr(data-icon);
+  font-size:1.7rem;
+  line-height:1;
+  color:var(--accent);
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.25));
+  transition:transform .45s;
+}
+.menu-btn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(120deg,transparent 0 40%,rgba(255,255,255,.07) 45%,transparent 55% 100%),
+    radial-gradient(circle at 85% 15%,rgba(255,255,255,.12),transparent 60%);
+  mix-blend-mode:screen;
+  opacity:.55;
+  pointer-events:none;
+}
+.menu-btn:hover,
+.menu-btn:focus-visible{
+  outline:none;
+  border-color:var(--accent);
+  color:#fff;
+  transform:translateY(-3px);
+  box-shadow:var(--glow);
+}
+.menu-btn:hover::before{transform:scale(1.1) rotate(5deg);}
+.menu-btn.danger{--accent:var(--danger);}
+.menu-btn.danger:hover{box-shadow:0 0 10px rgba(255,80,80,.6),0 0 22px rgba(255,80,80,.35);}
+@media(hover:none){
+  .menu-btn:hover{transform:none;}
+}
+.swipe-hint{margin-top:16px;font-size:.7rem;opacity:.55;text-align:center;letter-spacing:.08em;}
 </style>
+</head>
 <body>';
 
-if($_COOKIE['deactivate_swipe']!=1){
-	?>
-<script type="text/javascript">
-function swipedetect(el, callback){
-  
-    var touchsurface = el,
-    swipedir,
-    startX,
-    startY,
-    distX,
-    distY,
-    threshold = 150, //required min distance traveled to be considered swipe
-    restraint = 100, // maximum distance allowed at the same time in perpendicular direction
-    allowedTime = 300, // maximum time allowed to travel that distance
-    elapsedTime,
-    startTime,
-    handleswipe = callback || function(swipedir){}
-  
-    touchsurface.addEventListener('touchstart', function(e){
-        var touchobj = e.changedTouches[0]
-        swipedir = 'none'
-        dist = 0
-        startX = touchobj.pageX
-        startY = touchobj.pageY
-        startTime = new Date().getTime() // record time when finger first makes contact with surface
-        //e.preventDefault()
-    }, false)
-  
-    touchsurface.addEventListener('touchmove', function(e){
-        //e.preventDefault() // prevent scrolling when inside DIV
-    }, false)
-  
-    touchsurface.addEventListener('touchend', function(e){
-        var touchobj = e.changedTouches[0]
-        distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
-        distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
-        elapsedTime = new Date().getTime() - startTime // get time elapsed
-        if (elapsedTime <= allowedTime){ // first condition for awipe met
-            if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint){ // 2nd condition for horizontal swipe met
-                swipedir = (distX < 0)? 'left' : 'right' // if dist traveled is negative, it indicates left swipe
-            }
-            else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for vertical swipe met
-                swipedir = (distY < 0)? 'up' : 'down' // if dist traveled is negative, it indicates up swipe
-            }
-        }
-        handleswipe(swipedir)
-        //e.preventDefault()
-    }, false)
-}
+	$swipeHint = '';
 
-
-document.addEventListener('DOMContentLoaded', function() {
-	var el = document;//getElementById('document.body')
-	swipedetect(el, function(swipedir){
-		//swipedir contains either "none", "left", "right", "top", or "down"
-		if (swipedir =='right'){
-			document.location.href='menu.php';
-		}
-		
-		if (swipedir =='left'){
-			document.location.href='chat.php';
-		}	
-	});
-}, false);
-
-
-</script>
-
-<?php
-}
-	echo '<div align="center">';
-	echo '<a href="chat.php"><div class="btn">DE-Chat</div></a>';
-	echo '<a href="overview.php"><div class="btn">&Uuml;bersicht</div></a>';
-	echo '<a href="hyperfunk.php"><div class="btn">'.$menu_lang['eintrag_2'].'</div></a>';
-	echo '<a href="sysnews.php"><div class="btn">'.$menu_lang['eintrag_3'].'</div></a>';
-
-	echo '<a href="ang_techs.php"><div class="btn">Technologien</div></a>';
-	echo '<a href="specialization.php"><div class="btn">Spezialisierung</div></a>';
-
-	echo '<a href="resource.php"><div class="btn">'.$menu_lang['eintrag_6'].'</div></a>';
-	echo '<a href="artefacts.php"><div class="btn">'.$menu_lang['eintrag_18'].'</div></a>';
-	echo '<a href="auction.php"><div class="btn">Auktion</div></a>';
-	echo '<a href="missions.php"><div class="btn">Missionen</div></a>';
-
-
-	echo '<a href="production.php"><div class="btn">'.$menu_lang['eintrag_8'].'</div></a>';
-	echo '<a href="military.php"><div class="btn">Flotten</div></a>';
-	echo '<a href="secret.php"><div class="btn">'.$menu_lang['eintrag_11'].'</div></a>';
-	echo '<a href="sector.php"><div class="btn">'.$menu_lang['eintrag_12'].'</div></a>';
-	echo '<a href="secstatus.php"><div class="btn">'.$menu_lang['eintrag_13'].'</div></a>';
-	if($sv_deactivate_vsystems!=1){
-		echo '<a href="map_mobile.php"><div class="btn">Vergessene Systeme</div></a>';
+	if(!isset($_COOKIE['deactivate_swipe'])){
+		$_COOKIE['deactivate_swipe'] = 0;
 	}
-	//echo '<a href="politics.php"><div class="btn">'.$menu_lang['eintrag_15'].'</div></a>';
-	echo '<a href="allymain.php"><div class="btn">'.$menu_lang['eintrag_16'].'</div></a>';
-	echo '<a href="statistics.php"><div class="btn">'.$menu_lang['eintrag_21'].'</div></a>';
-	echo '<a href="toplist.php"><div class="btn">'.$menu_lang['eintrag_22'].'</div></a>';
-	//echo '<a href="community.php"><div class="btn">'.$menu_lang['eintrag_27'].'</div></a>';
-	echo '<a href="options.php"><div class="btn">'.$menu_lang['eintrag_24'].'</div></a>';
-	//echo '<a href="'.$sv_link[2].'" target="_blank"><div class="btn">'.$menu_lang['eintrag_26'].'</div></a>';
 
-	if($sv_deactivate_efta==0)echo '<a href="eftamain.php"><div class="btn">EFTA</div></a>';
-	if($sv_deactivate_efta==0)echo '<a href="efta_chat.php?frame=1"><div class="btn">EFTA-Chat</div></a>';
-	if($sv_deactivate_sou==0)echo '<a href="sou_main.php"><div class="btn">EA</div></a>';
-	if($sv_deactivate_sou==0)echo '<a href="sou_chat.php"><div class="btn">EA-Chat</div></a>';
-	echo '<a href="index.php?logout=1"><div class="btn">'.$menu_lang['eintrag_29'].'</div></a>';
+    if ($_COOKIE['deactivate_swipe'] != 1) {
+		$swipeHint = '<div class="swipe-hint">Swipe ◀ ▶ zum Wechseln</div>';
+        echo '<script>
+function swipedetect(el, cb){
+  let sx, sy, st;
+  const thresh=120, restr=90, time=320;
+  el.addEventListener("touchstart",e=>{
+    const t=e.changedTouches[0]; sx=t.pageX; sy=t.pageY; st=Date.now();
+  },{passive:true});
+  el.addEventListener("touchend",e=>{
+    const t=e.changedTouches[0];
+    let dx=t.pageX-sx, dy=t.pageY-sy, dt=Date.now()-st, dir="none";
+    if(dt<=time){
+      if(Math.abs(dx)>=thresh && Math.abs(dy)<=restr) dir=dx<0?"left":"right";
+      else if(Math.abs(dy)>=thresh && Math.abs(dx)<=restr) dir=dy<0?"up":"down";
+    }
+    cb(dir);
+  },{passive:true});
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  swipedetect(document,dir=>{
+    if(dir==="right") location.href="menu.php";
+    if(dir==="left")  location.href="chat.php";
+  });
+});
+</script>';
+    }
 
-	die('</div></body></html>');
+    echo '<div class="menu-wrap">
+  <h1 class="menu-title">Kommandokonsole</h1>
+  <nav class="menu-grid">
+    <a class="menu-btn" data-icon="💬" href="chat.php">DE-Chat</a>
+    <a class="menu-btn" data-icon="🛰" href="overview.php">&Uuml;bersicht</a>
+    <a class="menu-btn" data-icon="📡" href="hyperfunk.php">'.$menu_lang['eintrag_2'].'</a>
+    <a class="menu-btn" data-icon="🗞" href="sysnews.php">'.$menu_lang['eintrag_3'].'</a>
+    <a class="menu-btn" data-icon="⚙" href="ang_techs.php">Technologien</a>
+    <a class="menu-btn" data-icon="🧬" href="specialization.php">Spezialisierung</a>
+    <a class="menu-btn" data-icon="⛃" href="resource.php">'.$menu_lang['eintrag_6'].'</a>
+    <a class="menu-btn" data-icon="✧" href="artefacts.php">'.$menu_lang['eintrag_18'].'</a>
+    <a class="menu-btn" data-icon="⚖" href="auction.php">Auktion</a>
+    <a class="menu-btn" data-icon="✪" href="missions.php">Missionen</a>'.
+    ($sv_deactivate_vsystems!=1?'<a class="menu-btn" data-icon="✸" href="map_mobile.php">V-Systeme</a>':'').'
+    <a class="menu-btn" data-icon="🏭" href="production.php">'.$menu_lang['eintrag_8'].'</a>
+    <a class="menu-btn" data-icon="🚀" href="military.php">Flotten</a>
+    <a class="menu-btn" data-icon="🕵️" href="secret.php">'.$menu_lang['eintrag_11'].'</a>
+    <a class="menu-btn" data-icon="⌬" href="sector.php">'.$menu_lang['eintrag_12'].'</a>
+    <a class="menu-btn" data-icon="🛸" href="secstatus.php">'.$menu_lang['eintrag_13'].'</a>
+    <a class="menu-btn" data-icon="∞" href="allymain.php">'.$menu_lang['eintrag_16'].'</a>
+    <a class="menu-btn" data-icon="📊" href="statistics.php">'.$menu_lang['eintrag_21'].'</a>
+    <a class="menu-btn" data-icon="★" href="toplist.php">'.$menu_lang['eintrag_22'].'</a>
+    <a class="menu-btn" data-icon="⚙" href="options.php">'.$menu_lang['eintrag_24'].'</a>
+    <a class="menu-btn danger" data-icon="🚪" href="index.php?logout=1">'.$menu_lang['eintrag_29'].'</a>
+  </nav>
+  '.$swipeHint.'
+</div>
+</body></html>';
+
+    die();
+
 }
 ?>
-<!DOCTYPE HTML>
-<HTML>
-<HEAD>
-<title><?php echo $menu_lang['title']?></title>
-<script type="text/javascript" src="js/jquery.min.js"></script>
-<script type="text/javascript" src="js/jquery-migrate.min.js"></script>
-<script type="text/javascript" src="js/jquery.dimensions.min.js"></script>
-<script type="text/javascript" src="js/jquery.tooltip.min.js"></script>
-<?php 
-$loadcssmenu=1;
-//$_SESSION['ums_rasse']=4;
-include "cssinclude.php"; 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>Menu</title><title><?php echo $menu_lang['title']?></title>
+<?php
+
+
+echo '<link rel="stylesheet" type="text/css" href="gp/m'.$_SESSION['ums_rasse'].'.css">';
+//<link rel="stylesheet" type="text/css" href="gp/f'.$_SESSION['ums_rasse'].'.css">
 
 ?>
-<script language="javascript">
+<script>
 var aktScroll;
 var aktMinTop = 0;
 var scrollStep = 7;
@@ -196,100 +234,79 @@ function StopScroll() {
 	if (isAktive == "yes") { window.clearInterval(aktScroll); }
 }
 
-function showefta(){
-  <?php
-  if($_SESSION["ums_chatoff"]) echo "top.document.getElementById('gf').cols = '0, 0, *, 0';";
-  else echo "top.document.getElementById('gf').cols = '0, 0, 0, *, 0';";
-  ?>
-  top.document.getElementById('gf').rows = '*';
-}
-
-function showsou()
-{
-  <?php
-  if($_SESSION["ums_chatoff"]) echo "top.document.getElementById('gf').cols = '0, 0, 0, *';";
-  else echo "top.document.getElementById('gf').cols = '0, 0, 0, 0, *';";
-  ?>
-  top.document.getElementById('gf').rows = '*';
-}
 </script>
 </head>
 <body onload="setsize()">
 <?php
 
-  //wenn die spielelemente nicht deaktiviert wurden, dann anzeigen
-  if($sv_deactivate_efta==0)echo '<div id="gig1" onclick="showefta()" title="'.$menu_lang['eintrag_31'].'&'.$menu_lang['descefta'].'"></div>';
-  if($sv_deactivate_sou==0)echo '<div id="gig2" onclick="showsou()" title="'.$menu_lang['eintrag_32'].'&'.$menu_lang['descsou'].'"></div>';
-
-
 //hauptcontainer �ffnen
 echo '<div id="content">';
-  //oberen men�teile �ffenen
+//oberen men�teile �ffenen
 
 
-  echo '<div class="m1">';
-    //obere scrollbuttons hinterlegen
-    echo '<div id="btnup1" onClick="document.getElementById(\'menubtns\').style.top = \'0px\'" onMouseOver="StartScroll(\'Up\')" onMouseOut="StopScroll()"></div>';
-    echo '<div id="btnup2" onClick="document.getElementById(\'menubtns\').style.top = \'0px\'" onMouseOver="StartScroll(\'Up\')" onMouseOut="StopScroll()"></div>';
-  echo '</div>';
-  //mittleren men�teil hinterlegen der sich wiederholt
-  echo '<div class="m2"></div>';
-  //unteren men�teil �ffnen
-  echo '<div class="m3">';
-    //untere scrollbuttons hinterlegen  
-    echo '<div id="btndown1" onClick="document.getElementById(\'menubtns\').style.top = aktMinTop+\'px\'" onMouseOver="StartScroll(\'Down\')" onMouseOut="StopScroll()"></div>';
-    echo '<div id="btndown2" onClick="document.getElementById(\'menubtns\').style.top = aktMinTop+\'px\'" onMouseOver="StartScroll(\'Down\')" onMouseOut="StopScroll()"></div>';
-  echo '</div>';
+echo '<div class="m1">';
+//obere scrollbuttons hinterlegen
+echo '<div id="btnup1" onClick="document.getElementById(\'menubtns\').style.top = \'0px\'" onMouseOver="StartScroll(\'Up\')" onMouseOut="StopScroll()"></div>';
+echo '<div id="btnup2" onClick="document.getElementById(\'menubtns\').style.top = \'0px\'" onMouseOver="StartScroll(\'Up\')" onMouseOut="StopScroll()"></div>';
+echo '</div>';
+//mittleren men�teil hinterlegen der sich wiederholt
+echo '<div class="m2"></div>';
+//unteren men�teil �ffnen
+echo '<div class="m3">';
+//untere scrollbuttons hinterlegen
+echo '<div id="btndown1" onClick="document.getElementById(\'menubtns\').style.top = aktMinTop+\'px\'" onMouseOver="StartScroll(\'Down\')" onMouseOut="StopScroll()"></div>';
+echo '<div id="btndown2" onClick="document.getElementById(\'menubtns\').style.top = aktMinTop+\'px\'" onMouseOver="StartScroll(\'Down\')" onMouseOut="StopScroll()"></div>';
+echo '</div>';
 
-  //scrollbarbereich hinterlegen
-  echo '<div id="menumain">';
-  echo '<div id="menubtns">';
+//scrollbarbereich hinterlegen
+echo '<div id="menumain">';
+echo '<div id="menubtns">';
 
-	//alle men�punkte hier anlegen
-	echo '<a href="overview.php" target="h" class="btn">&Uuml;bersicht</a>';
-	echo '<a href="hyperfunk.php" target="h" class="btn">'.$menu_lang['eintrag_2'].'</a>';
-	echo '<a href="sysnews.php" target="h" class="btn">'.$menu_lang['eintrag_3'].'</a>';
-	echo '<span class="btnspacer">&nbsp;</span>';
+//alle men�punkte hier anlegen
+echo '<a href="overview.php" target="h" class="btn">&Uuml;bersicht</a>';
+echo '<a href="hyperfunk.php" target="h" class="btn">'.$menu_lang['eintrag_2'].'</a>';
+echo '<a href="sysnews.php" target="h" class="btn">'.$menu_lang['eintrag_3'].'</a>';
+echo '<span class="btnspacer">&nbsp;</span>';
 
-	echo '<a href="ang_techs.php" target="h" class="btn"><div class="btn">Technologien</div></a>';
-	echo '<a href="specialization.php" target="h" class="btn"><div class="btn">Spezialisierung</div></a>';
-	
+echo '<a href="ang_techs.php" target="h" class="btn"><div class="btn">Technologien</div></a>';
+echo '<a href="specialization.php" target="h" class="btn"><div class="btn">Spezialisierung</div></a>';
 
-	echo '<a href="resource.php" target="h" class="btn">'.$menu_lang['eintrag_6'].'</a>';
-	echo '<a href="artefacts.php" target="h" class="btn">'.$menu_lang['eintrag_18'].'</a>';	
-	echo '<span class="btnspacer">&nbsp;</span>';
-	echo '<a href="auction.php" target="h" class="btn">Auktion</a>';
-	echo '<a href="missions.php" target="h" class="btn">Missionen</a>';
 
-	if(!isset($sv_deactivate_vsystems)){
-		$sv_deactivate_vsystems=0;
-	}
+echo '<a href="resource.php" target="h" class="btn">'.$menu_lang['eintrag_6'].'</a>';
+echo '<a href="artefacts.php" target="h" class="btn">'.$menu_lang['eintrag_18'].'</a>';
+echo '<span class="btnspacer">&nbsp;</span>';
+echo '<a href="auction.php" target="h" class="btn">Auktion</a>';
+echo '<a href="missions.php" target="h" class="btn">Missionen</a>';
 
-	if($sv_deactivate_vsystems!=1){
-		echo '<a href="map_mobile.php" target="h" class="btn">V-Systeme</a>';
-	}
-	
-	echo '<span class="btnspacer">&nbsp;</span>';
-	echo '<a href="production.php" target="h" class="btn">'.$menu_lang['eintrag_8'].'</a>';
-	echo '<a href="military.php" target="h" class="btn">Flotten</a>';
-	echo '<a href="secret.php" target="h" class="btn">'.$menu_lang['eintrag_11'].'</a>';
-	
-	echo '<span class="btnspacer">&nbsp;</span>';
-	echo '<a href="sector.php" target="h" class="btn">'.$menu_lang['eintrag_12'].'</a>';
-	echo '<a href="secstatus.php" target="h" class="btn">'.$menu_lang['eintrag_13'].'</a>';
-	echo '<a href="allymain.php" target="h" class="btn">'.$menu_lang['eintrag_16'].'</a>';
-	echo '<span class="btnspacer">&nbsp;</span>';
+if (!isset($sv_deactivate_vsystems)) {
+    $sv_deactivate_vsystems = 0;
+}
 
-	echo '<a href="statistics.php" target="h" class="btn">'.$menu_lang['eintrag_21'].'</a>';
-	echo '<a href="toplist.php" target="h" class="btn">'.$menu_lang['eintrag_22'].'</a>';
-	echo '<span class="btnspacer">&nbsp;</span>';
-	echo '<a href="options.php" target="h" class="btn">'.$menu_lang['eintrag_24'].'</a>';
-	echo '<a href="index.php?logout=1" target="h" class="btn">'.$menu_lang['eintrag_29'].'</a>';
-  
-  echo '</div>';
-  echo '</div>';
+if ($sv_deactivate_vsystems != 1) {
+    echo '<a href="map_mobile.php" target="h" class="btn">V-Systeme</a>';
+}
 
-  
+echo '<span class="btnspacer">&nbsp;</span>';
+echo '<a href="production.php" target="h" class="btn">'.$menu_lang['eintrag_8'].'</a>';
+echo '<a href="military.php" target="h" class="btn">Flotten</a>';
+echo '<a href="secret.php" target="h" class="btn">'.$menu_lang['eintrag_11'].'</a>';
+
+echo '<span class="btnspacer">&nbsp;</span>';
+echo '<a href="sector.php" target="h" class="btn">'.$menu_lang['eintrag_12'].'</a>';
+echo '<a href="secstatus.php" target="h" class="btn">'.$menu_lang['eintrag_13'].'</a>';
+echo '<a href="allymain.php" target="h" class="btn">'.$menu_lang['eintrag_16'].'</a>';
+echo '<span class="btnspacer">&nbsp;</span>';
+
+echo '<a href="statistics.php" target="h" class="btn">'.$menu_lang['eintrag_21'].'</a>';
+echo '<a href="toplist.php" target="h" class="btn">'.$menu_lang['eintrag_22'].'</a>';
+echo '<span class="btnspacer">&nbsp;</span>';
+echo '<a href="options.php" target="h" class="btn">'.$menu_lang['eintrag_24'].'</a>';
+echo '<a href="index.php?logout=1" target="h" class="btn">'.$menu_lang['eintrag_29'].'</a>';
+
+echo '</div>';
+echo '</div>';
+
+
 echo '</div>';
 
 //per javascript die gr��en dynamisch anpassen
@@ -310,18 +327,6 @@ function setsize(){
 }
 
 setsize();
-
-$(document).ready(function () {
-	$("#gig1,#gig2").tooltip({ 
-	track: true, 
-	delay: 0, 
-	showURL: false, 
-	showBody: "&",
-	extraClass: "design1", 
-	fixPNG: true,
-	opacity: 0.15,
-	left: 0}); 
-});
   
 </script>';
 

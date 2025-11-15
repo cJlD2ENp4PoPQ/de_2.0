@@ -1,17 +1,25 @@
 <?php
 include('inc/header.inc.php');
 include('inc/lang/'.$sv_server_lang.'_ally.allymain.lang.php');
+include 'inc/lang/'.$sv_server_lang.'_ally.settings.lang.php';
 include('lib/basefunctions.lib.php');
 include('inc/allyjobs.inc.php');
 include_once('functions.php');
 
-$db_daten=mysqli_execute_query($GLOBALS['dbi'], "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, `system`, newtrans, newnews, allytag, status, dailyallygift FROM de_user_data WHERE user_id=?", [$ums_user_id]);
+$db_daten=mysqli_execute_query($GLOBALS['dbi'], "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, `system`, newtrans, newnews, allytag, status, ally_id, dailyallygift FROM de_user_data WHERE user_id=?", [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_array($db_daten);
 $restyp01=$row[0];$restyp02=$row[1];$restyp03=$row[2];$restyp04=$row[3];$restyp05=$row[4];$punkte=$row['score'];
 $newtrans=$row['newtrans'];$newnews=$row['newnews'];$sector=$row['sector'];$system=$row['system'];
 $dailyallygift=$row['dailyallygift'];
 
-if ($row['status']==1) $ownally = $row['allytag'];else $ownally='';
+if ($row['status']==1) {
+	$ownally = $row['allytag'];
+	$own_ally_id = $row['ally_id'];
+}else{
+	$ownally='';
+	$own_ally_id = -1;
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -20,9 +28,8 @@ if ($row['status']==1) $ownally = $row['allytag'];else $ownally='';
 <title><?php echo $allyallymain_lang['title'];?></title>
 <?php include('cssinclude.php'); ?>
 </head>
-<body>
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 /*
         Die Function getLink($user) erzeugt einen Hyperfunk-Link f&uuml;r den Benutzer mit der
         ID $user. Als Linktext wird der Name des Users angezeigt. Per Klick auf den
@@ -101,12 +108,41 @@ include('ally/ally.menu.inc.php');
 // Abfrage auf $iscoleader hinzugef&uuml;gt von Ascendant (01.09.2002)
 if (!$ismember and !$isleader and !$iscoleader) die(include("ally/ally.footer.inc.php"));
 
-if($isleader || $iscoleader){
-        $query = "SELECT * FROM de_allys where leaderid=? OR coleaderid1=? OR coleaderid2=? OR coleaderid3=?";
-        $result = mysqli_execute_query($GLOBALS['dbi'], $query, [$ums_user_id, $ums_user_id, $ums_user_id, $ums_user_id]);
+if(($isleader || $iscoleader) && $own_ally_id >0){
+	if(isset($_POST['B1'])){ //Settings speichern
+		$hpurl=$_POST['hpurl'] ?? '';
+		$bio=$_POST['bio'] ?? '';
+		$openirc=$_POST['openirc'] ?? '';
+		$internirc=$_POST['internirc'] ?? '';
+		$metairc=$_POST['metairc'] ?? '';
+		$keywords=$_POST['keywords'] ?? '';
+		$leadermessage=$_POST['leadermessage'] ?? '';
+		$bewerberinfo=$_POST['bewerberinfo'] ?? '';
+		$showactivity=intval($_POST['showactivity'] ?? 0);
+		$discord_bot=trim($_POST['discord_bot'] ?? '');
+
+		mysqli_execute_query($GLOBALS['dbi'],
+		"UPDATE de_allys 
+		SET homepage=?, besonderheiten=?, openirc=?, internirc=?, metairc=?, 
+			keywords=?, leadermessage=?, bewerberinfo=?, public_activity=?, discord_bot=? 
+		WHERE id=?",
+		[$hpurl, $bio, $openirc, $internirc, $metairc, $keywords, $leadermessage, 
+		$bewerberinfo, $showactivity, $discord_bot, $own_ally_id]);
+
+		echo '<div class="info_box mt10 mb10">';
+
+		echo "$allysettings_lang[msg_1]!";
+
+		echo '</div>';
+	}
+
+	//Allianzdaten laden
+	$query = "SELECT * FROM de_allys where leaderid=? OR coleaderid1=? OR coleaderid2=? OR coleaderid3=?";
+    $result = mysqli_execute_query($GLOBALS['dbi'], $query, [$_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id']]);
+
 }else{
         $query = "SELECT * FROM de_allys ally, de_user_data user where user.allytag=ally.allytag and user.user_id=?";
-        $result = mysqli_execute_query($GLOBALS['dbi'], $query, [$ums_user_id]);
+        $result = mysqli_execute_query($GLOBALS['dbi'], $query, [$_SESSION['ums_user_id']]);
 }
 $row_result = mysqli_fetch_assoc($result);
 $clanid 		= $row_result["id"];
@@ -145,6 +181,11 @@ $keywords 		= $row_result["keywords"];
 $leadermessage 	= formatString($row_result["leadermessage"]);
 $bewerberinfo 	= formatString($row_result["bewerberinfo"]);
 $publicactivity = $row_result["public_activity"];
+
+// Rohdaten für Textareas (ohne formatString, um Zeilenumbrüche zu erhalten)
+$bio_raw = $row_result["besonderheiten"];
+$leadermessage_raw = $row_result["leadermessage"];
+$bewerberinfo_raw = $row_result["bewerberinfo"];
 
 $mission_counter[1]=	$row_result["mission_counter_1"];
 $mission_counter[2]=	$row_result["mission_counter_2"];
@@ -236,16 +277,17 @@ echo '</div><br>';
 echo '
 <div class="info_box" style="color: #FFFFFF;">
 	<div style="text-align: center;">Erledigte Missionen</div>
-	<table style="width: 100%;">
-		<tr>
-			<td>ARES</td>
-			<td>HEPHAISTOS</td>
-		</tr>
-		<tr>
-			<td>'.$mission_counter[1].'</td>
-			<td>'.$mission_counter[2].'</td>
-		</tr>
-	</table>
+	
+	<div style="display: flex; justify-content: space-around; align-items: center; margin-top: 10px;">
+		<div style="position: relative; width: 128px; height: 128px; text-align: center; background-image: url(\'gp/g/mission_ares.png\'); background-size: cover; background-position: center;">
+			<div style="position:absolute; left:0; bottom:0; width: 100%; padding: 2px; text-align: center; background-color: rgba(0,0,0, 0.5);">ARES: '.$mission_counter[1].'</div>
+		</div>
+		
+		<div style="position: relative; width: 128px; height: 128px; text-align: center; background-image: url(\'gp/g/mission_hephaistos.png\'); background-size: cover; background-position: center;">
+			<div style="position:absolute; left:0; bottom:0; width: 100%; padding: 2px; text-align: center; background-color: rgba(0,0,0, 0.5);">HEPHAISTOS: '.$mission_counter[2].'</div>
+		</div>
+
+	</div>
 </div>
 <br>
 ';
@@ -271,7 +313,7 @@ $rundensiegartefatke=number_format($questpoints, 0,"",".").' (Platz: '.$platz.')
   
 
 echo '<table width="100%">';
-//print("<tr><td><h2>$allyallymain_lang[msg_4], $ums_spielername</h2></td></tr>");
+//print("<tr><td><h2>$allyallymain_lang[msg_4], $_SESSION['ums_spielername']</h2></td></tr>");
 //print("<tr><td><hr></td></tr>");
 
 echo '<tr><td>
@@ -281,7 +323,7 @@ echo '<tr><td>
     		</tr>
     		<tr class=cl>
       			<td height=21>Allianzname /-tag:</td>
-      			<td height=21 colspan="3"><b>'.utf8_encode_fix($clanname).' / '.utf8_encode_fix($clankuerzel).'</b></td>
+      			<td height=21 colspan="3"><b>'.htmlspecialchars($clanname, ENT_QUOTES, 'UTF-8').' / '.htmlspecialchars($clankuerzel, ENT_QUOTES, 'UTF-8').'</b></td>
     		</tr>
     		<tr class=cl>
     		</tr>
@@ -291,15 +333,15 @@ echo '<tr><td>
 	   		';
 
 if($dailyallygift==1){
-	$grafikname='symbol1.png';
+	$grafikname='icon15.png';
 }else{
- 	$grafikname='symbol2.png'; 
+ 	$grafikname='icon15_grey.png'; 
 }
 
 echo '
-      	<td height="32">Geworbene-Spieler-Bonus:</td>
+      	<td height="32">Täglicher Bonus:</td>
       	<td height="32" colspan="3">
-    		<a href="ally_dailygift.php"><img src="'.$ums_gpfad.'g/'.$grafikname.'" border="0"></a>
+    		<a href="ally_dailygift.php"><img src="gp/g/'.$grafikname.'" style="width: 32px; height: 32px;" class="rounded-borders"></a>
  			
   			  	
 	  	</td>
@@ -343,10 +385,10 @@ echo '<tr class="cl">
 		</tr>
 		<tr class=cl>
 			<td height="21">Partnerallianz:</td>
-			<td height="21" colspan="3"><b>'.utf8_encode_fix($partnerallianz).'</b></td>
+			<td height="21" colspan="3"><b>'.htmlspecialchars($partnerallianz, ENT_QUOTES, 'UTF-8').'</b></td>
 		</tr>
 		<tr class=cl>
-			<td height="21">'.$allyallymain_lang['homepage'].':</td>
+			<td height="21">Website:</td>
 			<td height="21" colspan="3"><b><a href="'.$homepageurl.'" target=_blank>'.$homepageurl.'</a></b></td>
 		</tr>
 		
@@ -456,20 +498,26 @@ echo '
       			<td height="21" colspan="2" class="cl"><h3>'.$allyallymain_lang['allianzbiografie'].':</h3></td>
     		</tr>
     		<tr>
-      			<td class="cl" height="21" colspan="2">'.utf8_encode_fix($bio).'</td>
+      			<td class="cl" height="21" colspan="2">'.nl2br(htmlspecialchars($bio, ENT_QUOTES, 'UTF-8')).'</td>
     		</tr>
+			</table>
 ';
 
 if ($isleader || $iscoleader)
 {
 	echo '
+
+		<div onclick="$(this).hide();$(\'#allianzbearbeiten\').show();" class="btn mt10 mb10" style="margin-left: auto; margin-right: auto;">Daten bearbeiten</div>
+
+		<form method="POST" action="allymain.php">
+		<table id="allianzbearbeiten" border="0" width="100%" cellspacing="1" cellpadding="0" class="invisible">
 			<tr>
       			<td height="21" colspan="2"><hr></td>
     		</tr>
     		<tr>
       			<td height="21" colspan="2" class="cl"><h3>'.$allyallymain_lang['changedaten'].':</h3></td>
     		</tr>
-			<form method="POST" action="ally_settings.php">
+			
 			<tr>
 				<td colspan="2">'.$allyallymain_lang['homepage'].':<br>
       			<input type="text" name="hpurl" size="50" maxlength="50" value="'.$homepageurl.'"></td>
@@ -506,29 +554,32 @@ if ($isleader || $iscoleader)
     		</tr>
     		<tr>
     			<td colspan="2">'.$allyallymain_lang['allianzbiografie'].':<br>
-      			<textarea rows="22" name="bio" cols="71">'.utf8_encode_fix($bio).'</textarea></td>
+      			<textarea rows="22" name="bio" cols="71">'.htmlspecialchars($bio_raw, ENT_QUOTES, 'UTF-8').'</textarea></td>
     		</tr>
     		<tr>
     			<td colspan="2">'.$allyallymain_lang['msgtoleader'].':<br>
-      			<textarea rows="10" name="leadermessage" cols="71">'.utf8_encode_fix($leadermessage).'</textarea></td>
+      			<textarea rows="10" name="leadermessage" cols="71">'.htmlspecialchars($leadermessage_raw, ENT_QUOTES, 'UTF-8').'</textarea></td>
     		</tr>
     		<tr>
     			<td colspan="2">'.$allyallymain_lang['bewerberinfo'].':<br>
-      			<textarea rows="10" name="bewerberinfo" cols="71">'.utf8_encode_fix($bewerberinfo).'</textarea></td>
+      			<textarea rows="10" name="bewerberinfo" cols="71">'.htmlspecialchars($bewerberinfo_raw, ENT_QUOTES, 'UTF-8').'</textarea></td>
     		</tr>
-    		<tr><td><br><br></td></tr>
+    		<tr><td><br></td></tr>
     		<tr>
-    			<td colspan="2"><input type="submit" value="'.$allyallymain_lang['abschicken'].'" name="B1"><input type="reset" value="'.$allyallymain_lang['zurueck'].'" name="B2"></td>
+    			<td colspan="2">
+					<input type="submit" value="speichern" name="B1">
+					<br><br>
+				</td>
     		</tr>
 			</form>
 	';
 }
 
-echo '</table></td></tr></table></div></div>';
+echo '</table></td></tr></table></div><br><br></div>';
 
 ?>
 <br>
 <?php include('ally/ally.footer.inc.php'); ?>
-<?php include ('fooban.php'); ?>
+
 </body>
 </html>

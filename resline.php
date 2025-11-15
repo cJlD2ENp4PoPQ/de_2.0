@@ -1,23 +1,28 @@
 <?php
 include 'inc/lang/'.$sv_server_lang.'_resline.lang.php';
 
-//tickzeiten laden
-include "cache/lasttick.tmp";
-include "cache/lastmtick.tmp";
+//de_system laden
+$deSystemResult=mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_system LIMIT 1");
+$deSystem=mysqli_fetch_assoc($deSystemResult);
+$lastWT = date('H:i', strtotime($deSystem['lasttick']));
+$lastKT = date('H:i', strtotime($deSystem['lastmtick']));
 
 $mes1='';
 $mes2='';
-if($newtrans==1){
+if(isset($newtrans) && $newtrans==1){
 	$mes1='<a href="hyperfunk.php?l=new">'.$resline_lang['hyperfunk'].'</a>';
 }
-if($newnews==1){
+if(isset($newnews) && $newnews==1){
 	$mes2='<a href="sysnews.php">'.$resline_lang['nachricht'].'</a>';
 }
 
 
 if($_SESSION['ums_vote']=="1"){
 
-	echo '<br><div class="info_box"><span class="text3">'.$resline_lang['vote'].'</span></div><br>';
+	echo '
+	<br>
+	<center>
+		<div class="info_box"><span class="text3">'.$resline_lang['vote'].'</span></div>';
 
 	include("vote.php");
 	exit();
@@ -92,7 +97,7 @@ if(!$flag_ang_big_iframe){
 ///////////////////////////////////////////////////////
 
 //resline-daten laden
-$db_datenresline=mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_user_data WHERE user_id=?", [$ums_user_id]);
+$db_datenresline=mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_user_data WHERE user_id=?", [$_SESSION['ums_user_id']]);
 $rowresline = mysqli_fetch_array($db_datenresline);
 
 $ehscore=$rowresline["ehscore"];
@@ -206,8 +211,8 @@ if($_SESSION['ums_mobi']==1 || $_SESSION['de_frameset']==1){
 
 	//uhr
 	echo '<div id="resclock1" rel="tooltip" title="'.$resline_lang['restipservertime'].'<br>'.$resline_lang['restipservertimedesc'].'">'.date("H:i").'</div>';
-	echo '<div id="resclock2" rel="tooltip" title="'.$resline_lang['restipserveretick'].'<br>'.$resline_lang['restipserveretickdesc'].'">'.$lasttick.'</div>';
-	echo '<div id="resclock3" rel="tooltip" title="'.$resline_lang['restipservermtick'].'<br>'.$resline_lang['restipservermtickdesc'].'">'.$lastmtick.'</div>';
+	echo '<div id="resclock2" rel="tooltip" title="'.$resline_lang['restipserveretick'].'<br>'.$resline_lang['restipserveretickdesc'].'">'.$lastWT.'</div>';
+	echo '<div id="resclock3" rel="tooltip" title="'.$resline_lang['restipservermtick'].'<br>'.$resline_lang['restipservermtickdesc'].'">'.$lastKT.'</div>';
 
 	//anzahl atter/deffer
 	//$gevflag=1000000;$gev=1000000;$geaflag=1000000;$gea=1000000;
@@ -232,21 +237,20 @@ if($_SESSION['ums_mobi']==1 || $_SESSION['de_frameset']==1){
 	echo '<div id="resscore" rel="tooltip" title="'.$resline_lang['restipscore'].'<br>'.$resline_lang['restipscoredesc'].'<br>'.$resline_lang['restipehscore'].': '.number_format($ehscore, 0,"",".").'<br>Executor-Punkte: '.number_format($pve_score, 0,"",".").'">'.number_format($punkte, 0,"",".").'</div>';
 
 	//hyperfunk
-	//$newtrans=1;
-	if ($newtrans==1){
+	if (isset($newtrans) && $newtrans==1){
 		echo '<a href="hyperfunk.php?l=new" rel="tooltip" title="'.$resline_lang['restipnewhyper'].'<br>'.$resline_lang['restipnewhyperdesc'].'"><div id="reshyper"></div></a>';
 	}
 
 	//nachrichten
 	//$newnews=1;
-	if ($newnews==1){
+	if (isset($newnews) && $newnews==1){
 		echo '<a href="sysnews.php" rel="tooltip" title="'.$resline_lang['restipnewnews'].'<br>'.$resline_lang['restipnewnewsdesc'].'"><div id="resnews"></div></a>';
 	}
 
 	//dailyallygif
 	if($resline_dailyallygift==1){
 		echo '<div id="resdailyallygift"><a href="ally_dailygift.php" title="'.$resline_lang['dailyallygift'].'<br>'.$resline_lang['dailyallygiftdesc'].'">
-		<img src="'.$ums_gpfad.'g/symbol1.png" width="100%" height="100%"></a></div>';
+		<img src="gp/g/icon15.png" class="rounded-borders" width="100%" height="100%"></a></div>';
 	}
 	echo '</div>';
 
@@ -329,8 +333,8 @@ if($_SESSION['ums_mobi']==1 || $_SESSION['de_frameset']==1){
 	
 	//serverzeiten
 	echo '$("#tb_time1", parent.document).html("'.date("H:i").'");';
-	echo '$("#tb_time2", parent.document).html("'.$lasttick.'");';
-	echo '$("#tb_time3", parent.document).html("'.$lastmtick.'");';
+	echo '$("#tb_time2", parent.document).html("'.$lastWT.'");';
+	echo '$("#tb_time3", parent.document).html("'.$lastKT.'");';
 	
 	echo '</script>';
 }
@@ -339,6 +343,7 @@ if(!isset($GLOBALS['deactivate_old_design'])){
 	$GLOBALS['deactivate_old_design']=false;
 }
 
+/*
 if(!$flag_ang_big_iframe){
 	if($GLOBALS['deactivate_old_design']!==true){
 		echo '
@@ -358,7 +363,7 @@ if(!$flag_ang_big_iframe){
 		</script>';
 	}
 }
-
+*/
 /////////////////////////////////////////////////////////////
 // helper
 /////////////////////////////////////////////////////////////
@@ -369,7 +374,7 @@ if($show_helper==1 && !isset($apiDisableHelper)){
 /////////////////////////////////////////////////////////////
 // Mission-Reminder
 /////////////////////////////////////////////////////////////
-if($show_trade_reminder==1 && !$flag_ang_big_iframe){
+if($show_trade_reminder==1 && !$flag_ang_big_iframe && ($_SESSION['de_frameset'] || $_SESSION['ums_mobi']==1)){
 	include "lib/trade_reminder.inc.php";
 }
 

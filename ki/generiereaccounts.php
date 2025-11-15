@@ -11,17 +11,16 @@ include "../inccon.php";
 
 //update für Sektor 666
 /*
-UPDATE de_user_data SET spielername= 'DX*Buguser', rasse = 1 WHERE sector = 666 AND `system` = 1;
-UPDATE de_user_data SET spielername= 'DX*Cheater', rasse = 1 WHERE sector = 666 AND `system` = 2;
-UPDATE de_user_data SET spielername= 'DX*Flamer', rasse = 2 WHERE sector = 666 AND `system` = 3;
-UPDATE de_user_data SET spielername= 'DX*Hacker', rasse = 2 WHERE sector = 666 AND `system` = 4;
-UPDATE de_user_data SET spielername= 'DX*Multi', rasse = 3 WHERE sector = 666 AND `system` = 5;
-UPDATE de_user_data SET spielername= 'DX*PW-Sharer', rasse = 3 WHERE sector = 666 AND `system` = 6;
-UPDATE de_user_data SET spielername= 'DX*Scripter', rasse = 4 WHERE sector = 666 AND `system` = 7;
-UPDATE de_user_data SET spielername= 'DX*Sekhopper', rasse = 4 WHERE sector = 666 AND `system` = 8;
-UPDATE de_user_data SET spielername= 'DX*Spamer', rasse = 5 WHERE sector = 666 AND `system` = 9;
-UPDATE de_user_data SET spielername= 'DX*ExecutorKarlath', rasse = 5 WHERE sector = 666 AND `system` = 10;
-
+UPDATE de_user_data SET spielername='DX*Buguser', nrspielername='DX*Buguser', rasse=1 WHERE sector=666 AND `system`=1;
+UPDATE de_user_data SET spielername='DX*Cheater', nrspielername='DX*Cheater', rasse=1 WHERE sector=666 AND `system`=2;
+UPDATE de_user_data SET spielername='DX*Flamer', nrspielername='DX*Flamer', rasse=2 WHERE sector=666 AND `system`=3;
+UPDATE de_user_data SET spielername='DX*Hacker', nrspielername='DX*Hacker', rasse=2 WHERE sector=666 AND `system`=4;
+UPDATE de_user_data SET spielername='DX*Multi', nrspielername='DX*Multi', rasse=3 WHERE sector=666 AND `system`=5;
+UPDATE de_user_data SET spielername='DX*PW-Sharer', nrspielername='DX*PW-Sharer', rasse=3 WHERE sector=666 AND `system`=6;
+UPDATE de_user_data SET spielername='DX*Scripter', nrspielername='DX*Scripter', rasse=4 WHERE sector=666 AND `system`=7;
+UPDATE de_user_data SET spielername='DX*Sekhopper', nrspielername='DX*Sekhopper', rasse=4 WHERE sector=666 AND `system`=8;
+UPDATE de_user_data SET spielername='DX*Spamer', nrspielername='DX*Spamer', rasse=5 WHERE sector=666 AND `system`=9;
+UPDATE de_user_data SET spielername='DX*ExecutorKarlath', nrspielername='DX*ExecutorKarlath', rasse=5 WHERE sector=666 AND `system`=10;
 
 
 Buguser
@@ -47,7 +46,7 @@ function generierespielername()
 
     $anzsilben = count($silben);
 
-    $name = '';
+    $name = 'DX*';
     //1. teil
     $csilben = rand(1, 4);
     for ($i = 1; $i <= $csilben; $i++) {
@@ -66,6 +65,10 @@ function generierespielername()
         }
         $name .= $suchsilbe;
     }
+
+    //Spielernamen auf 20 Zeichen kürzen
+    $name = substr($name, 0, 20);    
+
     return $name;
 }
 

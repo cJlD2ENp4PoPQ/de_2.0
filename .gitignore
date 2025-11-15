@@ -1,6 +1,7 @@
 g/*.ttf
 g/*.otf
 cache/*.tmp
+cache/**/*.tmp
 cache/creditlogs/*.txt
 cache/toplist/*.tmp
 cache/overview/*.tmp
@@ -15,5 +16,6 @@ inc/sv.inc.php
 map_analyse.php
 .claude
 claude.MD
+/vendor
 .idea/*
 *.iml

@@ -1,4 +1,5 @@
 <?php
+require_once 'vendor/autoload.php';
 
 function createTitleForUser($ownerId, $title){
 
@@ -39,19 +40,14 @@ function getInfocenter()
     $content = '';
     $pt = loadPlayerTechs($_SESSION['ums_user_id']);
 
-    //$content.='<div class="red mb10">under construction</div>';
-
     /////////////////////////////////////////////////
     // Missionen
     /////////////////////////////////////////////////
-    $content .= '<div class="header">Missionen</div>';
+    $targetId='tb_infocenter_missions';
+    //$content .= '<div class="header">Missionen</div>';
     if (!hasTech($pt, 29)) {
-        $techcheck = "SELECT tech_name FROM de_tech_data WHERE tech_id=29";
-        $db_tech = mysqli_query($GLOBALS['dbi'], $techcheck);
-        $row_techcheck = mysqli_fetch_array($db_tech);
-
-        $content .= '<div>Fehlende Technologie: '.getTechNameByRasse($row_techcheck['tech_name'], $_SESSION['ums_rasse']).'<div>';
-
+        //Icon ausblenden
+        $content .= '$("#'.$targetId.'").hide();';
     } else {
         //die Missionsdatensätze auslesen
         $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT * FROM de_user_mission WHERE user_id=".$_SESSION['ums_user_id'].";");
@@ -69,12 +65,26 @@ function getInfocenter()
         }
 
         if ($m_abholbereit > 0) {
-            $content .= '<div class="green">abholbereit: '.$m_abholbereit.'</div>';
+            //$content .= '<div class="green">abholbereit: '.$m_abholbereit.'</div>';
+            $content .= '$("#'.$targetId.'").show();';
+            $content .= '$("#'.$targetId.'").prop("title", "Missionen<br>abholbereit: '.$m_abholbereit.'");';
+            //pulsierende Klasse
+            $content .= '$("#'.$targetId.'").addClass("pulse-icon");';
         } else {
             if ($m_laufen == 0) {
-                $content .= '<div class="red">aktiv: 0</div>';
+                //Warnung, wenn keine Missionen laufen
+                //$content .= '<div class="red">aktiv: 0</div>';
+            $content .= '$("#'.$targetId.'").show();';
+            $content .= '$("#'.$targetId.'").prop("title", "Missionen<br>aktiv: 0");';
+            //pulsierende Klasse
+            $content .= '$("#'.$targetId.'").addClass("pulse-icon");';                
             } else {
-                $content .= '<div>aktiv: '.$m_laufen.'</div>';
+                //Hinweis wie viele Missionen laufen
+                //$content .= '<div>aktiv: '.$m_laufen.'</div>';
+            $content .= '$("#'.$targetId.'").show();';
+            $content .= '$("#'.$targetId.'").prop("title", "Missionen<br>aktiv: '.$m_laufen.'");';
+            //keine pulsierende Klasse
+            $content .= '$("#'.$targetId.'").removeClass("pulse-icon");';                
             }
 
         }
@@ -83,6 +93,8 @@ function getInfocenter()
     /////////////////////////////////////////////////
     // Technologien
     /////////////////////////////////////////////////
+    $targetId='tb_infocenter_technology';
+
     //zuerst checken ob man evtl. schon alle Techs hat, dann braucht man den Punkt gar nicht mehr anzeigen
     $db_daten = mysqli_query($GLOBALS['dbi'], "SELECT COUNT(*) AS anzahl FROM de_tech_data WHERE tech_sort_id < 1000");
     $row = mysqli_fetch_array($db_daten);
@@ -90,29 +102,44 @@ function getInfocenter()
     $tech_anzahl = count($pt);
 
     if ($tech_anzahl < $tech_max) {
-        $content .= '<div class="header mt10">Technologien</div>';
+        //$content .= '<div class="header mt10">Technologien</div>';
         //wird aktuell etwas erforscht?
         $t_aktiv = 0;
         foreach ($pt as $tech) {
-
-
             if (is_array($tech) && $tech['time_finished'] > time()) {
                 $t_aktiv++;
             }
         }
 
         if ($t_aktiv > 0) {
-            $content .= '<div>aktiv: '.$t_aktiv.'</div>';
+            //anzeigen wie viel erforscht wird
+            //$content .= '<div>aktiv: '.$t_aktiv.'</div>';
+            $content .= '$("#'.$targetId.'").show();';
+            $content .= '$("#'.$targetId.'").prop("title", "Technologien<br>aktiv: '.$t_aktiv.'");';
+            //keine pulsierende Klasse
+            $content .= '$("#'.$targetId.'").removeClass("pulse-icon");';
+
         } else {
-            $content .= '<div class="red">aktiv: 0</div>';
+            //Warnung, dass gerade nichts geforscht wird
+            //$content .= '<div class="red">aktiv: 0</div>';
+            $content .= '$("#'.$targetId.'").show();';
+            $content .= '$("#'.$targetId.'").prop("title", "Technologien<br>aktiv: 0");';
+            //pulsierende Klasse
+            $content .= '$("#'.$targetId.'").addClass("pulse-icon");';
         }
-
-        //$content.=count($pt).'/'.$tech_max;
-
-        //$content.=print_r($pt,true);
-
+    }else{
+        //alle Techs erforscht, Punkt nicht mehr anzeigen
+        $content .= '$("#'.$targetId.'").hide();';
     }
 
+    if(!empty($content)){
+        $content='
+        <script>
+        '.$content.';
+        setTooltip();
+        </script>
+        ';
+    }
 
     return $content;
 }
@@ -269,7 +296,7 @@ function createAuction($uid)
 	reward='".serialize($reward)."'
 	";
 
-    error_log($sql, 0);
+    //error_log($sql, 0);
 
     mysqli_query($GLOBALS['dbi'], $sql);
 }
@@ -443,7 +470,7 @@ function generateMissionReward($reward, $percent = 100)
 
                     //Erfolgs-Nachricht
                     //$content.=$amount.' '.$resnamen[$restyp-1].'<br>';
-                    $content .= '<img src="g/'.$resimages[$restyp - 1].'" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="'.$resnamen[$restyp - 1].'"> <div style="display: inline-block; margin-bottom: 5px;">'.$amount.'</div><br>';
+                    $content .= '<img src="gp/g/'.$resimages[$restyp - 1].'" class="rounded-borders" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="'.$resnamen[$restyp - 1].'"> <div style="display: inline-block; margin-bottom: 5px;">'.$amount.'</div><br>';
 
                     break;
                     //Items
@@ -452,8 +479,8 @@ function generateMissionReward($reward, $percent = 100)
                     $amount = number_format(floor($reward[$i][2] * $percent), 0, "", ".");
 
                     //Erfolgs-Nachricht, Design je nach Existenz einer passenden Bilddatei
-                    if (file_exists('g/item'.$item_id.'.png')) {
-                        $content .= '<img src="g/item'.$item_id.'.png" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="'.$GLOBALS['ps'][$item_id]['item_name'].'"> <div style="display: inline-block; margin-bottom: 5px;">'.$amount.'</div><br>';
+                    if (file_exists('gp/g/item'.$item_id.'.png')) {
+                        $content .= '<img src="gp/g/item'.$item_id.'.png" class="rounded-borders" style="height: 20px; width: auto; margin-bottom: -5px;" rel="tooltip" title="'.$GLOBALS['ps'][$item_id]['item_name'].'"> <div style="display: inline-block; margin-bottom: 5px;">'.$amount.'</div><br>';
                     } else {
                         $content .= $amount.' '.$GLOBALS['ps'][$item_id]['item_name'].'<br>';
                     }
@@ -563,7 +590,7 @@ function generate_vsystem_kopfzeile($system_id, $sytem_name)
     $kopfzeile .= '<div style="width: 90px; text-align: left;">'.$link_first.$link_lower.'</div>';
     $kopfzeile .= '
 	<div style="flex-grow: 1;">'.$sytem_name.' 
-		(#<input id="input_system_id"type="text" style="height: 12px; width: 24px; text-align: center;" value="'.$system_id.'">&nbsp;
+		(#<input id="input_system_id"type="text" style="height: 12px; width: 30px; text-align: center;" value="'.$system_id.'">&nbsp;
 		<span style="display: inline-block; width: 30px; cursor: pointer; height: 18px; background-color: #FFFFFF; color: #000000; text-decoration: none; text-align: center; border: 1px solid #888888; box-sizing: border-box;" onclick="location.href=\'map_system.php?id=\'+$(\'#input_system_id\').val()">OK</span>)
 		<a id="link_map" href="map_mobile.php#sysid'.$system_id.'" style="margin-right: 8px; display: inline-block; width: 40px; background-color: #FFFFFF; color: #000000; text-decoration: none; text-align: center; border: 1px solid #888888; box-sizing: border-box;"'.$tooltip_map.'>&there4;</a>
 	</div>';
@@ -1065,10 +1092,8 @@ function loadPlayerTechs($uid)
 
 function hasTech($pt, $tech_id)
 {
-    global $sv_comserver_roundtyp;
-
-    //Test auf Comserver-BR
-    if ($sv_comserver_roundtyp == 1 || $pt['npc'] == 2) {
+    //Test NPC2, die haben immer alle Techs
+    if ($pt['npc'] == 2) {
         return true;
     }
 
@@ -1111,9 +1136,9 @@ function sf($name, $arrOpt, $selected, $class = "", $jsHandler = '')
 
 function showeinheit_ang($techname, $tech_id, $rt01, $rt02, $rt03, $rt04, $rt05, $tech_ticks, $vorhanden, $bg, $tooltipid, $has_tech, $item_kosten = '')
 {
-    global $ums_gpfad, $ums_rasse, $tooltips;
+    global $tooltips;
 
-    $tooltip = '<img src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$tooltips[$tooltipid].'">';
+    $tooltip = '<img src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$tooltips[$tooltipid].'">';
 
     echo '<tr valign="middle" align="center" height="25">';
     //echo '<td width="115" height="25" bgcolor="'.$bg.'"><div align="left"><b><font color="white">&nbsp;</font></b><a href="help.php?SID='.$SID.'&t='.$tech_id.'"><FONT COLOR="#FFFFFF" style="font-size:8pt">'.$techname."</div></td>";
@@ -1426,7 +1451,7 @@ function getAllytagByAllyid($id)
     $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT allytag FROM de_allys WHERE id=?", [$id]);
     $row = mysqli_fetch_array($db_daten);
 
-    return $row['allytag'];
+    return $row['allytag'] ?? '';
 }
 
 function getAllyByID($ally_id)
@@ -1470,7 +1495,7 @@ function insert_chat_msg($channel, $channeltyp, $spielername, $chat_message)
 
     if ($channeltyp == 3) {//gloabler Chat
         $sql="INSERT INTO de_chat_msg (channel, channeltyp, server_tag, spielername, message, timestamp, owner_id) VALUES 
-		('$channel', '$channeltyp', '$sv_server_tag', ?, ? '$time', '$owner_id')";
+		('$channel', '$channeltyp', '$sv_server_tag', ?, ?, '$time', '$owner_id')";
         mysqli_execute_query($GLOBALS['dbi_ls'], $sql, [$spielername, $chat_message]);
     } else {
         //die verschiedenen Chats auf dem Server
@@ -1580,7 +1605,7 @@ function getfleetlevel($exp)
 
 function showtech($techname, $gebnr, $rt01, $rt02, $rt03, $rt04, $rt05, $buildgtime, $buildgnr, $techs, $typ, $verbtime, $bg, $cancancel)
 {
-    global $ums_rasse, $functions, $_SESSION;
+    global $functions;
 
     echo '<tr valign="middle" align="center" height="25">';
     echo '<td class="'.$bg.'" height="25"><div align="left"><b>&nbsp;</b><a href="help.php?t='.$gebnr.'" class="link">'.$techname."</a></div></td>";
@@ -1632,78 +1657,11 @@ function showtech($techname, $gebnr, $rt01, $rt02, $rt03, $rt04, $rt05, $buildgt
     echo "</tr>";
 }
 
-function showtech2($techname, $gebnr, $rt01, $rt02, $rt03, $rt04, $rt05, $buildgtime, $buildgnr, $techs, $typ, $verbtime, $bg, $cancancel)
-{
-    global $ums_rasse, $functions, $sv_link, $ums_gpfad;
-
-    $tooltip = '<img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_'.$gebnr.'.jpg" border="0">';
-
-    echo '<tr valign="middle" align="center" height="25">';
-
-    echo '<td class="'.$bg.'" align="left">';
-
-    echo '
-	<table border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td width="75"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t='.$gebnr.'" target="_blank">'.$tooltip.'</a></td>
-		<td width="145" align="center"><a href="help.php?t='.$gebnr.'" class="link">'.$techname.'</a></td>
-	</tr>
-	</table>';
-    echo '</td>';
-
-    //echo '<td class="'.$bg.'" height="25"><div align="left"><b>&nbsp;</b><a href="help.php?t='.$gebnr.'" class="link">'.$techname."</a></div></td>";
-    echo '<td class="'.$bg.'">'.number_format($rt01, 0, "", ".")."</td>";
-    echo '<td class="'.$bg.'">'.number_format($rt02, 0, "", ".")."</td>";
-    echo '<td class="'.$bg.'">'.number_format($rt03, 0, "", ".")."</td>";
-    echo '<td class="'.$bg.'">'.number_format($rt04, 0, "", ".")."</td>";
-    echo '<td class="'.$bg.'">'.number_format($rt05, 0, "", ".")."</td>";
-    echo '<td class="'.$bg.'">'.$buildgtime."</td>";
-    if ($buildgnr == $gebnr) {  //wird es gerade gebaut?
-        if ($typ == 0) { //Geb�ude
-            if ($verbtime <= 1) {
-                echo  '<td class="'.$bg.'">'.$functions[imbau].' ('.$verbtime.')</td>';
-            } else {
-                echo '<td class="'.$bg.'">'.$functions[imbau].' ('.$verbtime.')
-			 <a href="buildings.php?cancel='.$gebnr.'" onclick="return confirm(unescape(\'Soll der Geb�udebau wirklich abgebrochen werden? Die Rohstoffkosten werden erstattet.\'))" class="btn2" style="margin: 4px; display: inline-block;">Abbruch</a></td>';
-            }
-        } elseif ($typ == 1) { //Forschungen
-            if ($verbtime <= 1) {
-                echo  '<td class="'.$bg.'">'.$functions[wirderforscht].' ('.$verbtime.')</td>';
-            } else {
-                echo '<td class="'.$bg.'">'.$functions[wirderforscht].' ('.$verbtime.')
-			 <a href="research.php?cancel='.$gebnr.'" onclick="return confirm(unescape(\'Soll die Forschung wirklich abgebrochen werden? Die Rohstoffkosten werden erstattet.\'))" class="btn2" style="margin: 4px; display: inline-block;">Abbruch</a></td>';
-            }
-        } else { //Sektorgeb�ude
-            echo  '<td class="'.$bg.'">'.$functions[imbau].' ('.$verbtime.')</td>';
-        }
-    } elseif //wenn nein, dann
-    ($techs[$gebnr] == 1) { //schon fertig?
-        if ($typ == 0) {
-            echo '<td class="'.$bg.'">'.$functions[gebaut].'</td>';
-        } elseif ($typ == 1) {
-            echo '<td class="'.$bg.'">'.$functions[erforscht].'</td>';
-        } else {
-            echo '<td class="'.$bg.'">'.$functions[gebaut].'</td>';
-        }
-    } elseif ($buildgnr > 0) {
-        echo '<td class="'.$bg.'">'.$functions[ausgelastet].'</td>';
-    } else {
-        //if ($typ==0)echo  '<td class="'.$bg.'"><input type="Submit" name="i'.$gebnr.'" value="'.$functions[bauen].'"></td>';
-        //else echo '<td class="'.$bg.'"><input type="Submit" name="i'.$gebnr.'" value="'.$functions[forschen].'"></td>';
-        if ($typ == 0) {
-            echo '<td class="'.$bg.'"><a href="buildings.php?ida='.$gebnr.'&st='.$_SESSION['build_sec_token'].'" class="btn2">'.$functions['bauen'].'</a></td>';
-        } else {
-            echo '<td class="'.$bg.'"><a href="research.php?ida='.$gebnr.'&st='.$_SESSION['research_sec_token'].'" class="btn2">'.$functions['forschen'].'</a></td>';
-        }
-    }
-    echo "</tr>";
-}
-
 function showeinheit($techname, $tech_id, $rt01, $rt02, $rt03, $rt04, $rt05, $tech_ticks, $vorhanden, $bg, $tooltipid)
 {
-    global $ums_gpfad, $ums_rasse, $tooltips;
+    global $tooltips;
 
-    $tooltip = '<img src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$tooltips[$tooltipid].'">';
+    $tooltip = '<img src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$tooltips[$tooltipid].'">';
 
     echo '<tr valign="middle" align="center" height="25">';
     //echo '<td width="115" height="25" bgcolor="'.$bg.'"><div align="left"><b><font color="white">&nbsp;</font></b><a href="help.php?SID='.$SID.'&t='.$tech_id.'"><FONT COLOR="#FFFFFF" style="font-size:8pt">'.$techname."</div></td>";
@@ -1726,9 +1684,9 @@ function showeinheit($techname, $tech_id, $rt01, $rt02, $rt03, $rt04, $rt05, $te
 
 function showeinheit2($techname, $tech_id, $rt01, $rt02, $rt03, $rt04, $rt05, $tech_ticks, $vorhanden, $bg, $tooltipid)
 {
-    global $ums_gpfad, $ums_rasse, $sv_link, $tooltips;
+    global $sv_link, $tooltips;
 
-    $tooltip = '<img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_'.$tech_id.'.jpg" border="0" title="'.$tooltips[$tooltipid].'">';
+    $tooltip = '<img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_'.$tech_id.'.jpg" border="0" title="'.$tooltips[$tooltipid].'">';
 
     echo '<tr valign="middle" align="center" height="25">';
     echo '<td align="left">';
@@ -1736,8 +1694,8 @@ function showeinheit2($techname, $tech_id, $rt01, $rt02, $rt03, $rt04, $rt05, $t
     echo '
 	<table border="0" cellpadding="0" cellspacing="0">
 	<tr>
-		<td width="75"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t='.$tech_id.'" target="_blank">'.$tooltip.'</a></td>
-		<td class="'.$bg.'" width="108" align="center"><a href="help.php?t='.$tech_id.'" class="link">'.$techname.'</a></td>
+		<td width="75px"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t='.$tech_id.'" target="_blank">'.$tooltip.'</a></td>
+		<td class="'.$bg.'" width="133px" align="center"><a href="help.php?t='.$tech_id.'" class="link">'.$techname.'</a></td>
 	</tr>
 	</table>';
     echo '</td>';
@@ -1807,9 +1765,9 @@ function get_fleet_ground_speed($ez, $rasse, $uid)
     $spec3 = $row['spec3'];
 
     if ($spec3 == 2) {
-        $ums_rasse = $rasse;
-        for ($i = 0;$i < count($schiffsdaten[$ums_rasse]);$i++) {
-            $schiffsdaten[$ums_rasse - 1][$i][1] = floor($schiffsdaten[$ums_rasse - 1][$i][1] * 1.2);
+        $_SESSION['ums_rasse'] = $rasse;
+        for ($i = 0;$i < count($schiffsdaten[$_SESSION['ums_rasse']]);$i++) {
+            $schiffsdaten[$_SESSION['ums_rasse'] - 1][$i][1] = floor($schiffsdaten[$_SESSION['ums_rasse'] - 1][$i][1] * 1.2);
         }
     }
 
@@ -1943,115 +1901,6 @@ function get_fleet_ground_speed($ez, $rasse, $uid)
     }
 
     return($rz1);
-
-
-    /*
-    //anzahl der einheiten
-    $anzs=$sv_anz_schiffe;
-    //reisezeiten laden
-    for($x=0;$x<$sv_anz_schiffe;$x++)
-    {
-        //reisezeit aus dem schiffsdaten-array holen
-        $reisez[$x] = $sv_schiffsdaten[$ums_rasse][$x][0];
-    }
-    //reisezeitberechnung grundreisezeit
-    $z1 = 0;
-    $z2 = 0;
-    $z3 = 0;
-
-    //ben�tigte transportkapazit�t
-    // [0] = ID des Feldes f�r Nissen [1] = ID des Feldes f�r Bomber [2] = N�tiger Platz f�r Nissen [3] = N�tige Platz f�r Bomber
-    $tragbars[0] = 0;
-    $tragbars[1] = 5;
-    $tragbars[2] = $sv_schiffsdaten[$ums_rasse-1][0][2];
-    $tragbars[3] = $sv_schiffsdaten[$ums_rasse-1][5][2];
-
-    //vorhandene transportkapazit�t
-    $tragers[0] = 3;
-    $tragers[0] = 4;
-    $tragers[0] = 7;
-    $tragers[0] = $sv_schiffsdaten[$ums_rasse-1][3][1];
-    $tragers[0] = $sv_schiffsdaten[$ums_rasse-1][4][1];
-    $tragers[0] = $sv_schiffsdaten[$ums_rasse-1][7][1];
-
-     for ($x=0; $x <= $anzs; $x++)
-     {
-         for ($y=0; $y <= 2; $y++) {
-             if ($x == $tragers[$y])
-             {
-                 $trager[0] = $trager[0] + ($aktf[$x][0] * $tragers[$y+3]);
-                 $trager[1] = $trager[1] + ($aktf[$x][1] * $tragers[$y+3]);
-                 $trager[2] = $trager[2] + ($aktf[$x][2] * $tragers[$y+3]);
-             }
-
-             if ($y <= 1) {
-                 if ($x == $tragbars[y]) {
-                     $tragbar[0][$y] = $tragbar[0][$y] + ($aktf[$x][0] * $tragbars[$y+2]);
-                     $tragbar[1][$y] = $tragbar[1][$y] + ($aktf[$x][1] * $tragbars[$y+2]);
-                     $tragbar[2][$y] = $tragbar[2][$y] + ($aktf[$x][2] * $tragbars[$y+2]);
-                 }
-             }
-         }
-
-
-        //schauen ob man j�ger/bomber dabei hat
-        if (($tragbar[0] + $tragbar[1]) > 0)
-        {
-            if (($tragbar[0] + $tragbar[1]) <= $trager)
-            {
-                for ($x=0; $x <= $anzs; $x++)
-                {
-                    if ($aktf[$x] != 0)
-                    {
-                        if (($x != $tragbars[0]) && ($x != $tragbars[1]))
-                        {
-                            if ($reisez[$x][0] > $z1) { $z1 = $reisez[$x][0]; }
-                            //if ($reisez[$x][1] > $z2) { $z2 = $reisez[$x][1]; }
-                            //if ($reisez[$x][2] > $z3) { $z3 = $reisez[$x][2]; }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // Bomber werden als erstes in Tr�ger gesetzt, da l�ngere Reisezeit
-                if ($tragbar[1] > $trager) {
-                    // Bomber-Reisezeit, da mehr Bomber als Platz vorhanden
-                    $z1 = $reisez[$tragbars[1]][0];
-                    //$z2 = $reisez[$tragbars[1]][1];
-                    //$z3 = $reisez[$tragbars[1]][2];
-                }
-                else
-                {
-                    if (($tragbar[0] + $tragbar[1]) > $trager)
-                    {
-                        // Hornissen-Reisezeit, da mehr Hornissen als Platz vorhanden
-                        $z1 = $reisez[$tragbars[0]][0];
-                        //$z2 = $reisez[$tragbars[0]][1];
-                        //$z3 = $reisez[$tragbars[0]][2];
-                    }
-                }
-            }
-        }
-        else
-        {
-            for ($x=0; $x <= $anzs; $x++)
-            {
-                if ($aktf[$x] != 0)
-                {
-                    if (($x != $tragbars[0]) && ($x != $tragbars[1]))
-                    {
-                        if ($reisez[$x][0] > $z1) { $z1 = $reisez[$x][0]; }
-                        //if ($reisez[$x][1] > $z2) { $z2 = $reisez[$x][1]; }
-                        //if ($reisez[$x][2] > $z3) { $z3 = $reisez[$x][2]; }
-                    }
-                }
-            }
-        }
-
-    echo $z1;
-    $z1='-10';*/
-    return($z1);
 }
 
 function umlaut($fieldname)
@@ -2091,55 +1940,34 @@ function reumlaut($fieldname)
     return $fieldname;
 }
 
-function mail_smtp($empfaenger, $subject, $body, $absender = 'noreply@die-ewigen.com')
+function mail_smtp($empfaenger, $subject, $body, $absender = '')
 {
-    //Create a new PHPMailer instance
-    $mail = new PHPMailer();
-    //Tell PHPMailer to use SMTP
+    if(empty($absender)){
+        $absender = $GLOBALS['env_mail_noreply'];
+    }
+
+    $mail = new PHPMailer\PHPMailer\PHPMailer();
+
     $mail->isSMTP();
-    $mail->smtpConnect([
-        'ssl' => [
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true
-        ]
-    ]);
-    //Enable SMTP debugging
-    // 0 = off (for production use)
-    // 1 = client messages
-    // 2 = client and server messages
-    $mail->SMTPDebug = 0;
-    //Ask for HTML-friendly debug output
+    $mail->SMTPDebug = 0; // SMTP-Debug auf 3 für maximalen Output
     $mail->Debugoutput = 'html';
-    //Set the hostname of the mail server
+
     $mail->Host = $GLOBALS['env_mail_server'];
-    //Set the SMTP port number - likely to be 25, 465 or 587
     $mail->Port = 587;
-    //Whether to use SMTP authentication
+    $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
     $mail->SMTPAuth = true;
-    //Username to use for SMTP authentication
     $mail->Username = $GLOBALS['env_mail_user'];
-    //Password to use for SMTP authentication
     $mail->Password = $GLOBALS['env_mail_password'];
-    //Set who the message is to be sent from
-    $mail->setFrom('noreply@die-ewigen.com', 'Die Ewigen');
-    //Set an alternative reply-to address
-    $mail->addReplyTo('noreply@die-ewigen.com', 'Die Ewigen');
+    $mail->IsHTML(true);
+    $mail->setFrom($GLOBALS['env_mail_noreply'], 'Die Ewigen');
+    
     //Set who the message is to be sent to
     $mail->addAddress($empfaenger, '');
     //Set the subject line
     $mail->Subject = $subject;
     $mail->IsHTML(true);
-    //Read an HTML message body from an external file, convert referenced images to embedded,
-    //convert HTML into a basic plain-text alternative body
-    //$mail->msgHTML($text);
-    //Replace the plain text body with one created manually
-    //$mail->AltBody = 'This is a plain-text message body';
-    //Attach an image file
-    //$mail->addAttachment('images/phpmailer_mini.png');
+    
     $mail->Body = $body;
-
-    //$mail->AddStringAttachment($att_content, $dateiname, 'base64', 'text/html');
 
 
     $mail->send();
@@ -2152,4 +1980,115 @@ function utf8_encode_fix($string)
 function utf8_decode_fix($string)
 {
     return mb_convert_encoding($string, 'ISO-8859-1', 'UTF-8');
+}
+
+//dise Funktion gibt das System des SK zurück, wenn es keinen SK gibt, dann ist der Wert 0
+function issectorcommander() {
+	global $sector, $sv_maxsystem;
+
+	//global $system;
+	//alle user des sektors auslesen
+	if($sector>0){
+		$sql="SELECT votefor, `system` FROM de_user_data WHERE sector=$sector";
+		//echo $sql;
+		$resultsk = mysqli_query($GLOBALS['dbi'], $sql);
+		$anz = mysqli_num_rows($resultsk);
+
+		while($row=mysqli_fetch_array($resultsk)){
+			//$su[$row["system"]][0]=$row["nic"];
+			$su[$row["system"]][1]=$row["votefor"];
+			$su[$row["system"]][2]=$row["system"];
+		}
+		$ska=array(0,0,0,0,0,0,0,0,0,0,0);
+		//alle stimmen zählen
+		for ($i = 1; $i <= $sv_maxsystem; $i++){
+			if(isset($su[$i][1])){
+				$ska[$su[$i][1]]++;
+			}
+		}
+		//maximalwert suchen
+		$mw=0;
+		for ($i = 1; $i <= $sv_maxsystem; $i++){
+			if ($ska[$i]>$mw)$mw=$ska[$i];
+		}
+
+		//schauen ob wert doppelt vorhanden, wenn kleiner 6
+		$anzahl=0;
+		if ($mw<8)
+		{for ($i = 1; $i <= $sv_maxsystem; $i++)if($ska[$i]==$mw)$anzahl++;}
+		else $anzahl=1;
+
+
+		//wenn nicht 1, dann gibts mehrere mit der stimmenanzahl
+		if ($anzahl!=1) $mw=0;
+		$sksys=0;
+
+		if($mw!=0){
+			//noch das system des sk auslesen
+			for ($i = 1; $i <= $sv_maxsystem; $i++){
+				if($ska[$i]==$mw)$sksys=$i;
+			}
+		}
+	}else{
+		$sksys=0;
+	}
+
+	return $sksys;
+}
+
+function getSKSystemBySecID($sec_id){
+	global $sv_maxsystem;
+
+	$sector=$sec_id;
+
+	//echo '<br>IS_SK: '.$sector.'/'.$sv_maxsystem;
+
+	//global $system;
+	//alle user des sektors auslesen
+	if($sector>0){
+		$sql="SELECT votefor, `system` FROM de_user_data WHERE sector=$sector";
+		//echo $sql;
+		$resultsk = mysqli_query($GLOBALS['dbi'], $sql);
+		$anz = mysqli_num_rows($resultsk);
+
+		while($row=mysqli_fetch_array($resultsk)){
+			//$su[$row["system"]][0]=$row["nic"];
+			$su[$row["system"]][1]=$row["votefor"];
+			$su[$row["system"]][2]=$row["system"];
+		}
+		$ska=array(0,0,0,0,0,0,0,0,0,0,0);
+		//alle stimmen zählen
+		for ($i = 1; $i <= $sv_maxsystem; $i++){
+			if(isset($su[$i][1])){
+				$ska[$su[$i][1]]++;
+			}
+		}
+		//maximalwert suchen
+		$mw=0;
+		for ($i = 1; $i <= $sv_maxsystem; $i++){
+			if ($ska[$i]>$mw)$mw=$ska[$i];
+		}
+
+		//schauen ob wert doppelt vorhanden, wenn kleiner 6
+		$anzahl=0;
+		if ($mw<8)
+		{for ($i = 1; $i <= $sv_maxsystem; $i++)if($ska[$i]==$mw)$anzahl++;}
+		else $anzahl=1;
+
+
+		//wenn nicht 1, dann gibts mehrere mit der stimmenanzahl
+		if ($anzahl!=1) $mw=0;
+		$sksys=0;
+
+		if($mw!=0){
+			//noch das system des sk auslesen
+			for ($i = 1; $i <= $sv_maxsystem; $i++){
+				if($ska[$i]==$mw)$sksys=$i;
+			}
+		}
+	}else{
+		$sksys=0;
+	}
+
+	return $sksys;
 }

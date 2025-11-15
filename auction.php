@@ -1,11 +1,9 @@
 <?php
-$GLOBALS['deactivate_old_design'] = true;
-
 include "inc/header.inc.php";
 include "lib/transaction.lib.php";
 include "functions.php";
 include 'inc/userartefact.inc.php';
-//include "lib/map_system.class.php";
+
 $pt = loadPlayerTechs($_SESSION['ums_user_id']);
 
 $ps = loadPlayerStorage($_SESSION['ums_user_id']);
@@ -44,7 +42,7 @@ $maxtick = $row["tick"];
 ////////////////////////////////////////////////////////////////////////////////
 //userartefakte auslesen
 ////////////////////////////////////////////////////////////////////////////////
-$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=22 AND user_id='$ums_user_id'");
+$db_daten = mysqli_query($GLOBALS['dbi'], "SELECT id, level FROM de_user_artefact WHERE id=22 AND user_id='".$_SESSION['ums_user_id']."';");
 $artbonus_auktion = 0;
 while ($row = mysqli_fetch_array($db_daten)) {
     $artbonus_auktion = $artbonus_auktion + $ua_werte[$row["id"] - 1][$row["level"] - 1][0];
@@ -67,10 +65,9 @@ $tradescore = 10000;
 <?php
 include "cssinclude.php";
 ?>
-<script type="text/javascript" src="js/de_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/de_fn.js');?>"></script>
 </head>
-<body>
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 $content = '';
 
@@ -84,14 +81,14 @@ if (!hasTech($pt, 4)) {
     $content .= rahmen_oben('Fehlende Technologie', false);
     $content .= '<table width="572" border="0" cellpadding="0" cellspacing="0">';
     $content .= '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=4" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_4.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=4" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_4.jpg" border="0"></a></td>
 	<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'], $_SESSION['ums_rasse']).'</td>
 	</tr>';
     $content .= '</table>';
     $content .= rahmen_unten(false);
 } else {
 
-    if (setLock($ums_user_id)) {
+    if (setLock($_SESSION['ums_user_id'])) {
 
         $content .= '<div class="info_box">Nach dem Start der Auktion sinkt 1.000 Wirtschaftsticks lang der Preis. Auktionen, die man selbst gestartet hat, haben einen Nachlass von '.$nachlass.'%.</div><br>';
 
@@ -162,6 +159,7 @@ if (!hasTech($pt, 4)) {
             }
 
             //selbst erstellte Auktion?
+            $nachlass_str='';
             if ($creator) {
                 $reduzierung_in_prozent = ($nachlass + $artbonus_auktion) / 100;
                 $amount = ceil($amount - ($amount * $reduzierung_in_prozent));
@@ -169,7 +167,9 @@ if (!hasTech($pt, 4)) {
             } else {
                 $reduzierung_in_prozent = $artbonus_auktion / 100;
                 $amount = ceil($amount - ($amount * $reduzierung_in_prozent));
-                $nachlass_str = ' / '.number_format($artbonus_auktion, 2, ",", ".").' % Preisnachlass';
+                if($reduzierung_in_prozent > 0){
+                    $nachlass_str = ' / <span style="color: #00FF00;">'.number_format($artbonus_auktion, 2, ",", ".").' % Preisnachlass</span>';
+                }
             }
 
             switch ($cost[0]) {
@@ -192,7 +192,7 @@ if (!hasTech($pt, 4)) {
 
 
                     $preis .= '<div style="display: flex;">';
-                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' '.$resnamen[$cost[1] - 1].'<br>Lagerbestand: '.number_format($pd['restyp0'.$cost[1]], 0, ",", ".").'"><img src="g/icon'.$cost[1].'.png" style="width: 50px; height: auto;"></div>';
+                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' '.$resnamen[$cost[1] - 1].'<br>Lagerbestand: '.number_format($pd['restyp0'.$cost[1]], 0, ",", ".").'"><img src="gp/g/icon'.$cost[1].'.png" class="rounded-borders" style="width: 50px; height: auto;"></div>';
                     $preis .= '<div style="flex-grow: 1; padding-left: 10px; font-size: 18px; height: 100%; padding-top: 8px;'.$fehlende_res_color.'">'.formatMasseinheit($amount).' '.$resnamen[$cost[1] - 1].'<br><span style="font-size: 10px;">WT: '.number_format($reduzierung, 0, ",", ".").$nachlass_str.'</span></div>';
                     $preis .= '</div>';
 
@@ -218,8 +218,16 @@ if (!hasTech($pt, 4)) {
                         $fehlende_res_color = 'color: #ec0011;';
                     }
 
+                    $filename = 'item'.$cost[1].'.png';
+                    //Item 3-10 verwendet die VS-Rohstoffe und dafür verwendet man einfach deren Grafiken
+                    if($cost[1]>=3 && $cost[1]<=12){
+                        $nummer=$cost[1]-2;
+                        if($nummer<10){ $nummer='0'.$nummer;}
+                        $filename = 'ele'.$nummer.'.gif';
+                    }
+
                     $preis .= '<div style="display: flex;">';
-                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' '.$ps[$cost[1]]['item_name'].'<br>Lagerbestand: '.number_format($ps[$cost[1]]['item_amount'], 0, ",", ".").'"><img src="g/item'.$cost[1].'.png" style="width: 50px; height: auto;"></div>';
+                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' '.$ps[$cost[1]]['item_name'].'<br>Lagerbestand: '.number_format($ps[$cost[1]]['item_amount'], 0, ",", ".").'"><img src="gp/g/'.$filename.'" class="rounded-borders" style="width: 50px; height: auto;"></div>';
                     $preis .= '<div style="flex-grow: 1; padding-left: 10px; font-size: 18px; height: 100%; padding-top: 8px;'.$fehlende_res_color.'">'.formatMasseinheit($amount).' '.$ps[$cost[1]]['item_name'].'<br><span style="font-size: 10px;">WT: '.number_format($reduzierung, 0, ",", ".").$nachlass_str.'</span></div>';
                     $preis .= '</div>';
 
@@ -245,7 +253,7 @@ if (!hasTech($pt, 4)) {
                     }
 
                     $preis .= '<div style="display: flex;">';
-                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' Credits<br>Lagerbestand: '.number_format($pd['credits'], 0, ",", ".").'"><img src="g/credits.gif" style="width: 50px; height: auto; margin-top: 11px;"></div>';
+                    $preis .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($amount, 0, ",", ".").' Credits<br>Lagerbestand: '.number_format($pd['credits'], 0, ",", ".").'"><img src="gp/g/credits.gif" class="rounded-borders" style="width: 50px; height: auto; margin-top: 11px;"></div>';
                     $preis .= '<div style="flex-grow: 1; padding-left: 10px; font-size: 18px; height: 100%; padding-top: 8px;'.$fehlende_res_color.'">'.number_format($amount, 0, ",", ".").' Credits<br><span style="font-size: 10px;">WT: '.number_format($reduzierung, 0, ",", ".").$nachlass_str.'</span></div>';
                     $preis .= '</div>';
 
@@ -273,7 +281,7 @@ if (!hasTech($pt, 4)) {
                     }
 
                     $artikel .= '<div style="display: flex;">';
-                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="1 '.$ua_name[$artid - 1].'-Artefakt (Stufe 1)<br>'.$ua_desc[$artid - 1].'"><img src="'.$ums_gpfad.'g/arte'.$artid.'.gif"></div>';
+                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="1 '.$ua_name[$artid - 1].'-Artefakt (Stufe 1)<br>'.$ua_desc[$artid - 1].'"><img src="'.'gp/'.'g/arte'.$artid.'.gif"></div>';
                     $artikel .= '<div style="flex-grow: 1; padding: 8px 0 0 10px; font-size: 18px; vertical-align: middle;">'.$ua_name[$reward[1] - 1].$tradesystemscore_str.'</div>';
                     $artikel .= '</div>';
                     break;
@@ -289,7 +297,7 @@ if (!hasTech($pt, 4)) {
                     }
 
                     $artikel .= '<div style="display: flex;">';
-                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($reward[2], 0, ",", ".").' '.$resnamen[$reward[1] - 1].'"><img src="g/icon'.$reward[1].'.png" style="width: 50px; height: auto;"></div>';
+                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($reward[2], 0, ",", ".").' '.$resnamen[$reward[1] - 1].'"><img src="gp/g/icon'.$reward[1].'.png" class="rounded-borders" style="width: 50px; height: auto;"></div>';
                     $artikel .= '<div style="flex-grow: 1; padding: 8px 0 0 10px; font-size: 18px; vertical-align: middle;">'.number_format($reward[2], 0, ",", ".").' '.$resnamen[$reward[1] - 1].$tradesystemscore_str.'</div>';
                     $artikel .= '</div>';
 
@@ -305,7 +313,7 @@ if (!hasTech($pt, 4)) {
                         }
                     }
                     $artikel .= '<div style="display: flex;">';
-                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($reward[2], 0, ",", ".").' '.$ps[$reward[1]]['item_name'].'"><img src="g/item'.$reward[1].'.png" style="width: 50px; height: auto;"></div>';
+                    $artikel .= '<div style="width: 50px;" rel="tooltip" title="'.number_format($reward[2], 0, ",", ".").' '.$ps[$reward[1]]['item_name'].'"><img src="gp/g/item'.$reward[1].'.png" class="rounded-borders" style="width: 50px; height: auto;"></div>';
                     $artikel .= '<div style="flex-grow: 1; padding: 8px 0 0 10px; font-size: 18px; vertical-align: middle;">'.number_format($reward[2], 0, ",", ".").' '.$ps[$reward[1]]['item_name'].$tradesystemscore_str.'</div>';
                     $artikel .= '</div>';
 
@@ -406,7 +414,7 @@ if (!hasTech($pt, 4)) {
         $content .= rahmen_unten(false);
 
         //transaktionsende
-        $erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+        $erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
         if ($erg) {
             //print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
         } else {
@@ -429,6 +437,6 @@ echo $content;
 
 ?>
 <br>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

@@ -157,7 +157,7 @@ if ($sendhyperfunk) {
 if ($sendmailregdaten) {
   $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT de_user_data.spielername, de_login.reg_mail FROM de_user_data, de_login WHERE de_user_data.user_id = ? AND de_login.user_id = ?", [$uid, $uid]);
   $mail_data = mysqli_fetch_array($result);
-  $det_email='noreply@die-ewigen.com';
+  $det_email=$GLOBALS['env_mail_noreply'];
   $emailtext = "Hallo, \r\n";
   $emailtext .= "dein Account bei Die-Ewigen (".$mail_data["spielername"].") wurde wegen der Angabe falscher Userdaten bei der Registrierung gesperrt. \r\n";
   $emailtext .= "Bitte erstelle in der Accountverwaltung ein Ticket mit den Daten (Vorname, Nachname, PLZ, Ort, Land).\r\n";
@@ -430,7 +430,7 @@ $infos = $infos . '
   <td align="center">'.$de_user_data["werberid"].'</td>
   </tr>
   </table></td></tr>
-  <tr><td colspan="2"><b><u>Kommentar:</u></b>&nbsp;'.$de_user_info[kommentar].'</td></tr></table>';
+  <tr><td colspan="2"><b><u>Kommentar:</u></b>&nbsp;'.$de_user_info['kommentar'].'</td></tr></table>';
 
 //hyperfunknachrichten
 $infos.='<br>Eingang<br>';
@@ -457,10 +457,10 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
     $row[text]= eregi_replace("\[pre\]", "<pre>",$row[text]);
     $row[text]= eregi_replace("\[/pre\]", "</pre>",$row[text]);
 */
-    $row[text] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row[text]);
-    $row[text] = str_replace("[CROT]","<font color=\"#F10505\">",$row[text]);
-    $row[text] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row[text]);
-    $row[text] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row[text]);
+    $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
+    $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);
+    $row['text'] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row['text']);
+    $row['text'] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row['text']);
 
     /*
     $row[text]=eregi_replace("\\[email\\]([^\\[]*)\\[/email\\]","<a href=\"mailto:\\1\">\\1</a>",$row[text]);
@@ -514,10 +514,10 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
     $row[text]= eregi_replace("\[/pre\]", "</pre>",$row[text]);
     */
 
-    $row[text] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row[text]);
-    $row[text] = str_replace("[CROT]","<font color=\"#F10505\">",$row[text]);
-    $row[text] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row[text]);
-    $row[text] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row[text]);
+    $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
+    $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);
+    $row['text'] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row['text']);
+    $row['text'] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row['text']);
 
     /*
     $row[text]=eregi_replace("\\[email\\]([^\\[]*)\\[/email\\]","<a href=\"mailto:\\1\">\\1</a>",$row[text]);
@@ -529,7 +529,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
 
     $infos.= '<table border="0" cellpadding="0" cellspacing="2" width="500">';
     $infos.= '<tr>';
-    $infos.= '<td class="cl" width="40%">Empf&auml;nger: '.insertemp($row[empfaenger]).'</td>';
+    $infos.= '<td class="cl" width="40%">Empf&auml;nger: '.insertemp($row['empfaenger']).'</td>';
     $t=$row["time"];
     $time=$t[6].$t[7].'.'.$t[4].$t[5].'.'.$t[0].$t[1].$t[2].$t[3].' - '.$t[8].$t[9].':'.$t[10].$t[11].':'.$t[12].$t[13];
     $infos.= '<td class="cr" width="60%">Zeit: '.$time.'</td>';
@@ -572,10 +572,10 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
 
     */
 
-    $row[text] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row[text]);
-    $row[text] = str_replace("[CROT]","<font color=\"#F10505\">",$row[text]);
-    $row[text] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row[text]);
-    $row[text] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row[text]);
+    $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
+    $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);
+    $row['text'] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row['text']);
+    $row['text'] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row['text']);
 
 
     /*
@@ -664,7 +664,7 @@ if ($uid>0)
   
   // Beobachtungsliste ?
   if($de_user_info["observation_stat"] == 1) {
-    $observation_status = "<font style='color: red;'>".$de_user_info[observation_by]."</font>";
+    $observation_status = "<font style='color: red;'>".$de_user_info['observation_by']."</font>";
   } else {
     $observation_status = "-";
   }
@@ -791,8 +791,6 @@ echo '</table>';
 echo '</form>';
 echo '<form action="info.php?uid='.$uid.'" method="post">';
 
-if ($de_user_data["sector"]!=0 OR $sv_efta_in_de==1 OR $sv_sou_in_de==1)//wenn account aktiv
-{
   echo '<select name="mail" size="1" style="width:130px;">
   <option value="'.$det_email.'">'.$det_username.'</option>';
   for ($i=0;$i<$det_anz;$i++)
@@ -800,15 +798,6 @@ if ($de_user_data["sector"]!=0 OR $sv_efta_in_de==1 OR $sv_sou_in_de==1)//wenn a
 
   echo '</select>
   <input type="Submit" name="infostomail" value="Userinfos anfordern" style="width:130px;">';
-}
-else
-{
-  if ($de_user_data["system"]==1)
-  {
-    echo '<br>Account aktivieren:<br>';
-    echo '<input type="Submit" name="activateaccount" value="Account aktivieren">&nbsp;&nbsp;&nbsp;';
-  }
-}
 
 
 }

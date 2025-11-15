@@ -44,17 +44,16 @@ $GLOBALS['duration_factor']=1-($artbonus_duration/100);
 <html>
 <head>
 <title>Systeminformationen</title>
-<meta charset="utf-8"/>
-<script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
 <?php 
-//$newcss=1;
 include "cssinclude.php";
 ?>
+<script type="text/javascript" src="js/ang_fn.js?<?php echo filemtime($_SERVER['DOCUMENT_ROOT'].'/js/ang_fn.js');?>"></script>
 </head>
-<body>
 <?php 
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 $GLOBALS['ally_fundbuero_level']=0;
+$GLOBALS['allyid']=-1;
 if(!empty($pd['allytag']) && $pd['ally_status']==1){
 	$GLOBALS['allyid']=getAllyIDByAllytag($pd['allytag']);
 
@@ -85,14 +84,14 @@ if(!hasTech($pt,25)){
 	rahmen_oben('Fehlende Technologie');
 	echo '<table width="572" border="0" cellpadding="0" cellspacing="0">';
 	echo '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=28" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_25.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=28" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_25.jpg" border="0"></a></td>
 	<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'],$_SESSION['ums_rasse']).'</td>
 	</tr>';
 	echo '</table>';
 	rahmen_unten();
 }else{
 	//welche ID will man sich ansehen?
-	$id=intval($_REQUEST['id']);
+	$id=intval($_REQUEST['id'] ?? 1);
 	if($id<1){
 		$id=1;
 	}
@@ -148,7 +147,7 @@ if(!hasTech($pt,25)){
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////
 			$system_erreichbar=false;
 			//immer sichtbar?
-			if($system_daten['always_visible']==1){
+			if(isset($system_daten['always_visible']) && $system_daten['always_visible']==1){
 				$system_erreichbar=true;
 			}
 
@@ -274,6 +273,6 @@ if(!hasTech($pt,25)){
 	
 	
 <br>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>
