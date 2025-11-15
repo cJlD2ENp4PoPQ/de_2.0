@@ -16,7 +16,7 @@ $row=$pd;
 $restyp01=$row['restyp01'];$restyp02=$row['restyp02'];$restyp03=$row['restyp03'];$restyp04=$row['restyp04'];$restyp05=$row['restyp05'];
 $punkte=$row["score"];$techs=$row["techs"];$defenseexp=$row["defenseexp"];
 $newtrans=$row["newtrans"];$newnews=$row["newnews"];$sector=$row["sector"];$system=$row["system"];
-$design=$row["design"];$spec4=$row['spec4'];
+$spec4=$row['spec4'];
 $gr01=$restyp01;$gr02=$restyp02;$gr03=$restyp03;$gr04=$restyp04;$gr05=$restyp05;
 
 //maximalen tick auslesen
@@ -33,10 +33,9 @@ $max_kt = $row["kt"];
 <?php 
 include "cssinclude.php";
 ?>
-<link rel="stylesheet" href="g/style.css?<?php echo filemtime('g/style.css');?>">
 </head>
-<body>
-<?php 
+<?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 $content='';
 
@@ -62,7 +61,7 @@ if(!hasTech($pt,159)){
 
 	$ship_upgrade_cost=($ship->ship_level+1)*100;
 
-	if($_REQUEST['upgrade_ship']==1){
+	if(isset($_REQUEST['upgrade_ship']) && $_REQUEST['upgrade_ship']==1){
 		if($ps[1]['item_amount']>=$ship_upgrade_cost){
 			$ship->ship_level++;
 			saveSpecialShip($_SESSION['ums_user_id'], $ship);
@@ -79,19 +78,8 @@ if(!hasTech($pt,159)){
 			$ship_upgrade_cost=($ship->ship_level+1)*100;
 		}
 	}
-	
-	/*
-	SELECT de_user_getcol . *
-	FROM `de_user_getcol`
-	LEFT JOIN de_user_data ON ( de_user_getcol.zuser_id = de_user_data.user_id )
-	WHERE de_user_getcol.time <1535976000
-	AND de_user_data.npc =0
-	GROUP BY de_user_getcol.user_id
-	LIMIT 1000 
-	*/
 
 	$content.=rahmen_oben('BASISSTERN',false);
-
 
 
 	$content.='<div class="cell" style="width: 572px;">';
@@ -326,13 +314,13 @@ for($i=0;$i<3;$i++){
 include "resline.php";
 
 echo '
-<a href="production.php" title="Einheitenproduktion"><img src="'.$ums_gpfad.'g/symbol19.png" border="0" width="64px" heigth="64px"></a> 
-<a href="recycling.php" title="Recycling&Hier k&ouml;nnen Einheiten der Heimatflotte und Verteidigungseinheiten recycelt werden."><img src="'.$ums_gpfad.'g/symbol24.png" border="0" width="64px" heigth="64px"></a>';
+<a href="production.php" title="Einheitenproduktion"><img src="'.'gp/'.'g/symbol19.png" border="0" width="64px" heigth="64px"></a> 
+<a href="recycling.php" title="Recycling&Hier k&ouml;nnen Einheiten der Heimatflotte und Verteidigungseinheiten recycelt werden."><img src="'.'gp/'.'g/symbol24.png" border="0" width="64px" heigth="64px"></a>';
 if($sv_deactivate_vsystems!=1){
-	echo '<a href="specialship.php" title="Basisstern"><img src="'.$ums_gpfad.'g/symbol27.png" border="0" width="64px" heigth="64px"></a>';
+	echo '<a href="specialship.php" title="Basisstern"><img src="'.'gp/'.'g/symbol27.png" border="0" width="64px" heigth="64px"></a>';
 }
 echo'
-<a href="unitinfo.php" title="Einheiteninformationen"><img src="'.$ums_gpfad.'g/symbol26.png" border="0" width="64px" heigth="64px"></a>
+<a href="unitinfo.php" title="Einheiteninformationen"><img src="'.'gp/'.'g/symbol26.png" border="0" width="64px" heigth="64px"></a>
 ';
 
 echo $content;
@@ -341,6 +329,6 @@ echo $content;
 ?>
 
 <br>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

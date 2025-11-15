@@ -9,9 +9,9 @@ class GetActiveBuilds
     const string GET_BUILDS_SQL = "SELECT tech_id, anzahl, verbzeit, score FROM de_user_build where user_id = ?";
 
     /**
-     * Retrieves sector status from the database.
+     * Fetches all active builds of the player.
      *
-     * @return array the sector status array of given user, one item represent the status of one system.
+     * @return array of active builds containing techid, count, ETA and points
      */
     public function getBuilds(int $userId) : array
     {

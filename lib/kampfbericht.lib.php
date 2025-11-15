@@ -29,13 +29,13 @@ function showkampfberichtBG($data){
 			//Zeile in der man selbst ist hervorheben
 			$bg_color='none';
 			$parts=explode("&nbsp;",$kb[$runde][$p]['spielername1']);
-			if($parts[0]==$_SESSION['ums_spielername'] && !empty($parts[0])){
+			if($parts[0]==($_SESSION['ums_spielername'] ?? '') && !empty($parts[0])){
 				$css1.='font-weight: bold;';
 				$bg_color='#222222';
 			}
 			
 			$parts=explode("&nbsp;",$kb[$runde][$p]['spielername2']);
-			if($parts[0]==$_SESSION['ums_spielername'] && !empty($parts[0])){
+			if($parts[0]==($_SESSION['ums_spielername'] ?? '') && !empty($parts[0])){
 				$css2.='font-weight: bold;';
 				$bg_color='#222222';
 			}
@@ -60,8 +60,8 @@ function showkampfberichtBG($data){
 	return $content;
 }
 
-function showkampfberichtV0($text,$rasse,$ums_spielername, $sector, $system, $schiffspunkte){
-	global $sv_anz_rassen, $sv_anz_schiffe, $sv_anz_tuerme, $ums_rasse, $sv_server_lang;
+function showkampfberichtV0($text,$rasse, $spielername, $sector, $system, $schiffspunkte){
+	global $sv_anz_rassen, $sv_anz_schiffe, $sv_anz_tuerme, $sv_server_lang;
 
 	$rassenklassen[0] = array ('k1', 'k2');
 	$rassenklassen[1] = array ('k3', 'k4');
@@ -94,14 +94,14 @@ function showkampfberichtV0($text,$rasse,$ums_spielername, $sector, $system, $sc
 	$srec2=$kbd[$grundindex+4];
 
 	//eigenen spielername fett darstellen
-	if($ums_rasse==1)$rflag='E';
-	elseif($ums_rasse==2)$rflag='I';
-	elseif($ums_rasse==3)$rflag='K';
-	elseif($ums_rasse==4)$rflag='Z';
-	elseif($ums_rasse==5)$rflag='D';
+	if($_SESSION['ums_rasse']==1)$rflag='E';
+	elseif($_SESSION['ums_rasse']==2)$rflag='I';
+	elseif($_SESSION['ums_rasse']==3)$rflag='K';
+	elseif($_SESSION['ums_rasse']==4)$rflag='Z';
+	elseif($_SESSION['ums_rasse']==5)$rflag='D';
 
 
-	$username=$ums_spielername.' ['.$rflag.']('.$sector.':'.$system.')';
+	$username=$_SESSION['ums_spielername'].' ['.$rflag.']('.$sector.':'.$system.')';
 	$atterliste=str_replace($username, '<b>'.$username.'</b>', $atterliste);
 	$defferliste=str_replace($username, '<b>'.$username.'</b>', $defferliste);
 
@@ -208,7 +208,8 @@ function showkampfberichtV0($text,$rasse,$ums_spielername, $sector, $system, $sc
 
 			if ($rasse-1!=$aktrasse)//wenn es nicht die eigene rasse ist leer lassen
 			{
-			  $keigene1 = array ('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;');
+			  // Platzhalter dynamisch auf Anzahl der Schiffe setzen (vorher nur 8, führte zu Undefined array key Warnungen bei Index >=8)
+			  $keigene1 = array_fill(0, $sv_anz_schiffe, '&nbsp;');
 			  $keigene2 = $keigene1;
 			  $keigene3 = $keigene1;
 			}
@@ -391,9 +392,9 @@ function showkampfberichtV0($text,$rasse,$ums_spielername, $sector, $system, $sc
 	return($kbstring);
 }
 
-function showkampfberichtV1($text,$rasse,$ums_spielername, $sector, $system, $schiffspunkte){
+function showkampfberichtV1($text,$rasse, $spielername, $sector, $system, $schiffspunkte){
 
-	global $sv_anz_rassen, $sv_anz_schiffe, $sv_anz_tuerme, $ums_rasse, $sv_server_lang, $sv_oscar;
+	global $sv_anz_rassen, $sv_anz_schiffe, $sv_anz_tuerme, $sv_server_lang, $sv_oscar;
 
 	$rassenklassen[0] = array ('k1', 'k2');
 	$rassenklassen[1] = array ('k3', 'k4');
@@ -418,25 +419,30 @@ function showkampfberichtV1($text,$rasse,$ums_spielername, $sector, $system, $sc
 	$atterliste=$kbd['daten']['atterliste'];
 	$defferliste=$kbd['daten']['defferliste'];
 
-	$kollieserbeutet=$kbd['daten_spieler']['colstolen'];
-	$exp=$kbd['daten_spieler']['exp'];
-	$kartefakte=$kbd['daten_spieler']['kartefakt'];
-	$srec1=$kbd['daten_spieler']['recycling1'];
-	$srec2=$kbd['daten_spieler']['recycling2'];
-	$kg_set_01=$kbd['daten_spieler']['kg_set_01'];
-	$kg_set_02=$kbd['daten_spieler']['kg_set_02'];
-	$kg_set_03=$kbd['daten_spieler']['kg_set_03'];
-	$kg_set_04=$kbd['daten_spieler']['kg_set_04'];
+	// Sicherer Zugriff auf Spieler-Daten, Defaults verhindern PHP-Warnungen bei fehlenden Keys
+	$daten_spieler = [];
+	if(isset($kbd['daten_spieler']) && is_array($kbd['daten_spieler'])){
+		$daten_spieler = $kbd['daten_spieler'];
+	}
+	$kollieserbeutet = isset($daten_spieler['colstolen']) ? (int)$daten_spieler['colstolen'] : 0;
+	$exp            = isset($daten_spieler['exp']) ? (int)$daten_spieler['exp'] : 0;
+	$kartefakte     = isset($daten_spieler['kartefakt']) ? (int)$daten_spieler['kartefakt'] : 0;
+	$srec1          = isset($daten_spieler['recycling1']) ? (int)$daten_spieler['recycling1'] : 0;
+	$srec2          = isset($daten_spieler['recycling2']) ? (int)$daten_spieler['recycling2'] : 0;
+	$kg_set_01      = isset($daten_spieler['kg_set_01']) ? (int)$daten_spieler['kg_set_01'] : 0;
+	$kg_set_02      = isset($daten_spieler['kg_set_02']) ? (int)$daten_spieler['kg_set_02'] : 0;
+	$kg_set_03      = isset($daten_spieler['kg_set_03']) ? (int)$daten_spieler['kg_set_03'] : 0;
+	$kg_set_04      = isset($daten_spieler['kg_set_04']) ? (int)$daten_spieler['kg_set_04'] : 0;
 
 	//eigenen spielername fett darstellen
-	if($ums_rasse==1)$rflag='E';
-	elseif($ums_rasse==2)$rflag='I';
-	elseif($ums_rasse==3)$rflag='K';
-	elseif($ums_rasse==4)$rflag='Z';
-	elseif($ums_rasse==5)$rflag='D';
+	if(!isset($_SESSION['ums_rasse']) || $_SESSION['ums_rasse']==1)$rflag='E';
+	elseif($_SESSION['ums_rasse']==2)$rflag='I';
+	elseif($_SESSION['ums_rasse']==3)$rflag='K';
+	elseif($_SESSION['ums_rasse']==4)$rflag='Z';
+	elseif($_SESSION['ums_rasse']==5)$rflag='D';
 
 
-	$username=$ums_spielername.' ['.$rflag.']('.$sector.':'.$system.')';
+	$username=($_SESSION['ums_spielername'] ?? '').' ['.$rflag.']('.$sector.':'.$system.')';
 	$atterliste=str_replace($username, '<b>'.$username.'</b>', $atterliste);
 	$defferliste=str_replace($username, '<b>'.$username.'</b>', $defferliste);
 
@@ -485,11 +491,11 @@ function showkampfberichtV1($text,$rasse,$ums_spielername, $sector, $system, $sc
   <table cellSpacing=0 cellPadding=2 width=555 border=1>
   <tr align="center">
   <td class="k1" width="15%"><b>'.$kbl_lang['angreifer'].':</b></td>
-  <td class="k1" width="85%">'.utf8_encode_fix($atterliste).'</td>
+  <td class="k1" width="85%">'.$atterliste.'</td>
   </tr>
   <tr align="center">
   <td class="k1"><b>'.$kbl_lang['verteidiger'].':</b></td>
-  <td class="k1">'.utf8_encode_fix($defferliste).'</td>
+  <td class="k1">'.$defferliste.'</td>
   </tr>
   <tr align="center">
 	<td class="k1" colspan="2" align="left"><b>'.$kolliesatz.
@@ -546,7 +552,8 @@ function showkampfberichtV1($text,$rasse,$ums_spielername, $sector, $system, $sc
 
 					//eigene Einheiten
 					if ($rasse-1!=$aktrasse){//wenn es nicht die eigene rasse ist leer lassen
-						  $keigene1 = array ('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;');
+						  // Platzhalter dynamisch auf Anzahl der Schiffe setzen (vorher nur 8, führte zu Undefined array key Warnungen bei Index >=8)
+						  $keigene1 = array_fill(0, $sv_anz_schiffe, '&nbsp;');
 						  $keigene2 = $keigene1;
 						  $keigene3 = $keigene1;
 					}else{ //ansonsten variablen in die array packen

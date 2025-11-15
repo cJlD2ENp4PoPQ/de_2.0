@@ -9,7 +9,7 @@ $db_daten = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, `system`, 
             newtrans, newnews, allytag, status 
      FROM de_user_data WHERE user_id = ?",
-    [$ums_user_id]
+    [$_SESSION['ums_user_id']]
 );
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01=$row['restyp01'];$restyp02=$row['restyp02'];$restyp03=$row['restyp03'];$restyp04=$row['restyp04'];$restyp05=$row['restyp05'];
@@ -23,9 +23,8 @@ if ($row['status']==1) $ownally = $row['allytag'];
 <title>Allianzprojekte</title>
 <?php include('cssinclude.php'); ?>
 </head>
-<body>
-<div style="text-align: center;">
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 //stelle die ressourcenleiste dar
 include('resline.php');
 include('ally/ally.menu.inc.php');
@@ -150,13 +149,13 @@ if($num==1){
     //////////////////////////////////////////////////////
     //////////////////////////////////////////////////////    
     if(isset($_REQUEST['build'])){
-  	  	if (setLock($ums_user_id)){
+  	  	if (setLock($_SESSION['ums_user_id'])){
 			//Allystorage laden
 			$as=loadAllyStorage($ownallyid);
 			$GLOBALS['as']=$as;
 		
 			//test ob es der leader ist
-			if($ums_user_id==$leaderid){
+			if($_SESSION['ums_user_id']==$leaderid){
 				$build=intval($_REQUEST['build']);
 
 				//hat man bei den späteren Gebäuden die Allianzsektorraumbasis als Vorbedingung erfüllt?
@@ -185,7 +184,10 @@ if($num==1){
 								$need_storage_res=array();
 								
 								//test auf ausreichende Rohstoffe
-								$einzelkosten=explode(';', $def_allybldg[$build]['bldg_cost'][$def_allybldg[$build]['haslevel']]);
+								$cost_string = isset($def_allybldg[$build]['bldg_cost'][$def_allybldg[$build]['haslevel']]) 
+									? $def_allybldg[$build]['bldg_cost'][$def_allybldg[$build]['haslevel']] 
+									: '';
+								$einzelkosten = $cost_string ? explode(';', $cost_string) : array();
 								//print_r($einzelkosten);
 								foreach ($einzelkosten as $value) {
 									$parts=explode("x", $value);
@@ -217,7 +219,7 @@ if($num==1){
 							
 									$entry='Allianzprojekt abgeschlossen: '.$def_allybldg[$build]['name'].' ('.$def_allybldg[$build]['haslevel'].'/'.$def_allybldg[$build]['maxlevel'].')';
 									//meldung im chat hinterlegen
-									//insert_chat_msg($entry, 1, $ums_user_id);
+									//insert_chat_msg($entry, 1, $_SESSION['ums_user_id']);
 									insert_chat_msg($allyid, 1, '', $allytag.'-'.$entry);
 							
 									//meldung in der allianzhistorie hinterlegen
@@ -263,12 +265,12 @@ if($num==1){
 				echo '<br><div class="info_box text2">Nur der Allianzleiter kann Allianzprojekte in Auftrag geben.</div>';
 			}    
 			//transaktionsende
-			$erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+			$erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
 			if ($erg){
 			//print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
 			}
 			else{
-			print('Datensatz Nr. '.$ums_user_id.' Konnte nicht entsperrt werden.<br><br>');
+			print('Datensatz Nr. '.$_SESSION['ums_user_id'].' Konnte nicht entsperrt werden.<br><br>');
 			}
 		}// if setlock-ende
 		else echo '<br><font color="#FF0000">Es ist zur Zeit bereits eine Transaktion aktiv. Bitte warten Sie, bis die Transaktion abgeschlossen ist.</font><br><br>';
@@ -314,7 +316,10 @@ if($num==1){
 
 			//Item-Baukosten
 			$kosten='';
-			$einzelkosten=explode(';', $def_allybldg[$i]['bldg_cost'][$def_allybldg[$i]['haslevel']]);
+			$cost_string = isset($def_allybldg[$i]['bldg_cost'][$def_allybldg[$i]['haslevel']]) 
+				? $def_allybldg[$i]['bldg_cost'][$def_allybldg[$i]['haslevel']] 
+				: '';
+			$einzelkosten = $cost_string ? explode(';', $cost_string) : array();
 			foreach ($einzelkosten as $value) {
 				/*
 				if($kosten!='<span style="color: #00AA00;">'){
@@ -353,7 +358,7 @@ if($num==1){
 			}
 			else{
 				if($def_allybldg[$i]['haslevel']<$def_allybldg[$i]['maxlevel']){
-					echo '<a href="ally_bldg.php?sf='.$sf.'&build='.$i.'">';
+					echo '<a style="font-size: 10px;" href="ally_bldg.php?build='.$i.'">';
 				}
 
 				//////////////////////////////////////////
@@ -361,7 +366,7 @@ if($num==1){
 				//////////////////////////////////////////			
 
 				echo '<div id="bc'.$i.'" title="'.$title.'" style="position: relative; margin-left: 5.5px; margin-top: 4px; width: 50px; height: 64px; border: 1px solid #333333; float: left; background-color: #000000;">';
-				echo '<span style="position: absolute; left: 0px; top: 0px; height: 50px; width: 100%;"><img src="'.$ums_gpfad.'g/'.$def_allybldg[$i]['grafikfile'].'" border="0" alt="'.$def_allybldg[$i]['name'].'" width="100%" height="100%"></span>';
+				echo '<span style="position: absolute; left: 0px; top: 0px; height: 50px; width: 100%;"><img src="'.'gp/'.'g/'.$def_allybldg[$i]['grafikfile'].'" border="0" alt="'.$def_allybldg[$i]['name'].'" width="100%" height="100%"></span>';
 				echo '<span style="position: absolute; left: 0px; top: 50px; width: 100%;">'.$def_allybldg[$i]['haslevel'].'/'.$def_allybldg[$i]['maxlevel'].'</span>';
 				echo '</div>';
 				if($def_allybldg[$i]['haslevel']<$def_allybldg[$i]['maxlevel']){
@@ -398,6 +403,6 @@ besondere spielerartefakte
 ?>
 </div>
 <br>
-<?php include('fooban.php'); ?>
+
 </body>
 </html>

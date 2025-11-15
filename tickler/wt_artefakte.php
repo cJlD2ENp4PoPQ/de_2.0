@@ -578,7 +578,7 @@ while ($row = mysqli_fetch_array($res)) {
         //neuen sektor auslesen
         $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT sec_id, bk FROM de_sector WHERE techs LIKE 's1%' AND sec_id<>? AND npc=0 AND sec_id>1 ORDER BY RAND() LIMIT 0,1", [$artsec]);
         $rowx = mysqli_fetch_array($db_daten);
-        $zielsec = $rowx["sec_id"];
+        $zielsec = $rowx["sec_id"] ?? -1;
         //bk des zielsektors
         $zielbk = getSKSystemBySecID($zielsec);
 
@@ -634,8 +634,11 @@ while ($row = mysqli_fetch_array($res)) {
 
         //artefakt verschieben
         mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_artefakt set sector=? WHERE id=?", [$zielsec, $artid]);
-        echo 'Artefakttransfer: A-ID: '.$artid.', Herkunftssektor: '.$artsec.', Zielsektor: '.$zielsec.', 
-      News SK (Herkunft): '.$uidh.', News SK (Ziel): '.$uidz.'<br>';
+                // Fallback falls keine Nutzer-IDs gefunden wurden (verhindert Undefined Variable Warnungen)
+                if(!isset($uidh)) $uidh = 0;
+                if(!isset($uidz)) $uidz = 0;
+                echo 'Artefakttransfer: A-ID: '.$artid.', Herkunftssektor: '.$artsec.', Zielsektor: '.$zielsec.', 
+            News SK (Herkunft): '.$uidh.', News SK (Ziel): '.$uidz.'<br>';
 
         //artefaktumzug in der db hinterlegen
         //typ: 0 = hypersturm, 1 = angriff

@@ -278,7 +278,7 @@ class map_system{
 					}
 					$content.='
 					<div style="text-align:center; font-size: 20px;">
-						<img style="width: 40px; border-radius: 5px;'.$border.'" src="g/ele'.$filename_nr.'.gif" title="'.$GLOBALS['map_field_typ'][$this->fields[$i][0]]['name'].'">
+						<img style="width: 40px; border-radius: 5px;'.$border.'" src="gp/g/ele'.$filename_nr.'.gif" class="rounded-borders" title="'.$GLOBALS['map_field_typ'][$this->fields[$i][0]]['name'].'">
 						'.$stufeninfo.
 					'</div>';
 				}else{
@@ -362,7 +362,7 @@ class map_system{
 						<input name="id" value="'.$this->system_id.'" type="hidden">
 						<input name="fieldid" value="'.$i.'" type="hidden">
 						<input name="upgrade" value="1" type="hidden">
-						<img src="/g/icon12.png" style="width: 100%; height: 100%;" onclick="$(this).parents(\'form:first\').submit();">
+						<img src="gp/g/icon12.png" style="width: 100%; height: 100%;" onclick="$(this).parents(\'form:first\').submit();">
 					</form>			
 				</div>
 				';
@@ -490,8 +490,8 @@ class map_system{
 								$mainbuilding_ok=true;
 							}						
 
-						//man will es bauen und man hat alles
-						if($baukosten['has_all'] && $_POST['upgrade']==1 && $mainbuilding_ok){
+						//man will es bauen und man hat alles (upgrade angefordert)
+						if($baukosten['has_all'] && isset($_POST['upgrade']) && $_POST['upgrade']==1 && $mainbuilding_ok){
 							//Bauauftrag in der DB hinterlegen, dazu unterscheiden zwischen laufendem Upgrader oder auch nicht
 							if(time()<$this->playerBldg[$bldg_index]['bldg_time']){
 								//es läuft ein Upgrade
@@ -612,7 +612,7 @@ class map_system{
 									//Technologie anzeigen
 									$content.='<div style="width: 100%; border: 1px solid #FFFFFF;padding: 5px; box-sizing: border-box; margin-bottom: 8px;">';
 									//Textfarbe für Tech-Name, damit erkennbar ist, ob man sie erforscht hat
-									if(hasTech($GLOBALS['pt'],$GLOBALS['map_buildings'][$g]['need_tech']) || !isset($GLOBALS['map_buildings'][$g]['need_tech'])){
+									if(!isset($GLOBALS['map_buildings'][$g]['need_tech']) || hasTech($GLOBALS['pt'], $GLOBALS['map_buildings'][$g]['need_tech'])){
 										$tech_name_color='#FFFFFF';
 										$has_tech=true;
 									}else{
@@ -625,8 +625,8 @@ class map_system{
 									//Baukosten laden
 									$baukosten=$this->formatBaukosten($GLOBALS['map_buildings'][$g]['bldg_cost'][0]);
 
-									//man will es bauen und man hat alles
-									if($baukosten['has_all'] && $has_tech && $_POST['build']==$g){
+											//man will es bauen und man hat alles 
+									if($baukosten['has_all'] && $has_tech && isset($_POST['build']) && $_POST['build']==$g){
 										//Bauauftrag in der DB hinterlegen
 										setBldgByFieldID($_SESSION['ums_user_id'], $this->system_id, $fieldid, $g, 1, time()+($GLOBALS['map_buildings'][$g]['bldg_time']*$GLOBALS['tech_build_time_faktor']*$GLOBALS['duration_factor']));
 
@@ -1012,7 +1012,7 @@ class map_system{
 							if($filename_nr<10){
 								$filename_nr='0'.$filename_nr;
 							}
-							$content.='<div style="text-align:center; padding-left: 10px; font-weight: bold; font-size: 20px;"><img style="width: 40px; border-radius: 5px;'.$border.'" src="g/ele'.$filename_nr.'.gif" title="'.$GLOBALS['map_field_typ'][$this->fields[$i][0]]['name'].'">'.$stufeninfo.'</div>';
+							$content.='<div style="text-align:center; padding-left: 10px; font-weight: bold; font-size: 20px;"><img style="width: 40px; border-radius: 5px;'.$border.'" src="gp/g/ele'.$filename_nr.'.gif" title="'.$GLOBALS['map_field_typ'][$this->fields[$i][0]]['name'].'">'.$stufeninfo.'</div>';
 						}else{
 							$content.='<div title="keine Rohstoffe" style="margin-left: 10px; line-height: 40px; width: 40px; height: 40px; background-color: #666666; text-align: center; border-radius: 5px;'.$border.'">-</div>';
 						}

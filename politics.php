@@ -1,16 +1,14 @@
 <?php
 include "inc/header.inc.php";
 include "inc/artefakt.inc.php";
-include "format_sammlung.php";
 include 'inc/lang/'.$sv_server_lang.'_politics.lang.php';
 include_once "functions.php";
-include "issectork.php";
 
 $db_daten = mysqli_execute_query($GLOBALS['dbi'], 
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, techs, sector, `system`, score, newtrans, newnews, secmoves, secatt 
      FROM de_user_data 
      WHERE user_id=?", 
-    [$ums_user_id]
+    [$_SESSION['ums_user_id']]
 );
 $row = mysqli_fetch_array($db_daten);
 $restyp01=$row[0];$restyp02=$row[1];$restyp03=$row[2];$restyp04=$row[3];$restyp05=$row[4];$punkte=$row["score"];
@@ -266,14 +264,12 @@ document.getElementById("newstext").focus();
 }
 ?>
 </head>
-<body>
-<?php
 
-//stelle die ressourcenleiste dar
+<?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 include "resline.php";
 echo '<form action="politics.php" method="post">';
-include('outputlib.php');
 
 //SK - sekstat sichtbar
 if(isset($_REQUEST["do"]) && $_REQUEST["do"]==2 AND $system==issectorcommander()){
@@ -317,19 +313,19 @@ if(!empty($letsgo) && $sector>1){
 	$userslist=intval($_POST['userslist']);
 	mysqli_execute_query($GLOBALS['dbi'], 
 		"UPDATE de_user_data SET votefor=? WHERE user_id=?",
-		[$userslist, $ums_user_id]
+		[$userslist, $_SESSION['ums_user_id']]
 	);
 }
 
 //einen neuen sektor beantragen
-$getnewsec=isset($_REQUEST['getnewsec']) ? getnewsec : '';
+$getnewsec=isset($_REQUEST['getnewsec']) ?? '';
 if(!empty($getnewsec) && $secmoves<$sv_max_secmoves && $techs[26]=='1'){
 	//abfrage da die funktion  zum erstellen nur noch f�r premium accounts zul�ssig ist
-	if ($ums_premium>0 OR 1==1){
+	if (1==1){
 		//schauen ob derjenige schon einen sektor beantragt hat
 		$result1 = mysqli_execute_query($GLOBALS['dbi'], 
 			"SELECT user_id FROM de_sector_umzug WHERE user_id=?",
-			[$ums_user_id]
+			[$_SESSION['ums_user_id']]
 		);
 		$anz1 = mysqli_num_rows($result1);
 		if ($anz1==0)//es l�uft noch kein umzug
@@ -357,7 +353,7 @@ if(!empty($getnewsec) && $secmoves<$sv_max_secmoves && $techs[26]=='1'){
 			//eintrag in der db machen, dass er umzieht
 			mysqli_execute_query($GLOBALS['dbi'], 
 				"INSERT INTO de_sector_umzug (user_id, typ, sector, `system`, pass, ticks) VALUES (?, 1, 0, 0, ?, 192)",
-				[$ums_user_id, $newpass]
+				[$_SESSION['ums_user_id'], $newpass]
 			);
 		}
 	}
@@ -365,7 +361,8 @@ if(!empty($getnewsec) && $secmoves<$sv_max_secmoves && $techs[26]=='1'){
 }
 
 //einem bestehenden sektor joinen
-$joinsec= isset($_REQUEST['joinsec']) ? $_REQUEST['joinsec'] : '';
+$joinsec  = $_REQUEST['joinsec']  ?? '';
+$secpass  = $_REQUEST['secpass']  ?? '';
 if(!empty($joinsec) && $secmoves<$sv_max_secmoves && $secpass!='' && $techs[26]=='1'){
   //es gibt 2 m�glichkeiten zu joinen
   //1. es gibt den sektor schon
@@ -389,7 +386,7 @@ if(!empty($joinsec) && $secmoves<$sv_max_secmoves && $secpass!='' && $techs[26]=
   //hat man evtl. schon was am laufen
   $result3 = mysqli_execute_query($GLOBALS['dbi'], 
     "SELECT user_id FROM de_sector_umzug WHERE user_id=?",
-    [$ums_user_id]
+    [$_SESSION['ums_user_id']]
   );
   $anz3 = mysqli_num_rows($result3);
 
@@ -416,24 +413,24 @@ if(!empty($joinsec) && $secmoves<$sv_max_secmoves && $secpass!='' && $techs[26]=
       //account sperren
       mysqli_execute_query($GLOBALS['dbi'],
         "UPDATE de_login SET status = ? WHERE user_id = ?",
-        [4, $ums_user_id]
+        [4, $_SESSION['ums_user_id']]
       );
       
       //eintrag in der db machen, dass er umzieht
       mysqli_execute_query($GLOBALS['dbi'],
         "INSERT INTO de_sector_umzug (user_id, typ, sector) VALUES (?, ?, ?)",
-        [$ums_user_id, 2, $zielsec]
+        [$_SESSION['ums_user_id'], 2, $zielsec]
       );
       
       //nachricht an den account schicken
       mysqli_execute_query($GLOBALS['dbi'],
         "INSERT INTO de_user_news (user_id, typ, time, text) VALUES (?, ?, ?, ?)",
-        [$ums_user_id, 3, $time, $politics_lang["msg_25"]]
+        [$_SESSION['ums_user_id'], 3, $time, $politics_lang["msg_25"]]
       );
       
       mysqli_execute_query($GLOBALS['dbi'],
         "UPDATE de_user_data SET newnews = ? WHERE user_id = ?",
-        [1, $ums_user_id]
+        [1, $_SESSION['ums_user_id']]
       );
       echo die($politics_lang["msg_5"]);
 
@@ -451,7 +448,7 @@ if(!empty($joinsec) && $secmoves<$sv_max_secmoves && $secpass!='' && $techs[26]=
       //eintrag in der db machen, dass er umzieht
       mysqli_execute_query($GLOBALS['dbi'], 
         "INSERT INTO de_sector_umzug (user_id, typ, pass, ticks) VALUES (?, 1, ?, 192)",
-        [$ums_user_id, $secpass]
+        [$_SESSION['ums_user_id'], $secpass]
       );
     }
     else echo '<br><font color="FF0000">'.$politics_lang["msg_6"].'</font><br><br>';
@@ -465,7 +462,7 @@ $cancelgetnewsec=isset($_POST['cancelgetnewsec']) ? $_POST['cancelgetnewsec'] : 
 if(!empty($cancelgetnewsec)){
 	mysqli_execute_query($GLOBALS['dbi'], 
 		"DELETE FROM de_sector_umzug WHERE user_id=? AND typ=1",
-		[$ums_user_id]
+		[$_SESSION['ums_user_id']]
 	);
 }
 
@@ -766,7 +763,7 @@ if(!empty($sec_btn) && $system==issectorcommander()){
 		  [$name, $sector]
 		);
 
-		if($issectorcommander() && $sector!=1)//nur wenn man sk ist kann man die steuer ändern
+		if(issectorcommander() && $sector!=1)//nur wenn man sk ist kann man die steuer ändern
 		{
 			if($sv_deactivate_vsystems!=1)
 				mysqli_execute_query($GLOBALS['dbi'],
@@ -842,7 +839,10 @@ if ($s==2){
 
 		echo '<br>';
 	}//Ende des Menus f&uuml;r die Sektorsteuer
-	else echo 'F&uuml;r diese Funktion wird das Sektorhandelszentrum ben&ouml;tigt.';
+	else {
+    echo 'F&uuml;r diese Funktion wird das Sektorhandelszentrum ben&ouml;tigt.';
+  }
+
 	}
 	?>
 	</div>
@@ -865,8 +865,9 @@ if ($s==2){
 	);
 	$anz1 = $result1->num_rows;
 	
-	if ($anz1==0) echo $politics_lang["msg_16"].'<br><br>';
-	else {
+	if ($anz1==0) {
+        //echo $politics_lang["msg_16"].'<br><br>';
+    } else {
 		if ($status!=1)  //ausgabe der spielerliste, wenn noch keine auswertung erfolgt ist.
 		{
 			$result = mysqli_execute_query($GLOBALS['dbi'],
@@ -904,7 +905,7 @@ if ($s==2){
 	//Menu f&uuml;r die Sektorsteuer mit Abfrage ob SekHandelsZentrum vorhanden ist
 }//skmenu ende
 
-//men� f�r den sektor, wie sk-wahl und vote f�r exilanden
+//menü für den sektor, wie sk-wahl und vote für exilanden
 if ($s==1 OR !isset($s)){
 echo '<table border="0" cellpadding="0" cellspacing="0">
 <tr align="center">
@@ -1110,7 +1111,7 @@ $btip=$politics_lang['sektorkosten'].'&'.$btipstr;
 $bg='cell';
 echo '<tr height="30" align="center">';
 echo '<td class="'.$bg.'">'.$politics_lang["sumsekfleet"].': '.number_format($secfleet, 0,",",".").'</td>';
-echo '<td class="'.$bg.'">'.$politics_lang["sektorkosten"].': <img style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$btip.'"></td>';
+echo '<td class="'.$bg.'">'.$politics_lang["sektorkosten"].': <img style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$btip.'"></td>';
 echo '</tr>';    
 
 //sektorpasswort für die sphäre benötigt
@@ -1302,7 +1303,7 @@ if ($techs[26]=='1'  AND $secmoves<$sv_max_secmoves)
 //schauen ob derjenige schon einen sektor beantragt hat
 $result1 = mysqli_execute_query($GLOBALS['dbi'],
   "SELECT user_id, pass, ticks FROM de_sector_umzug WHERE user_id = ? AND typ = 1",
-  [$ums_user_id]
+  [$_SESSION['ums_user_id']]
 );
 $anz1 = $result1->num_rows;
 if($anz1>0) {
@@ -1528,6 +1529,6 @@ if ($num>0){
 </div>
 </form>
 <br>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

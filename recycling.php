@@ -105,17 +105,17 @@ while($row = mysqli_fetch_array($db_daten)){ //jeder gefundene datensatz wird ge
 ///////////////////////////////////////////////////////////////////////
 if(isset($_REQUEST['recyclingbutton']) AND hasTech($pt,129) AND $sabotage==0){
 	//transaktionsbeginn
-	if (setLock($ums_user_id)){
+	if (setLock($_SESSION['ums_user_id'])){
 		unset($rec_gesamt);
 		//zerst alle vorhandenen einheiten auslesen
 		unset($einheiten);
-		$fleetid=$ums_user_id.'-0';
+		$fleetid=$_SESSION['ums_user_id'].'-0';
 		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT * FROM de_user_fleet WHERE user_id='$fleetid'");
 		$row = mysqli_fetch_array($db_daten);
 		for($i=81;$i<=90;$i++){
 			$einheiten[$i]=$row['e'.$i];
 		}
-		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT e100, e101, e102, e103, e104 FROM de_user_data WHERE user_id='$ums_user_id'");
+		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT e100, e101, e102, e103, e104 FROM de_user_data WHERE user_id='".$_SESSION['ums_user_id']."'");
 		$row = mysqli_fetch_array($db_daten);
 		for($i=100;$i<=104;$i++){
 			$einheiten[$i]=$row['e'.$i];
@@ -159,11 +159,10 @@ if(isset($_REQUEST['recyclingbutton']) AND hasTech($pt,129) AND $sabotage==0){
 								$tech_ticks=1;
 							}
 							mysqli_query($GLOBALS['dbi'],"INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit, score, recycling) VALUES 
-							($ums_user_id, $rec_target, $target_amount, $tech_ticks, $score, 1)");
+							(".$_SESSION['ums_user_id'].", $rec_target, $target_amount, $tech_ticks, $score, 1)");
 						}
 					}
 				}
-				//else $recyclingmessage='<div class="info_box text2">Dieser Zieltyp ist ung&uuml;ltig.</div>';
 			}
 		}
 
@@ -189,7 +188,7 @@ if(isset($_REQUEST['recyclingbutton']) AND hasTech($pt,129) AND $sabotage==0){
 						$score=$target_amount*$techscore[$rec_target];
 						if($target_amount>0){
 							//die türme abziehen
-							$sql="UPDATE de_user_data SET e".$i."=e".$i."-".$rec_amount." WHERE user_id='$ums_user_id'";
+							$sql="UPDATE de_user_data SET e".$i."=e".$i."-".$rec_amount." WHERE user_id='".$_SESSION['ums_user_id']."'";
 							mysqli_query($GLOBALS['dbi'],$sql);
 
 							//bauauftrag hinterlegen
@@ -206,29 +205,17 @@ if(isset($_REQUEST['recyclingbutton']) AND hasTech($pt,129) AND $sabotage==0){
 							if($tech_ticks<1){
 								$tech_ticks=1;
 							}
-							$sql="INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit, score, recycling) VALUES ($ums_user_id, $rec_target, $target_amount, $tech_ticks, $score, 1)";
+							$sql="INSERT INTO de_user_build (user_id, tech_id, anzahl, verbzeit, score, recycling) VALUES (".$_SESSION['ums_user_id'].", $rec_target, $target_amount, $tech_ticks, $score, 1)";
 							//echo $sql;
 							mysqli_query($GLOBALS['dbi'],$sql);
 						}
 					}
 				}
-				//else $recyclingmessage='<div class="info_box text2">Dieser Zieltyp ist ung&uuml;ltig.</div>';
-
 			}
-
-			/*
-			$recyclingmessage='<div class="info_box text3" style="text-align: left;">Erhaltene Rohstoffe:
-			<br>'.number_format($rec_gesamt[0] ,0,",",".").' M
-			<br>'.number_format($rec_gesamt[1] ,0,",",".").' D
-			<br>'.number_format($rec_gesamt[2] ,0,",",".").' I
-			<br>'.number_format($rec_gesamt[3] ,0,",",".").' E
-			<br>'.number_format($rec_gesamt[4] ,0,",",".").' T
-			</div>';
-			*/
 		}			
 
 		//transaktionsende
-		$erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+		$erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
 		if ($erg)
 		{
 			//print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
@@ -249,18 +236,19 @@ if(isset($_REQUEST['recyclingbutton']) AND hasTech($pt,129) AND $sabotage==0){
 <title>Recycling</title>
 <?php include "cssinclude.php";?>
 </head>
-<body>
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+
 include 'resline.php';
 
 echo '
-<a href="production.php" title="Einheitenproduktion"><img src="'.$ums_gpfad.'g/symbol19.png" border="0" width="64px" heigth="64px"></a> 
-<a href="recycling.php" title="Recycling&Hier k&ouml;nnen Einheiten der Heimatflotte und Verteidigungseinheiten recycelt werden."><img src="'.$ums_gpfad.'g/symbol24.png" border="0" width="64px" heigth="64px"></a>';
+<a href="production.php" title="Einheitenproduktion"><img src="'.'gp/'.'g/symbol19.png" border="0" width="64px" heigth="64px"></a> 
+<a href="recycling.php" title="Recycling&Hier k&ouml;nnen Einheiten der Heimatflotte und Verteidigungseinheiten recycelt werden."><img src="'.'gp/'.'g/symbol24.png" border="0" width="64px" heigth="64px"></a>';
 if($sv_deactivate_vsystems!=1){
-	echo '<a href="specialship.php" title="Basisstern"><img src="'.$ums_gpfad.'g/symbol27.png" border="0" width="64px" heigth="64px"></a>';
+	echo '<a href="specialship.php" title="Basisstern"><img src="'.'gp/'.'g/symbol27.png" border="0" width="64px" heigth="64px"></a>';
 }
 echo'
-<a href="unitinfo.php" title="Einheiteninformationen"><img src="'.$ums_gpfad.'g/symbol26.png" border="0" width="64px" heigth="64px"></a>
+<a href="unitinfo.php" title="Einheiteninformationen"><img src="'.'gp/'.'g/symbol26.png" border="0" width="64px" heigth="64px"></a>
 ';
 
 //feststellen ob eine sabotage vorliegt und dann abbrechen
@@ -274,11 +262,6 @@ if($sabotage==1)
   die('</body></html>');
 }
 
-if($recyclingmessage!=''){
-	echo $recyclingmessage;
-	echo '<br>';
-}
-
 //ben�tigtes geb�ude recyclotron
 if(!hasTech($pt,129)){
 	$techcheck="SELECT tech_name FROM de_tech_data WHERE tech_id=129";
@@ -289,7 +272,7 @@ if(!hasTech($pt,129)){
 	rahmen_oben('Fehlende Technologie');
 	echo '<table width="572" border="0" cellpadding="0" cellspacing="0">';
 	echo '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=13" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_13.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=13" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_13.jpg" border="0"></a></td>
 	<td valign="top">Du ben&ouml;tigst folgende Technogie: '.getTechNameByRasse($row_techcheck['tech_name'],$_SESSION['ums_rasse']).'</td>
 	</tr>';
 	echo '</table>';
@@ -304,7 +287,7 @@ if(!hasTech($pt,129)){
   	echo '<form action="recycling.php" method="POST">';
 	
 	//optische ausgabe
-	rahmen_oben('Recycling  <img style="vertical-align: middle;" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" 
+	rahmen_oben('Recycling  <img style="vertical-align: middle;" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" 
 	title="Informationen&Die Einheiten werden sofort in ihre Bestandteile zerlegt und der Bau der neuen Einheiten beginnt.<br><br>
 	Dabei tritt ein gewisser Schwund auf:<br>Abzug bei Einheiten der 
 	Heimatflotte: '.($fleetabzug*100).'%<br>Abzug bei Verteidigungseinheiten: '.($defabzug*100).'%<br><br>&Uuml;bersch&uuml;ssige Teile gehen verloren, also sollten m&ouml;glichst gro&szlig;e Mengen recycelt werden, da sonst der prozentuale Verlust zu gro&szlig; werden kann.<br><br>Titanen-Energiekerne werden nicht zur&uuml;ckerstattet.">');
@@ -314,7 +297,7 @@ if(!hasTech($pt,129)){
 	echo '<tr class="cell"><td><b>Name</b></td><td align="center"><b>vorhanden</b></td><td align="center"><b>Recyclingmenge</b></td><td align="center"><b>Zieleinheit</td></tr>';
 
 	//einheiten aus der db lesen
-	$fleetid=$ums_user_id.'-0';
+	$fleetid=$_SESSION['ums_user_id'].'-0';
 	$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT * FROM de_user_fleet WHERE user_id='$fleetid'");
 	$row = mysqli_fetch_array($db_daten);
 	for($i=81;$i<=90;$i++){
@@ -334,7 +317,7 @@ if(!hasTech($pt,129)){
 	echo '<tr class="cell"><td><b>Name</b></td><td align="center"><b>vorhanden</b></td><td align="center"><b>Recyclingmenge</b></td><td align="center"><b>Zieleinheit</td></tr>';
 	
 	//einheiten aus der db lesen
-	$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT e100, e101, e102, e103, e104 FROM de_user_data WHERE user_id='$ums_user_id'");
+	$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT e100, e101, e102, e103, e104 FROM de_user_data WHERE user_id='".$_SESSION['ums_user_id']."'");
 	$row = mysqli_fetch_array($db_daten);
 	for($i=100;$i<=104;$i++){
 		echo '<tr class="cell">
@@ -354,7 +337,7 @@ if(!hasTech($pt,129)){
 	
 //zeige aktive bauauftr�ge an
 $result=mysqli_query($GLOBALS['dbi'],"SELECT tech_id, SUM(anzahl) AS anzahl, verbzeit, SUM(score) AS score FROM `de_user_build` 
-	WHERE user_id='$ums_user_id' AND tech_id>80 AND tech_id<110 GROUP BY tech_id, verbzeit ORDER BY verbzeit, tech_id ASC");
+	WHERE user_id='".$_SESSION['ums_user_id']."' AND tech_id>80 AND tech_id<110 GROUP BY tech_id, verbzeit ORDER BY verbzeit, tech_id ASC");
 $num = mysqli_num_rows($result);
 if ($num>0){
 	echo '<tr class="cell1"><td colspan="4"><b>Aktive Bauauftr&auml;ge:</b></td></tr>';
@@ -393,6 +376,6 @@ if ($num>0){
 
 
 ?>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

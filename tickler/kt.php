@@ -1,27 +1,17 @@
 <?php
-//anzeige in der logdatei
-//include "croninfo.inc.php";
-
 set_time_limit(120);
-/*
-$directory=str_replace("\\\\","/",$HTTP_SERVER_VARS["SCRIPT_FILENAME"]);
-$directory=str_replace("/tickler/kt.php","/",$directory);
-if ($directory=='')$directory='../';
-*/
 $directory="../";
 include $directory."inc/sv.inc.php";
-if($sv_debug==0 && $sv_comserver==0){
+if($sv_debug==0){
 	if(!in_array(intval(date("i")), $GLOBALS['kts'][date("G")]) && $sv_debug!=1){
 		die('<br>KT: NO TICK TIME<br>');
 	}
 }
 
 include_once $directory."inccon.php";
-if($sv_comserver==1)include_once $directory.'inc/svcomserver.inc.php';
 include_once $directory."inc/schiffsdaten.inc.php";
 include_once $directory."inc/userartefact.inc.php";
 include_once $directory."functions.php";
-include_once $directory."issectork.php";
 include_once $directory."inc/lang/".$sv_server_lang."_kt.lang.php";
 include_once $directory."lib/special_ship.class.php";
 include_once $directory.'lib/bg_defs.inc.php';
@@ -53,8 +43,8 @@ if($sv_ewige_runde==1){
 	$row = mysqli_fetch_array($db_daten);
 	if($row["tick"]<=0)$ticks=1;else $ticks=$row["tick"];
 	
-	if ($ticks<2500000 OR $sv_comserver_roundtyp==1){
-		if($sv_comserver_roundtyp==1)$ticks-=2500000;//fix für community-server in der BR
+	if ($ticks<2500000){
+
 		//wenn die ticks kleiner als die maximale tickzahl sind, dann läuft die runde noch
 		if($ticks<$sv_winscore){
 
@@ -247,27 +237,8 @@ while ($sector_row = mysqli_fetch_assoc($res))
 include_once 'kt_manage_bg.php';
 
 //lege in der datenbank die zeit des letzten ticks ab
-$time=date("YmdHis");
-mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_system SET lastmtick = ?", [$time]);
+mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_system SET lastmtick = ?", [date("Y-m-d H:i:s")]);
 print '<br><br>Letzter Tick: '.date("d/m/Y - H:i:s");
-
-function xecho($str){
-	global $cachefile;
-	//echo $str;
-	if ($cachefile) fwrite ($cachefile, $str);
-}
-
-//erstelle datei mit der zeit des letzten kampf-ticks
-$filename = "../cache/lastmtick.tmp";
-
-$cachefile = fopen ($filename, 'w');
-
-$zeit=date("H:i");
-echo $zeit;
-xecho('<?php $lastmtick="'.$zeit.'";');
-
-xecho('?>');
-
 
 } else {
 	echo '<br>Kampfticks deaktiviert.<br>'; //doetick

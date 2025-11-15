@@ -18,7 +18,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, `system`, newtrans, newnews, allytag, spielername 
      FROM de_user_data 
      WHERE user_id=?",
-    [$ums_user_id]);
+    [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($result);
 $restyp01=$row['restyp01'];$restyp02=$row['restyp02'];$restyp03=$row['restyp03'];$restyp04=$row['restyp04'];$restyp05=$row['restyp05'];$punkte=$row['score'];
 $newtrans=$row['newtrans'];$newnews=$row['newnews'];$sector=$row['sector'];$system=$row['system'];
@@ -30,9 +30,9 @@ $spielername=$row['spielername'];$allytag=$row['allytag'];
 <title><?php echo $allyhistory_lang['title']?></title>
 <?php include "cssinclude.php"; ?>
 </head>
-<body>
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+
 include('resline.php');
 include('ally/ally.menu.inc.php');
 
@@ -64,6 +64,6 @@ print('</table>');
 ?>
 <br>
 <?php include('ally/ally.footer.inc.php'); ?>
-<?php include('fooban.php'); ?>
+
 </body>
 </html>

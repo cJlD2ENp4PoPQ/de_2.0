@@ -8,6 +8,19 @@ include('inc/lang/'.$sv_server_lang.'_military.lang.php');
 $military_lang['klassennamen']=array('J&auml;ger','Jagdboot','Zerst&ouml;rer','Kreuzer','Schlachtschiff','Bomber','Transmitterschiff','Tr&auml;ger','Frachter','Titan',
 'Orbitalj&auml;ger-Basis','Flugk&ouml;rper-Plattform','Energiegeschoss-Plattform','Materiegeschoss-Plattform','Hochenergiegeschoss-Plattform');
 
+// Sicherstellen, dass $db vorhanden ist (einige Funktionen erwarten es), ansonsten aus globaler DB-Verbindung ableiten
+if(!isset($db) && isset($GLOBALS['dbi'])){
+	$db = $GLOBALS['dbi'];
+}
+
+if(isset($_GET['se'])){
+	$se = $_GET['se'];
+}
+
+if(isset($_GET['sy'])){
+	$sy = $_GET['sy'];
+}
+
 //Check ob die Missionen zu Ende sind
 checkMissionEnd();
 
@@ -49,23 +62,24 @@ if (isset($_POST['befehle'])){
 
 //spezialisierung tr�gerkapazit�t
 if($spec3==2){	
-	for($i=0;$i<count($schiffsdaten[$ums_rasse]);$i++){
-		$schiffsdaten[$ums_rasse-1][$i][1]= floor($schiffsdaten[$ums_rasse-1][$i][1] * 1.2);
+	for($i=0;$i<count($schiffsdaten[$_SESSION['ums_rasse']]);$i++){
+		$schiffsdaten[$_SESSION['ums_rasse']-1][$i][1]= floor($schiffsdaten[$_SESSION['ums_rasse']-1][$i][1] * 1.2);
 	}	
 }
 
 if (isset($_POST['befehle'])){
-  $zsecf1=(int)$_POST['zsecf1'];
-  $zsysf1=(int)$_POST['zsysf1'];
-  $zsecf2=(int)$_POST['zsecf2'];
-  $zsysf2=(int)$_POST['zsysf2'];
-  $zsecf3=(int)$_POST['zsecf3'];
-  $zsysf3=(int)$_POST['zsysf3'];
+	// Eingangsparameter defensiv lesen, um Undefined-Index-Warnings zu vermeiden
+	$zsecf1=isset($_POST['zsecf1']) ? (int)$_POST['zsecf1'] : 0;
+	$zsysf1=isset($_POST['zsysf1']) ? (int)$_POST['zsysf1'] : 0;
+	$zsecf2=isset($_POST['zsecf2']) ? (int)$_POST['zsecf2'] : 0;
+	$zsysf2=isset($_POST['zsysf2']) ? (int)$_POST['zsysf2'] : 0;
+	$zsecf3=isset($_POST['zsecf3']) ? (int)$_POST['zsecf3'] : 0;
+	$zsysf3=isset($_POST['zsysf3']) ? (int)$_POST['zsysf3'] : 0;
 
   //sektor 1 unangreifbar machen und man kann auch nicht aus sektor 1 angegriffen werden
-  if($zsecf1==1 OR $sector==1)$zsecf1='-1';
-  if($zsecf2==1 OR $sector==1)$zsecf2='-1';
-  if($zsecf3==1 OR $sector==1)$zsecf3='-1';
+  if($zsecf1==1 || $sector==1)$zsecf1='-1';
+  if($zsecf2==1 || $sector==1)$zsecf2='-1';
+  if($zsecf3==1 || $sector==1)$zsecf3='-1';
   /*
     Aktionen
     0: Verteidigung des Heimatsystems
@@ -76,143 +90,88 @@ if (isset($_POST['befehle'])){
   */
   //fuer jede flotte eigene sektion
   //flotte 1
-  $af1=intval($_POST['af1']);
+	$af1=isset($_POST['af1']) ? intval($_POST['af1']) : 0; // 0 = keine neuen Befehle
   switch($af1){
     case 0: //keine neuen befehle
       break;
     case 1: //heimkehr
-      recall($ums_user_id.'-1', $sector, $system, $db);
+      recall($_SESSION['ums_user_id'].'-1', $sector, $system, $db);
       break;
     case 2: //angreifen
-      attdef($ums_user_id.'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 1, 0);
+      attdef($_SESSION['ums_user_id'].'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 1, 0);
       break;
     case 3: //verteidigen
-      attdef($ums_user_id.'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
+      attdef($_SESSION['ums_user_id'].'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
       break;
     case 4: //verteidigen
-      attdef($ums_user_id.'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
+      attdef($_SESSION['ums_user_id'].'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
       break;
     case 5: //verteidigen
-      attdef($ums_user_id.'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
-      break;
-    case 6: //arch�ologie
-      quest($ums_user_id.'-1', $zsecf1, $zsysf1);
+      attdef($_SESSION['ums_user_id'].'-1', $sector, $system, $pt, $zsecf1, $zsysf1, $db, 2, $af1-2);
       break;
   }//switch af1 ende
   //flotte 2
-  $af2=intval($_POST['af2']);
+	$af2=isset($_POST['af2']) ? intval($_POST['af2']) : 0;
   switch($af2){
     case 0: //keine neuen befehle
       break;
     case 1: //heimkehr
-      recall($ums_user_id.'-2', $sector, $system, $db);
+      recall($_SESSION['ums_user_id'].'-2', $sector, $system, $db);
       break;
     case 2: //angreifen
-      attdef($ums_user_id.'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 1, 0);
+      attdef($_SESSION['ums_user_id'].'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 1, 0);
       break;
     case 3: //verteidigen
-      attdef($ums_user_id.'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
+      attdef($_SESSION['ums_user_id'].'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
       break;
     case 4: //verteidigen
-      attdef($ums_user_id.'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
+      attdef($_SESSION['ums_user_id'].'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
       break;
     case 5: //verteidigen
-      attdef($ums_user_id.'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
+      attdef($_SESSION['ums_user_id'].'-2', $sector, $system, $pt, $zsecf2, $zsysf2, $db, 2, $af2-2);
       break;
-    case 6: //arch�ologie
-      quest($ums_user_id.'-2', $zsecf2, $zsysf2);
-      break;  }//switch af2 ende
+	}//switch af2 ende
   //flotte 3
-  $af3=intval($_POST['af3']);
+	$af3=isset($_POST['af3']) ? intval($_POST['af3']) : 0;
   switch($af3){
     case 0: //keine neuen befehle
       break;
     case 1: //heimkehr
-      recall($ums_user_id.'-3', $sector, $system, $db);
+      recall($_SESSION['ums_user_id'].'-3', $sector, $system, $db);
       break;
     case 2: //angreifen
-      attdef($ums_user_id.'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 1, 0);
+      attdef($_SESSION['ums_user_id'].'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 1, 0);
       break;
     case 3: //verteidigen
-      attdef($ums_user_id.'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
+      attdef($_SESSION['ums_user_id'].'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
       break;
     case 4: //verteidigen
-      attdef($ums_user_id.'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
+      attdef($_SESSION['ums_user_id'].'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
       break;
     case 5: //verteidigen
-      attdef($ums_user_id.'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
+      attdef($_SESSION['ums_user_id'].'-3', $sector, $system, $pt, $zsecf3, $zsysf3, $db, 2, $af3-2);
       break;
-    case 6: //arch�ologie
-      quest($ums_user_id.'-3', $zsecf3, $zsysf3);
-      break;  }//switch af3 ende
+	}//switch af3 ende
 }
-
-function quest($fleet_id, $zsec, $zsys){
-	global $db, $errmsg, $ums_user_id, $military_lang, $showfleettarget;
-
-	//teste ob die flotte bereit ist befehle zu bekommen
-	$sql="SELECT aktion, e81, e82, e83, e84, e85, e86, e87, e88, e89, e90 FROM de_user_fleet WHERE user_id = '$fleet_id'";
-	$db_daten=mysqli_query($GLOBALS['dbi'],$sql);
-	$row = mysqli_fetch_array($db_daten);
-	$akt=$row['aktion'];
-	$schiffe=0;
-	//schauen ob schiffe in der flotte sind
-	for ($i=81;$i<=90;$i++){
-		$erg=$row['e'.$i];
-		if ($erg>0) $schiffe=1;
-	}
-
-	//echo $schiffe.':'.$akt;
-	if ($schiffe>0)$errmsg.='<table width=600><tr><td class="ccr">'.$military_lang['error'].'<br>'.$military_lang['error2'].'</td></tr></table>';
-	if ($akt<>0)$errmsg.='<table width=600><tr><td class="ccr">'.$military_lang['error3'].'</td></tr></table>';
-	if ($schiffe==0 and $akt==0){ //flotte kann befehle bekommen
-		//teste ob die koordinaten ok sind
-		//man kann die einheiten nur in npc-systeme schicken
-		$zsec=(int)$zsec;
-		$zsys=(int)$zsys;
-		$db_daten=mysqli_query($GLOBALS['dbi'],"SELECT user_id FROM de_user_data WHERE sector='$zsec' and `system`='$zsys' AND npc=1");
-		$num = mysqli_num_rows($db_daten);
-
-		if($num==1){//die koordinaten stimmen
-			//showfleetstatus auslesen
-			$hv=explode('-',$fleet_id);
-			$showft=$showfleettarget[$hv[1]-1];
-
-			//flotte auf die reise schicken
-			$aktzeit=0;
-			$akttyp=4;
-			$rz=5;
-			$sql="UPDATE de_user_fleet SET aktion = '$akttyp', zeit = '$rz', gesrzeit = '$rz', zielsys = '$zsys', zielsec='$zsec', entdeckt=0, showfleettarget='$showft', aktzeit = '$aktzeit', fleetsize = 0 WHERE user_id = '$fleet_id'";
-			mysqli_query($GLOBALS['dbi'],$sql);
-			//meldung dass alles ok ist
-			$errmsg.='<table width=600><tr><td class="ccg">'.$military_lang['fleetrausack'].'</td></tr></table>';
-		}
-		else $errmsg.='<table width=600><tr><td class="ccr">'.$military_lang['fleetrausnack'].'</td></tr></table>';
-	}
-}
-
 
 //schauen ob er die whg hat und dann die attgrenze anpassen
 if ($techs[4]==0)$sv_attgrenze_whg_bonus=0;
 
 if (isset($_POST['verlegen'])){
 	//transaktionsbeginn
-	if (setLock($ums_user_id)){
+	if (setLock($_SESSION['ums_user_id'])){
 		//zuerst alle übergebenen felder in nen array packen
 		$c=0;
 		for ($i=81; $i<=80+$sv_anz_schiffe; $i++){
 			str_replace(".","", $_POST['m".$i."_1'] ?? 0);
 
-			if($_POST['m'.$i.'_1']>0)$sa[$c][0]=(int)str_replace(".","",$_POST['m'.$i.'_1']);else $sa[$c][0]=0;
-			if($_POST['m'.$i.'_2']>0)$sa[$c][1]=(int)str_replace(".","",$_POST['m'.$i.'_2']);else $sa[$c][1]=0;
-			if($_POST['m'.$i.'_3']>0)$sa[$c][2]=(int)str_replace(".","",$_POST['m'.$i.'_3']);else $sa[$c][2]=0;
-			/*echo 'A:'.$_POST['m".$i."_1'].' - '.'B: '.$sa[$c][0].'<br>';
-			echo 'C:'.$_POST['m".$i."_2'].' - '.'D: '.$sa[$c][1].'<br>';
-			echo 'E:'.$_POST['m".$i."_3'].' - '.'F: '.$sa[$c][2].'<br><br>';*/
+			if(($_POST['m'.$i.'_1'] ?? 0)>0)$sa[$c][0]=(int)str_replace(".","",$_POST['m'.$i.'_1'] ?? 0);else $sa[$c][0]=0;
+			if(($_POST['m'.$i.'_2'] ?? 0)>0)$sa[$c][1]=(int)str_replace(".","",$_POST['m'.$i.'_2'] ?? 0);else $sa[$c][1]=0;
+			if(($_POST['m'.$i.'_3'] ?? 0)>0)$sa[$c][2]=(int)str_replace(".","",$_POST['m'.$i.'_3'] ?? 0);else $sa[$c][2]=0;
 			$c++;
 		}
 		//flottendaten laden
-		$fid0=$ums_user_id.'-0';$fid1=$ums_user_id.'-1';$fid2=$ums_user_id.'-2';$fid3=$ums_user_id.'-3';
+		$fid0=$_SESSION['ums_user_id'].'-0';$fid1=$_SESSION['ums_user_id'].'-1';$fid2=$_SESSION['ums_user_id'].'-2';$fid3=$_SESSION['ums_user_id'].'-3';
 		$einheiten_result=mysqli_query($GLOBALS['dbi'],"SELECT * FROM de_user_fleet WHERE user_id='$fid0' OR user_id='$fid1' OR user_id='$fid2' OR user_id='$fid3'ORDER BY user_id ASC");
 		$einheiten_daten=array();
 		while($row = mysqli_fetch_array($einheiten_result)){ //jeder gefundene datensatz wird geprueft
@@ -256,13 +215,13 @@ if (isset($_POST['verlegen'])){
 					$fw2=$sa[$i-81][1]-$fleet[2];
 					$fw3=$sa[$i-81][2]-$fleet[3];
 					//schiffsart updaten, wenn die flotte auch daheim ist
-					$sql ="UPDATE de_user_fleet SET e$i = e$i + '$fw0' WHERE user_id = '$ums_user_id-0';";
+					$sql ="UPDATE de_user_fleet SET e$i = e$i + '$fw0' WHERE user_id = '".$_SESSION['ums_user_id']."-0';";
 					mysqli_query($GLOBALS['dbi'],$sql);
-					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw1' WHERE user_id = '$ums_user_id-1';";
+					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw1' WHERE user_id = '".$_SESSION['ums_user_id']."-1';";
 					if($fleet_a[1]==0)mysqli_query($GLOBALS['dbi'],$sql);
-					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw2' WHERE user_id = '$ums_user_id-2';";
+					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw2' WHERE user_id = '".$_SESSION['ums_user_id']."-2';";
 					if($fleet_a[2]==0)mysqli_query($GLOBALS['dbi'],$sql);
-					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw3' WHERE user_id = '$ums_user_id-3';";
+					$sql="UPDATE de_user_fleet SET e$i = e$i + '$fw3' WHERE user_id = '".$_SESSION['ums_user_id']."-3';";
 					if($fleet_a[3]==0)mysqli_query($GLOBALS['dbi'],$sql);
 				}
 			}
@@ -282,11 +241,11 @@ if (isset($_POST['verlegen'])){
 		if($showerror[0]==0 AND $showerror[1]==0)
 		$errmsg.='<table width=600><tr><td class="ccg">'.$military_lang['fleetumgestellt'].'</td></tr></table>';
 
-		$erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+		$erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
 		if ($erg){
 			//print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
 		}else{
-			print($military_lang['releaselock'].$ums_user_id.$military_lang['releaselock2']."<br><br><br>");
+			print($military_lang['releaselock'].$_SESSION['ums_user_id'].$military_lang['releaselock2']."<br><br><br>");
 		}
 	}// if setlock-ende
 	else echo '<br><font color="#FF0000">'.$military_lang['setlock'].'</font><br><br>';
@@ -330,7 +289,7 @@ echo 'var fleetna = new Array();';
 echo 'var shipscore = new Array();';
 //alle werte auslesen, die man f�r die seite ben�tigt
 //lade die anzahl der einheiten
-$fid0=$ums_user_id.'-0';$fid1=$ums_user_id.'-1';$fid2=$ums_user_id.'-2';$fid3=$ums_user_id.'-3';
+$fid0=$_SESSION['ums_user_id'].'-0';$fid1=$_SESSION['ums_user_id'].'-1';$fid2=$_SESSION['ums_user_id'].'-2';$fid3=$_SESSION['ums_user_id'].'-3';
 $einheiten_result=mysqli_query($GLOBALS['dbi'],"SELECT * FROM de_user_fleet WHERE user_id='$fid0' OR user_id='$fid1' OR user_id='$fid2' OR user_id='$fid3'ORDER BY user_id ASC");
 $einheiten_daten=array();
 while($row = mysqli_fetch_array($einheiten_result)){ //jeder gefundene datensatz wird geprueft
@@ -372,34 +331,34 @@ while($row = mysqli_fetch_array($db_daten)){ //jeder gefundene datensatz wird ge
 	$zstr.='<br><font color=#FFFA65>'.$military_lang['punkte'].': '.number_format($unit[$_SESSION['ums_rasse']-1][$i-81][4], 0,"",".").'</font>';
 
 	//reiszeit
-	$zstr.='<br><br>'.$military_lang['reisezeit'].': '.$schiffsdaten[$ums_rasse-1][$i-81][0];
+	$zstr.='<br><br>'.$military_lang['reisezeit'].': '.$schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][0];
 	//transportkapazität
-	if ($schiffsdaten[$ums_rasse-1][$i-81][1]>0)$zstr.='<br>'.$military_lang['kapazitaet'].': '.$schiffsdaten[$ums_rasse-1][$i-81][1];
+	if ($schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][1]>0)$zstr.='<br>'.$military_lang['kapazitaet'].': '.$schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][1];
 	//ben. transportkapazität
-	if ($schiffsdaten[$ums_rasse-1][$i-81][2]>0)$zstr.='<br>'.$military_lang['kapazitaet2'].': '.$schiffsdaten[$ums_rasse-1][$i-81][2];
+	if ($schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][2]>0)$zstr.='<br>'.$military_lang['kapazitaet2'].': '.$schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][2];
 
 	//frachtkapazität
-	if (isset($unit[$ums_rasse-1][$i-81]['fk']) && $unit[$ums_rasse-1][$i-81]['fk'] > 0)$zstr.='<br>Frachtkapazit&auml;t: '.$unit[$_SESSION['ums_rasse']-1][$i-81]['fk'];
+	if (isset($unit[$_SESSION['ums_rasse']-1][$i-81]['fk']) && $unit[$_SESSION['ums_rasse']-1][$i-81]['fk'] > 0)$zstr.='<br>Frachtkapazit&auml;t: '.$unit[$_SESSION['ums_rasse']-1][$i-81]['fk'];
 
 	//waffenarten
 	//konventionell
-	if($unit[$ums_rasse-1][$i-81][2]>0)$wv='<font color=#2DFF11>'.$military_lang['waffenvorhandenja'].'</font>';
+	if($unit[$_SESSION['ums_rasse']-1][$i-81][2]>0)$wv='<font color=#2DFF11>'.$military_lang['waffenvorhandenja'].'</font>';
 		else $wv='<font color=#ED0909>'.$military_lang['waffenvorhandennein'].'</font>';
 	$zstr.='<br><br><font color=#9D4B15>'.$military_lang['waffengattung1'].':</font> '.$wv;
 
 	//klassenziel
-	if($unit[$ums_rasse-1][$i-81][2]>0){
+	if($unit[$_SESSION['ums_rasse']-1][$i-81][2]>0){
 		$zstr.='<br><font color=#ED9409>-'.$military_lang['klasseziel1'].': '.$military_lang['klassennamen'][$kampfmatrix[$i-81][0]].'</font>';
 		$zstr.='<br><font color=#F0BA66>-'.$military_lang['klasseziel2'].': '.$military_lang['klassennamen'][$kampfmatrix[$i-81][2]].'</font>';
 	}
 
 	//emp
-	if($unit[$ums_rasse-1][$i-81][3]>0)$wv='<font color=#2DFF11>'.$military_lang['waffenvorhandenja'].'</font>';
+	if($unit[$_SESSION['ums_rasse']-1][$i-81][3]>0)$wv='<font color=#2DFF11>'.$military_lang['waffenvorhandenja'].'</font>';
 		else $wv='<font color=#ED0909>'.$military_lang['waffenvorhandennein'].'</font>';
 	$zstr.='<br><br><font color=#15629D>'.$military_lang['waffengattung2'].':</font> '.$wv;
 
 	//klassenziel
-	if($unit[$ums_rasse-1][$i-81][3]>0){
+	if($unit[$_SESSION['ums_rasse']-1][$i-81][3]>0){
 		$zstr.='<br><font color=#ED9409>-'.$military_lang['klasseziel1'].': '.$military_lang['klassennamen'][$blockmatrix[$i-81][0]].'</font>';
 		$zstr.='<br><font color=#F0BA66>-'.$military_lang['klasseziel2'].': '.$military_lang['klassennamen'][$blockmatrix[$i-81][2]].'</font>';
 	}
@@ -435,7 +394,7 @@ while($row = mysqli_fetch_array($db_daten)){ //jeder gefundene datensatz wird ge
 	echo 'aktf['.$c1.'] = new Array('.$e1.', '.$e2.', '.$e3.');';
 
 	// Reisezeiten
-	echo 'reisez['.$c1.'] = new Array('.$schiffsdaten[$ums_rasse-1][$i-81][0].', '.($schiffsdaten[$ums_rasse-1][$i-81][0]+1).', '.($schiffsdaten[$ums_rasse-1][$i-81][0]+2).');';
+	echo 'reisez['.$c1.'] = new Array('.$schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][0].', '.($schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][0]+1).', '.($schiffsdaten[$_SESSION['ums_rasse']-1][$i-81][0]+2).');';
 
 	//transportdaten �berpr�fen
 	//j�ger
@@ -472,30 +431,30 @@ while($row = mysqli_fetch_array($db_daten)){ //jeder gefundene datensatz wird ge
  if (anzs != -1) { var calcf = new Array(anzs); }
 
  // [0] = ID Kreuzer [1] = ID Schlachter [2] = ID Träger [3] = Kapazität Kreuzer [4] = Kapazität Schlachter [5] = Kapazität Trager
- var tragers = new Array(<?=$tid[0]?>, <?=$tid[1]?>, <?=$tid[2]?>, <?=$schiffsdaten[$ums_rasse-1][3][1]?>, <?=$schiffsdaten[$ums_rasse-1][4][1]?>, <?=$schiffsdaten[$ums_rasse-1][7][1]?>);
+ var tragers = new Array(<?=$tid[0]?>, <?=$tid[1]?>, <?=$tid[2]?>, <?=$schiffsdaten[$_SESSION['ums_rasse']-1][3][1]?>, <?=$schiffsdaten[$_SESSION['ums_rasse']-1][4][1]?>, <?=$schiffsdaten[$_SESSION['ums_rasse']-1][7][1]?>);
  var trager = new Array(2);
 
  // [0] = ID des Feldes für Nissen [1] = ID des Feldes für Bomber [2] = Nötiger Platz für Nissen [3] = N�tige Platz f�r Bomber
- var tragbars = new Array(<?=$bentid[0]?>, <?=$bentid[1]?>, <?=$schiffsdaten[$ums_rasse-1][0][2]?>, <?=$schiffsdaten[$ums_rasse-1][5][2]?>);
+ var tragbars = new Array(<?=$bentid[0]?>, <?=$bentid[1]?>, <?=$schiffsdaten[$_SESSION['ums_rasse']-1][0][2]?>, <?=$schiffsdaten[$_SESSION['ums_rasse']-1][5][2]?>);
  var tragbar = new Array(2);
  tragbar[0] = new Array(0, 0);
  tragbar[1] = new Array(0, 0);
  tragbar[2] = new Array(0, 0);
 
  // [0] = ID Zerstoerer [1] = ID Kreuzer [2] = ben. Zerstoerer [3] = ben. Kreuzer
- var bsspeedup = new Array(<?=$tid[3]?>, <?=$tid[0]?>, <?=$sv_bs_speedup[$ums_rasse-1][0]?>, <?=$sv_bs_speedup[$ums_rasse-1][1]?>);
+ var bsspeedup = new Array(<?=$tid[3]?>, <?=$tid[0]?>, <?=$sv_bs_speedup[$_SESSION['ums_rasse']-1][0]?>, <?=$sv_bs_speedup[$_SESSION['ums_rasse']-1][1]?>);
  var bsspeedupmod = 0;
 
- var fk_per_ship=<?php echo $unit[$ums_rasse-1][8]['fk'];?>;
+ var fk_per_ship=<?php echo $unit[$_SESSION['ums_rasse']-1][8]['fk'];?>;
 
 </script>
 <?php
 echo '<script language="javascript" type="text/javascript" src="/js/military.js?'.filemtime($_SERVER['DOCUMENT_ROOT'].'/js/military.js').'"></script>';
 ?>
 </head>
-<body>
 <?php
-//stelle die ressourcenleiste dar
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
+
 include "resline.php";
 if ($errmsg!='')echo $errmsg;
 
@@ -605,7 +564,7 @@ function rangok($zscore, $rang_nr, $sector, $system, $zcol, $kriegsgegner, $coun
 
 
 function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $aktzeit){
-	global $ownally, $ums_rasse, $schiffsdaten, $errmsg, $ums_user_id, $col, $military_lang, $sv_npcatt_col_grenze, $ownsector, $showfleettarget;
+	global $ownally, $schiffsdaten, $errmsg, $col, $military_lang, $sv_npcatt_col_grenze, $ownsector, $showfleettarget;
 
 	//teste ob die flotte bereit ist befehle zu bekommen
 	$sql="SELECT aktion, e81, e82, e83, e84, e85, e86, e87, e88, e89, e90 FROM de_user_fleet WHERE user_id = '$fleet_id'";
@@ -618,7 +577,7 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 		if ($erg>0) $schiffe=1;
 		$ez[$i-81]=$erg;
 		//fix um die zerstörer der 4. rasse unsichtbar zu machen
-		if($ums_rasse==4 && $i==83 && $akttyp==1){$deftarn=$erg; $erg=0;}
+		if($_SESSION['ums_rasse']==4 && $i==83 && $akttyp==1){$deftarn=$erg; $erg=0;}
 		$ge=$ge+$erg;
 	}
 
@@ -653,11 +612,11 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 			if ($akttyp==1){
 				//sind es kriegsgegner?
 				$kriegsgegner=false;
-				$atter_ally_id=get_player_allyid($ums_user_id);
+				$atter_ally_id=get_player_allyid($_SESSION['ums_user_id']);
 				$target_ally_id=get_player_allyid($uid);
 				
 				$ok=rangok($zscore, $rang_nr, $zsec, $zsys, $zcol, 
-				checkForKriegsgegner($atter_ally_id, $target_ally_id), checkForCounter($ums_user_id, $uid));
+				checkForKriegsgegner($atter_ally_id, $target_ally_id), checkForCounter($_SESSION['ums_user_id'], $uid));
 			}
 			//npc-accounts sind nicht unbegrenzt angreifbar
 			//if ($akttyp==1 AND $npc==1 AND $col>=$sv_npcatt_col_grenze) $attverbot=1;
@@ -673,9 +632,9 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 			
 			//man kann ein Ziel nicht gleichzeitig angreifen und verteidigen
 			if ($akttyp==1){//beim Angriff testen ob man das Ziel defft
-				$fleet_id_1=$ums_user_id.'-1';
-				$fleet_id_2=$ums_user_id.'-2';
-				$fleet_id_3=$ums_user_id.'-3';
+				$fleet_id_1=$_SESSION['ums_user_id'].'-1';
+				$fleet_id_2=$_SESSION['ums_user_id'].'-2';
+				$fleet_id_3=$_SESSION['ums_user_id'].'-3';
 				$sql="SELECT aktion FROM de_user_fleet WHERE aktion=2 AND zielsec='$zsec' AND zielsys='$zsys' AND (user_id = '$fleet_id_1' OR user_id = '$fleet_id_2' OR user_id = '$fleet_id_3');";
 				//echo $sql;
 				$db_datenf=mysqli_query($GLOBALS['dbi'],$sql);
@@ -686,9 +645,9 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 				}
 			}
 			elseif ($akttyp==2){//beim Deffen testen ob man das Ziel angreift
-				$fleet_id_1=$ums_user_id.'-1';
-				$fleet_id_2=$ums_user_id.'-2';
-				$fleet_id_3=$ums_user_id.'-3';
+				$fleet_id_1=$_SESSION['ums_user_id'].'-1';
+				$fleet_id_2=$_SESSION['ums_user_id'].'-2';
+				$fleet_id_3=$_SESSION['ums_user_id'].'-3';
 				$sql="SELECT aktion FROM de_user_fleet WHERE aktion=1 AND zielsec='$zsec' AND zielsys='$zsys' AND (user_id = '$fleet_id_1' OR user_id = '$fleet_id_2' OR user_id = '$fleet_id_3');";
 				$db_datenf=mysqli_query($GLOBALS['dbi'],$sql);
 				$num = mysqli_num_rows($db_datenf);
@@ -741,7 +700,7 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 			}
 
 			if ($ok==1 && $attverbot==0){
-				$rz=get_fleet_ground_speed($ez, $ums_rasse, $ums_user_id);
+				$rz=get_fleet_ground_speed($ez, $_SESSION['ums_rasse'], $_SESSION['ums_user_id']);
 
 				//entfernungzuschlag
 				if ($zsec<>$sector){
@@ -795,16 +754,9 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 					if($akttyp==1 AND $ez[6]==0)
 					$errmsg.='<div class="info_box text2">'.$military_lang['notranseninfo'].'</div>';
 
-					//wenn man andere spieler angreift, handelsinfo
-					/*
-					  if($akttyp==1 AND $npc==0)
-					  {
-						  $errmsg.='<div class="info_box text2">Achtung: Angriffe auf andere Spieler wirken sich negativ auf den Handelsbonus aus.</div>';
-					  }
-					  */
-					  //showfleettarget auslesen
-					  $hv=explode('-',$fleet_id);
-					  $showft=$showfleettarget[$hv[1]-1];
+					//showfleettarget auslesen
+					$hv=explode('-',$fleet_id);
+					$showft=$showfleettarget[$hv[1]-1];
 
 					//flotte losschicken
 					if ($aktzeit<1 OR $aktzeit>3)$aktzeit=0;
@@ -822,7 +774,7 @@ function attdef($fleet_id, $sector, $system, $pt, $zsec, $zsys, $db, $akttyp, $a
 }
 
 function recall($fleet_id, $sector, $system, $db){
-	global $ums_rasse, $military_lang, $spec5;
+	global $military_lang, $spec5;
 
 	//erstmal die daten der flotte holen und sichern
 	$sql="select aktion, zeit, entdeckt, zielsec, zielsys, e81, e82, e83, e84, e85, e86, e87, e88, e89, e90 from de_user_fleet where user_id = '$fleet_id'";
@@ -837,8 +789,13 @@ function recall($fleet_id, $sector, $system, $db){
 	//erstmal schauen, ob man sie �berhaupt zur�ckrufen kann
 	//if ($akttyp==1 OR $akttyp==2 OR $akttyp==4){//also wenn sie hinfliegt
 	if ($akttyp==1 OR $akttyp==2){//also wenn sie hinfliegt
-		if($spec5!=2)$sql="UPDATE de_user_fleet set aktion = 3, zeit = gesrzeit-zeit, entdeckt = 0, zielsec = hsec, zielsys = hsys, aktzeit=0 WHERE user_id = '$fleet_id'";
-		else $sql="UPDATE de_user_fleet set aktion = 3, zeit = gesrzeit-zeit-1, entdeckt = 0, zielsec = hsec, zielsys = hsys, aktzeit=0 WHERE user_id = '$fleet_id'";
+        if($spec5!=2){
+            $sql="UPDATE de_user_fleet set aktion = 3, zeit = gesrzeit - zeit, entdeckt = 0, zielsec = hsec, zielsys = hsys, aktzeit=0 WHERE user_id = '$fleet_id'";
+        }else{
+            // Saubere Lösung: Erst prüfen, dann berechnen
+            $sql="UPDATE de_user_fleet set aktion = 3, zeit = CASE WHEN gesrzeit > zeit THEN gesrzeit - zeit - 1 ELSE 0 END, entdeckt = 0, zielsec = hsec, zielsys = hsys, aktzeit=0 WHERE user_id = '$fleet_id'";
+        }
+
 		mysqli_query($GLOBALS['dbi'],$sql);
 		//echo $sql;
 
@@ -862,7 +819,7 @@ function recall($fleet_id, $sector, $system, $db){
 				$erg=$row['e'.$i];
 				$ez[$i-81]=$erg;
 				//fix um die zerst�rer der 4. rasse unsichtbar zu machen
-				if($ums_rasse==4 AND $i==83 AND $akttyp==1)$erg=0;
+				if($_SESSION['ums_rasse']==4 AND $i==83 AND $akttyp==1)$erg=0;
 				$ge=$ge+$erg;
 			}
 
@@ -889,7 +846,7 @@ function recall($fleet_id, $sector, $system, $db){
 
 
 if ($techs[13]==0 AND 1==2){
-	$techcheck="SELECT tech_name FROM de_tech_data".$ums_rasse." WHERE tech_id=13";
+	$techcheck="SELECT tech_name FROM de_tech_data".$_SESSION['ums_rasse']." WHERE tech_id=13";
 	$db_tech=mysqli_query($GLOBALS['dbi'],$techcheck);
 	$row_techcheck = mysqli_fetch_array($db_tech);
 	//echo $military_lang[techcheck].$row_techcheck[tech_name].$military_lang[techcheck2];
@@ -898,7 +855,7 @@ if ($techs[13]==0 AND 1==2){
 	rahmen_oben($military_lang['fehlendesgebaeude']);
 	echo '<table width="572" border="0" cellpadding="0" cellspacing="0">';
 	echo '<tr align="left" class="cell">
-	<td width="100"><a href="'.$sv_link[0].'?r='.$ums_rasse.'&t=13" target="_blank"><img src="'.$ums_gpfad.'g/t/'.$ums_rasse.'_13.jpg" border="0"></a></td>
+	<td width="100"><a href="'.$sv_link[0].'?r='.$_SESSION['ums_rasse'].'&t=13" target="_blank"><img src="'.'gp/'.'g/t/'.$_SESSION['ums_rasse'].'_13.jpg" border="0"></a></td>
 	<td valign="top">'.$military_lang['gebaeudeinfo'].': '.$row_techcheck['tech_name'].'</td>
 	</tr>';
 	echo '</table>';
@@ -918,7 +875,7 @@ echo '
 <tr height="37">
 <td width="13" height="37" class="rol">&nbsp;</td>
 <td align="center" class="ro"><div class="cellu">'.$military_lang['fleetaufstellung'].' <img title="'.$ranginfo.'" src="'.
-  $ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></div></td>
+  'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></div></td>
 <td width="13" class="ror">&nbsp;</td>
 </tr>
 <tr>
@@ -936,7 +893,7 @@ echo '
   //tooltips f�r flotteninfos generieren
   unset($flottentooltip);
   for($flotte=0;$flotte<=3;$flotte++){
-  $fleetid=$ums_user_id.'-'.$flotte;
+  $fleetid=$_SESSION['ums_user_id'].'-'.$flotte;
   $result=mysqli_query($GLOBALS['dbi'],"SELECT komatt, komdef, aktion, artid1, artlvl1, artid2, artlvl2, artid3, artlvl3  FROM de_user_fleet WHERE user_id='$fleetid'");
   $row = mysqli_fetch_array($result);
   
@@ -952,15 +909,15 @@ echo '
   //echo '<table border="0" cellpadding="0" cellspacing="1" width="500" bgcolor="#000000">';
   echo '<tr align="center">';
   echo '<td class="tc">&nbsp;</td>';
-  echo '<td class="tc">'.$military_lang['heimatflotte'].' <img title="'.$flottentooltip[0].'" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
-  echo '<td class="tc">'.$military_lang['flotte1'].' <img title="'.$flottentooltip[1].'" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
-  echo '<td class="tc">'.$military_lang['flotte2'].' <img title="'.$flottentooltip[2].'" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
-  echo '<td class="tc">'.$military_lang['flotte3'].' <img title="'.$flottentooltip[3].'" src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif"></td>';
+  echo '<td class="tc">'.$military_lang['heimatflotte'].' <img title="'.$flottentooltip[0].'" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
+  echo '<td class="tc">'.$military_lang['flotte1'].' <img title="'.$flottentooltip[1].'" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
+  echo '<td class="tc">'.$military_lang['flotte2'].' <img title="'.$flottentooltip[2].'" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
+  echo '<td class="tc">'.$military_lang['flotte3'].' <img title="'.$flottentooltip[3].'" src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif"></td>';
   echo '</tr>';
   //echo '</table>';
 
   //lade die anzahl der einheiten
-  $fid0=$ums_user_id.'-0';$fid1=$ums_user_id.'-1';$fid2=$ums_user_id.'-2';$fid3=$ums_user_id.'-3';
+  $fid0=$_SESSION['ums_user_id'].'-0';$fid1=$_SESSION['ums_user_id'].'-1';$fid2=$_SESSION['ums_user_id'].'-2';$fid3=$_SESSION['ums_user_id'].'-3';
   $einheiten_result=mysqli_query($GLOBALS['dbi'],"SELECT * FROM de_user_fleet WHERE user_id='$fid0' OR user_id='$fid1' OR user_id='$fid2' OR user_id='$fid3'ORDER BY user_id ASC");
   $einheiten_daten=array();
   while($row = mysqli_fetch_array($einheiten_result)){ //jeder gefundene datensatz wird geprueft
@@ -1007,7 +964,7 @@ echo '
 
 	echo '<tr>';
 	//heimatflotte
-	echo '<td class="cl">&nbsp;<img src="'.$ums_gpfad.'g/'.$ums_rasse.'_hilfe.gif" border="0" title="'.$mtip[$c1-1].'">&nbsp;'.getTechNameByRasse($row['tech_name'],$_SESSION['ums_rasse']).'</td>';
+	echo '<td class="cl">&nbsp;<img src="'.'gp/'.'g/'.$_SESSION['ums_rasse'].'_hilfe.gif" border="0" title="'.$mtip[$c1-1].'">&nbsp;'.getTechNameByRasse($row['tech_name'],$_SESSION['ums_rasse']).'</td>';
 	echo '<td class="cc" id="m'.$c1.'_0">'.number_format($e0, 0,"",".").'</td>';
 	//flotte 1
 	if($fleet_a[1]!=0){$h1=number_format($e1, 0,"",".");$h2='style="display: none;"';}else{$h1='';$h2='';}
@@ -1166,17 +1123,17 @@ echo '
   $rz1='';$rz2='';$rz3='';
   if ($a1==$military_lang['status']) // Hier stand Systemverteidigung vorher statt lang-variable
   {
-    $rz1=get_fleet_ground_speed($ez1, $ums_rasse, $ums_user_id);
+    $rz1=get_fleet_ground_speed($ez1, $_SESSION['ums_rasse'], $_SESSION['ums_user_id']);
   }
 
   if ($a2==$military_lang['status']) // Hier stand Systemverteidigung vorher statt lang-variable
   {
-    $rz2=get_fleet_ground_speed($ez2, $ums_rasse, $ums_user_id);
+    $rz2=get_fleet_ground_speed($ez2, $_SESSION['ums_rasse'], $_SESSION['ums_user_id']);
   }
 
   if ($a3==$military_lang['status']) // Hier stand Systemverteidigung vorher statt lang-variable
   {
-    $rz3=get_fleet_ground_speed($ez3, $ums_rasse, $ums_user_id);
+    $rz3=get_fleet_ground_speed($ez3, $_SESSION['ums_rasse'], $_SESSION['ums_user_id']);
   }
   //echo '<table border="0" cellpadding="0" cellspacing="1" width="500" bgcolor="#000000">';
   if ($rz1=='')$rz1='&nbsp';if ($rz2=='')$rz2='&nbsp';if ($rz3=='')$rz3='&nbsp';
@@ -1373,6 +1330,6 @@ $("input").tooltip({
 	  });
 </script>
 </form>
-<?php include "fooban.php"; ?>
+
 </body>
 </html>

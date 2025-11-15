@@ -1,16 +1,11 @@
 <?php
 include "inc/header.inc.php";
 //daten laden
-$sql = "SELECT sector, allytag FROM de_user_data WHERE user_id=?";
-$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id]);
+$sql = "SELECT sector, ally_id FROM de_user_data WHERE user_id=?";
+$db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $sector = $row["sector"];
-$allytag = $row["allytag"];
-//allyid auslesen
-$sql = "SELECT id FROM de_allys WHERE allytag=?";
-$db_datenx = mysqli_execute_query($GLOBALS['dbi'], $sql, [$allytag]);
-$rowx = mysqli_fetch_assoc($db_datenx);
-$allyid = $rowx["id"];
+$ally_id = $row["ally_id"];
 
 //rundenstart auslesen
 $sql = "SELECT rundenstart_datum FROM de_system";
@@ -19,16 +14,16 @@ $rowx = mysqli_fetch_assoc($db_datenx);
 $rundenstart_datum = $rowx["rundenstart_datum"];
 
 //hintergund laden
-$im = imagecreatefrompng("smilies/statvorl2.png");
+$im = imagecreatefrompng("lib/statvorl2.png");
 
 //statistische daten auslesen
 //spieler
 if ($_GET["typ"] == 1) {
     $sql = "SELECT score FROM de_user_stat WHERE user_id=? AND datum>? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id, $rundenstart_datum]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id'], $rundenstart_datum]);
 } elseif ($_GET["typ"] == 2) {
     $sql = "SELECT col FROM de_user_stat WHERE user_id=? AND datum>? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ums_user_id, $rundenstart_datum]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$_SESSION['ums_user_id'], $rundenstart_datum]);
 }
 
 //sektor
@@ -45,16 +40,16 @@ elseif ($_GET["typ"] == 11) {
 //allianz
 elseif ($_GET["typ"] == 21) {
     $sql = "SELECT score FROM de_ally_stat WHERE id=? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$allyid]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ally_id]);
 } elseif ($_GET["typ"] == 22) {
     $sql = "SELECT col FROM de_ally_stat WHERE id=? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$allyid]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ally_id]);
 } elseif ($_GET["typ"] == 23) {
     $sql = "SELECT platz FROM de_ally_stat WHERE id=? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$allyid]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ally_id]);
 } elseif ($_GET["typ"] == 24) {
     $sql = "SELECT member FROM de_ally_stat WHERE id=? ORDER BY datum ASC";
-    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$allyid]);
+    $db_daten = mysqli_execute_query($GLOBALS['dbi'], $sql, [$ally_id]);
 }
 
 $i = 0;
@@ -83,7 +78,7 @@ $farben[] = array(  51, 153, 255);
 $farben[] = array( 166, 166, 166);
 $farben[] = array( 222,  57,  57);
 $farben[] = array(  57, 162,  54);
-$color = ImageColorAllocate($im, $farben[$ums_rasse - 1][0], $farben[$ums_rasse - 1][1], $farben[$ums_rasse - 1][2]);
+$color = ImageColorAllocate($im, $farben[$_SESSION['ums_rasse'] - 1][0], $farben[$_SESSION['ums_rasse'] - 1][1], $farben[$_SESSION['ums_rasse'] - 1][2]);
 
 //statistik zeichnen
 $x1 = 51;

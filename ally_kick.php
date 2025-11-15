@@ -7,7 +7,7 @@ $db_daten = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, techs, sector, `system`, newtrans, newnews, allytag 
      FROM de_user_data 
      WHERE user_id=?",
-    [$ums_user_id]);
+    [$_SESSION['ums_user_id']]);
 if($row = mysqli_fetch_assoc($db_daten)) {
     $restyp01=$row['restyp01'];
     $restyp02=$row['restyp02'];
@@ -29,18 +29,19 @@ if($row = mysqli_fetch_assoc($db_daten)) {
 <title><?=$allykick_lang['title']?></title>
 <?php include('cssinclude.php'); ?>
 </head>
-<body>
-
 <?php
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 
 include('resline.php');
 include('ally/ally.menu.inc.php');
 include('lib/basefunctions.lib.php');
 
+$userid = $_GET['userid'] ?? 0;
+
 //Erweiterung des Querys auf Abfrage von Coleadern von Ascendant (05.09.2002)
 $allys = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT * FROM de_allys WHERE leaderid=? OR coleaderid1=? OR coleaderid2=? OR coleaderid3=?",
-    [$ums_user_id, $ums_user_id, $ums_user_id, $ums_user_id]);
+    [$_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id']]);
 if(mysqli_num_rows($allys) < 1)
 {
 	echo $allykick_lang['msg_1'];
@@ -50,7 +51,7 @@ else
 	//Erweiterung des Querys auf Abfrage von Coleadern von Ascendant (05.09.2002)
 	$result = mysqli_execute_query($GLOBALS['dbi'],
 		"SELECT * FROM de_allys WHERE leaderid=? OR coleaderid1=? OR coleaderid2=? OR coleaderid3=?",
-		[$ums_user_id, $ums_user_id, $ums_user_id, $ums_user_id]);
+		[$_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id'], $_SESSION['ums_user_id']]);
 	if($result) {
 		if($row = mysqli_fetch_assoc($result)) {
 	

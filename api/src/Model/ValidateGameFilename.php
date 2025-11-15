@@ -13,7 +13,11 @@ class ValidateGameFilename
 		'missions.php',
 		'production.php',
 		'resource.php',
-		'sector.php'
+		'sector.php',
+		'secstatus.php',
+		'ally_register2.php',
+		'ally_join.php',
+		'sysnews.php'
 	);
 
     public function isValid($filename) :bool {

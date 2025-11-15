@@ -92,7 +92,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["col"], 0,"",".").'"';
@@ -224,7 +224,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["col"], 0,"",".").'"';
@@ -339,7 +339,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["tower"], 0,"",".").'"';
@@ -450,7 +450,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["roundpoints"], 0,"",".").'"';
@@ -566,7 +566,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["kgget"], 0,"",".").'"';
@@ -686,7 +686,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["gesamtenergie"], 0,"",".").'"';
@@ -818,7 +818,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["wert"] ?? 0, 0,"",".").'"';
@@ -929,7 +929,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["ehscore"], 0,"",".").'"';
@@ -1040,7 +1040,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["eh_counter"], 0,"",".").'"';
@@ -1151,7 +1151,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["eh_counter"], 0,"",".").'"';
@@ -1262,7 +1262,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   $varsystem=$varsystem.$row["system"];
 
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varcol!='')$varcol=$varcol.',';
   $varcol=$varcol.'"'.number_format($row["pve_score"], 0,"",".").'"';
@@ -1315,9 +1315,9 @@ xecho('
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 
-//in der de_sector die pl�tze der sektoren eintragen
+//in der de_sector die Plätze der sektoren eintragen
 mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_sector set platz=0, tempcol=0");
-$db_daten=mysqli_execute_query($GLOBALS['dbi'], "SELECT sector, sum(score) as score, sum(col) AS col FROM de_user_data WHERE npc=0 AND sector>1 GROUP BY sector ORDER BY score DESC");
+$db_daten=mysqli_execute_query($GLOBALS['dbi'], "SELECT sector, sum(score) as score, sum(col) AS col FROM de_user_data WHERE (npc=0 OR npc=2) AND sector > 1 AND sector < 666 GROUP BY sector ORDER BY score DESC");
 $platz=1;
 while($row = mysqli_fetch_array($db_daten)){
     $sec=$row["sector"];
@@ -1360,11 +1360,11 @@ while($row = mysqli_fetch_array($db_daten)){
   $row_score=mysqli_fetch_array($get_score);
 
   if($row["platz_last_day"]==$row["platz"])
-$grafik='<img border="0" src="'.$sv_image_server_list[0].'g/tl_constant.gif" width="11" height="11" title="unver&auml;ndert" alt="unver&auml;ndert">';
+$grafik='<img border="0" src="gp/g/tl_constant.gif" width="11" height="11" title="unver&auml;ndert" alt="unver&auml;ndert">';
   if($row["platz_last_day"]>$row["platz"])
-$grafik='<img border="0" src="'.$sv_image_server_list[0].'g/tl_up.gif" width="11" height="11" title="+'.($row['platz_last_day']-$row['platz']).'" alt="+'.($row['platz_last_day']-$row['platz']).'" >';
+$grafik='<img border="0" src="gp/g/tl_up.gif" width="11" height="11" title="+'.($row['platz_last_day']-$row['platz']).'" alt="+'.($row['platz_last_day']-$row['platz']).'" >';
   if($row["platz_last_day"]<$row["platz"])
-$grafik='<img border="0" src="'.$sv_image_server_list[0].'g/tl_down.gif" width="11" height="11" title="-'.($row['platz']-$row['platz_last_day']).'" alt="-'.($row['platz']-$row['platz_last_day']).'">';
+$grafik='<img border="0" src="gp/g/tl_down.gif" width="11" height="11" title="-'.($row['platz']-$row['platz_last_day']).'" alt="-'.($row['platz']-$row['platz_last_day']).'">';
 
   if ($row['name']=='') $row['name']='&nbsp';
   xecho ("<tr>");
@@ -1532,7 +1532,7 @@ while($row = mysqli_fetch_array($db_daten))
   $target_url = 'ally_detail.php?allyid='.$row['id'];
   xecho ("<tr>");
   xecho ('<td class="cc">'.$platz.'</td>');
-  xecho ('<td class="cc" nowrap><a href="'.$target_url.'">'.utf8_encode_fix($row["allytag"]).'</a></td>');
+  xecho ('<td class="cc" nowrap><a href="'.$target_url.'">'.$row["allytag"].'</a></td>');
   xecho ('<td class="cr">'.number_format($row['questpoints'], 0,"",".").'</td>');
   xecho ("</tr>");
   $platz++;
@@ -1698,7 +1698,7 @@ if($sv_ewige_runde==1){
 	  $target_url = 'ally_detail.php?allyid='.$row['id'];
 	  xecho ("<tr>");
 	  xecho ('<td class="cc">'.$platz.'</td>');
-	  xecho ('<td class="cc" nowrap><a href="'.$target_url.'">'.utf8_encode_fix($row["allytag"]).'</a></td>');
+	  xecho ('<td class="cc" nowrap><a href="'.$target_url.'">'.$row["allytag"].'</a></td>');
 	  xecho ('<td class="cr">'.number_format($row['eh_gestellt_anz'], 0,"",".").'</td>');
 	  xecho ("</tr>");
 	  $platz++;
@@ -1756,7 +1756,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
 
   xecho ('<tr>');
   xecho ('<td class="cc">'.$platz.'</td>');
-  xecho ('<td class="cc"><a href="details.php?se='.$row["sector"].'&sy='.$row["system"].'&a=s">'.utf8_encode_fix($row["spielername"]).'</td>');
+  xecho ('<td class="cc"><a href="details.php?se='.$row["sector"].'&sy='.$row["system"].'&a=s">'.$row["spielername"].'</td>');
   xecho ('<td class="cc">'.number_format($row["tradesystemtrades"], 0,"",".").'</td>');
   xecho ('<td class="cr">'.number_format($row["tradesystemscore"], 0,"",".").'</td>');
   xecho ('</tr>');
@@ -1820,7 +1820,7 @@ while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird gepru
   if ($row["sells"]>0)$tschnitt=$row["tradescore"]/$row["sells"];else $tschnitt=0;
   xecho ('<tr>');
   xecho ('<td class="cc">'.$platz.'</td>');
-  xecho ('<td class="cc"><a href="details.php?se='.$row["sector"].'&sy='.$row["system"].'&a=s">'.utf8_encode_fix($row["spielername"]).'</td>');
+  xecho ('<td class="cc"><a href="details.php?se='.$row["sector"].'&sy='.$row["system"].'&a=s">'.$row["spielername"].'</td>');
   xecho ('<td class="cc">'.number_format($row["sells"], 0,"",".").'</td>');
   xecho ('<td class="cr">'.number_format($row["tradescore"], 0,"",".").'</td>');
   xecho ('<td class="cc">'.number_format($tschnitt, 0,"",".").'</td>');
@@ -1887,7 +1887,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT de_user_data.spielername
 while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird geprueft
 {
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varlevel!='')$varlevel=$varlevel.',';
   if ($row["level"]!='')
@@ -1987,7 +1987,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT de_user_data.spielername
 while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird geprueft
 {
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varlevel!='')$varlevel=$varlevel.',';
   if ($row["level"]!='')
@@ -2088,7 +2088,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT de_user_data.spielername
 while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird geprueft
 {
   if ($varname!='')$varname=$varname.',';
-  $varname=$varname.'"'.utf8_encode_fix($row["spielername"]).'"';
+  $varname=$varname.'"'.$row["spielername"].'"';
 
   if ($varlevel!='')$varlevel=$varlevel.',';
   if ($row["level"]!='')

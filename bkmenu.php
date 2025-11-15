@@ -5,11 +5,10 @@ include 'inc/lang/'.$sv_server_lang.'_bkmenu.lang.php';
 include 'inc/lang/'.$sv_server_lang.'_functions.lang.php';
 include 'inc/lang/'.$sv_server_lang.'_politics.lang.php';
 include 'functions.php';
-include "issectork.php";
 
 $db_daten = mysqli_execute_query($GLOBALS['dbi'],
     "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, system, newtrans, newnews FROM de_user_data WHERE user_id=?", 
-    [$ums_user_id]);
+    [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01=$row["restyp01"];$restyp02=$row["restyp02"];$restyp03=$row["restyp03"];$restyp04=$row["restyp04"];
 $restyp05=$row["restyp05"];$punkte=$row["score"];$newtrans=$row["newtrans"];$newnews=$row["newnews"];
@@ -71,7 +70,7 @@ if($baukostenreduzierung>20)$baukostenreduzierung=20;
 $baukostenreduzierung=$baukostenreduzierung/100;
 
 
-//ggf. neuen verteilungsschl�sssel setzen
+//ggf. neuen Verteilungsschlüsssel setzen
 $fehlermsg='';
 $e_t1=isset($_POST["e_t1"]) ? intval($_POST["e_t1"]) : 0;
 $e_t2=isset($_POST["e_t2"]) ? intval($_POST["e_t2"]) : 0;
@@ -145,9 +144,8 @@ $re=ceil($ee/$emve);
 <title>Basiskommandantenmen&uuml;</title>
 <?php include "cssinclude.php"; ?>
 </head>
-<body>
 <?php
-
+echo '<body class="theme-rasse'.$_SESSION['ums_rasse'].' '.(($_SESSION['ums_mobi']==1) ? 'mobile' : 'desktop').'">';
 //stelle die ressourcenleiste dar
 
 include "resline.php";
@@ -174,13 +172,10 @@ if($system!=issectorcommander()){
 
 echo '<form action="bkmenu.php" method="post">';
 
-function attdef($ownsector, $zsec, $db, $akttyp, $aktzeit){
+function attdef($ownsector, $zsec, $akttyp, $aktzeit){
 	global $bkmenu_lang;
-	$sector=(int)$sector;
-	$zsec=(int)$zsec;
-	$akttyp=(int)$akttyp;
-	$aktzeit=(int)$aktzeit;
-	//teste ob die flotte bereit ist befehle zu bekommen
+
+  //teste ob die flotte bereit ist befehle zu bekommen
 	$db_daten = mysqli_execute_query($GLOBALS['dbi'],
 		"SELECT aktion, e2 FROM de_sector WHERE sec_id = ?",
 		[$ownsector]);
@@ -211,6 +206,8 @@ function attdef($ownsector, $zsec, $db, $akttyp, $aktzeit){
 		$ztechs = $rowx["techs"];
 
 		if ($ztechs[1]==1) $ok=1;else $ok=0;//wenn srb dann hinflug m�glich
+
+		$rz = 0; // Initialisierung der Variable $rz
 
 		if ($ok==1){
 			$rz=12;
@@ -260,7 +257,7 @@ function attdef($ownsector, $zsec, $db, $akttyp, $aktzeit){
 	if ($rz==0) echo $bkmenu_lang['fehlerflottenbefehle'];
 }
 
-function recall($ownsector, $db){
+function recall($ownsector){
 	global $bkmenu_lang;
 	//erstmal die daten der flotte holen und sichern
 	$db_daten = mysqli_execute_query($GLOBALS['dbi'],
@@ -340,13 +337,13 @@ if(!empty($befehle)){
     case 0: //keine neuen befehle
       break;
     case 1: //heimkehr
-      recall($sector, $db);
+      recall($sector);
       break;
     case 2: //angreifen
-      attdef($sector, $zsecf1, $db, 1, 0);
+      attdef($sector, $zsecf1, 1, 0);
       break;
     default: //verteidigen
-      attdef($sector, $zsecf1, $db, 2, $af1-2);
+      attdef($sector, $zsecf1, 2, $af1-2);
       break;
   }//switch af1 ende
 }
@@ -411,7 +408,7 @@ $prodanz=$_POST['prodanz'] ?? 0;
 if ($prod)//ja, es wurde ein button gedrueckt
 {
   //transaktionsbeginn
-  if (setLock($ums_user_id))
+  if (setLock($_SESSION['ums_user_id']))
   {
     $prodanz=(int)$prodanz;
     if($techs[122]==1 AND $prodanz>=1)
@@ -475,27 +472,21 @@ if ($prod)//ja, es wurde ein button gedrueckt
     }
 
     //transaktionsende
-    $erg = releaseLock($ums_user_id); //L�sen des Locks und Ergebnisabfrage
+    $erg = releaseLock($_SESSION['ums_user_id']); //L�sen des Locks und Ergebnisabfrage
     if ($erg)
     {
         //print("Datensatz Nr. 10 erfolgreich entsperrt<br><br><br>");
     }
     else
     {
-        print("Datensatz Nr. ".$ums_user_id." konnte nicht entsperrt werden!<br><br><br>");
+        print("Datensatz Nr. ".$_SESSION['ums_user_id']." konnte nicht entsperrt werden!<br><br><br>");
     }
   }// if setlock-ende
   else echo '<br><font color="#FF0000">'.$bkmenu_lang['transactionactive'].'</font><br><br>';
 
 }//submit ende
 
-//wurde ein button bau-gedrueckt??
-/*
-$t=0;$str='if ($b1)$t=1;';
-for ($i=120;$i<=129;$i++) $str = $str."elseif (\$b$i)\$t=$i;";
-eval($str);
-*/
-
+//wurde ein Gebäudebaubutton gedrueckt??
 if(isset($_REQUEST['ida'])){
 	$t=intval($_REQUEST['ida']);
 }else{
@@ -519,11 +510,11 @@ if ($t>=120 && $buildgnr==0){//ja, es wurde ein button gedrueckt
 		[$t]);
 	$row = mysqli_fetch_assoc($db_daten);
 	
-	$benrestyp01=floor($row[0]/$kostenfaktor);
-	$benrestyp02=floor($row[1]/$kostenfaktor);
-	$benrestyp03=floor($row[2]/$kostenfaktor);
-	$benrestyp04=floor($row[3]/$kostenfaktor);
-	$benrestyp05=floor($row[4]/$kostenfaktor);
+	$benrestyp01=floor($row['restyp01']/$kostenfaktor);
+	$benrestyp02=floor($row['restyp02']/$kostenfaktor);
+	$benrestyp03=floor($row['restyp03']/$kostenfaktor);
+	$benrestyp04=floor($row['restyp04']/$kostenfaktor);
+	$benrestyp05=floor($row['restyp05']/$kostenfaktor);
 
 	$tech_ticks=$row["tech_ticks"];$tech_vor=$row["tech_vor"];
 	
@@ -586,7 +577,7 @@ if ($t>=120 && $buildgnr==0){//ja, es wurde ein button gedrueckt
 //sektorphalanx
 $sc1=$_POST['sc1'] ?? false;
 $sc2=$_POST['sc2'] ?? false;
-$scansec=$_POST['scansec'];
+$scansec = isset($_POST['scansec']) ? trim($_POST['scansec']) : null;
 if (($sc1 || $sc2) && $scansec){
   $scansec=(int)$scansec;
   $db_daten = mysqli_execute_query($GLOBALS['dbi'],
@@ -860,7 +851,7 @@ echo '</table>';
 rahmen_unten();
 
 
-echo '<input type="image" src="'.$ums_gpfad.'g/e.gif" style="width:0; height=0; border:0px;">';
+echo '<input type="image" src="'.'gp/'.'g/e.gif" style="width:0; height=0; border:0px;">';
 echo '</form>';
 echo '<form action="bkmenu.php" method="post">';
 

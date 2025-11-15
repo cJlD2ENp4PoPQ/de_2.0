@@ -123,6 +123,23 @@ for ($c = 0; $c < $z; $c++) {
     $defferliste = '';
     $atterliste = '';
 
+    // Arrays für aggregierte Angriffs-/Blockwerte sauber initialisieren
+    // (Verhindert Undefined Variable Warnungen wie bei $atter_awges)
+    if(!isset($atter_awges) || !is_array($atter_awges)){
+        $atter_awges = array_fill(0, $sv_anz_schiffe+$sv_anz_tuerme, 0);
+    }
+    if(!isset($atter_bwges) || !is_array($atter_bwges)){
+        $atter_bwges = array_fill(0, $sv_anz_schiffe+$sv_anz_tuerme, 0);
+    }
+
+    // Deffer aggregierte Werte initialisieren (sonst Warnungen bei +=)
+    if(!isset($deffer_awges) || !is_array($deffer_awges)){
+        $deffer_awges = array_fill(0, $sv_anz_schiffe+$sv_anz_tuerme, 0);
+    }
+    if(!isset($deffer_bwges) || !is_array($deffer_bwges)){
+        $deffer_bwges = array_fill(0, $sv_anz_schiffe+$sv_anz_tuerme, 0);
+    }
+
     echo '<br>'.$c.'<br><br>';
     $zsec = $kampfsys[$c][0];
     $zsys = $kampfsys[$c][1];
@@ -271,8 +288,15 @@ for ($c = 0; $c < $z; $c++) {
 
             $awgesamtbonus = 1 + $awartbonus + $awexpbonus + $awallybonus;
             $bwgesamtbonus = 1 + $bwartbonus + $bwexpbonus + $bwallybonus;
-            $atter_awges[$i] += $atter[$anz_atter][$i] * $wgrad * $unit[$db_data["rasse"] - 1][$i][2] * $awgesamtbonus;
-            $atter_bwges[$i] += $atter[$anz_atter][$i] * $wgrad * $unit[$db_data["rasse"] - 1][$i][3] * $bwgesamtbonus;
+            // Absicherung: falls Elemente noch nicht existieren -> auf 0 setzen
+            if(!isset($atter_awges[$i])) $atter_awges[$i]=0;
+            if(!isset($atter_bwges[$i])) $atter_bwges[$i]=0;
+            $akt_anz = isset($atter[$anz_atter][$i]) ? $atter[$anz_atter][$i] : 0;
+            // Falls unit-Daten fehlen, mit 0 weiterrechnen
+            $aw_basis = isset($unit[$db_data["rasse"] - 1][$i][2]) ? $unit[$db_data["rasse"] - 1][$i][2] : 0;
+            $bw_basis = isset($unit[$db_data["rasse"] - 1][$i][3]) ? $unit[$db_data["rasse"] - 1][$i][3] : 0;
+            $atter_awges[$i] += $akt_anz * $wgrad * $aw_basis * $awgesamtbonus;
+            $atter_bwges[$i] += $akt_anz * $wgrad * $bw_basis * $bwgesamtbonus;
             echo '<br>'.$i.'WGRAD: '.$wgrad;
         }
         echo 'AWEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: ';
@@ -611,20 +635,78 @@ for ($c = 0; $c < $z; $c++) {
 
     echo 'TAWARTBONUS inkl Expbonus: '.$tawartbonus.'<br>';
 
-
-
-    //zuerst array nullen
-    for ($i = 0;$i < $sv_anz_rassen;$i++) {
-        for ($s = 0;$s < $sv_anz_schiffe;$s++) {
-            $atterrassen[$i][$s] = 0;
+    // umfassende Initialisierung aller relevanten Arrays
+    // Rassen x Einheiten / Türme
+    for ($r = 0; $r < $sv_anz_rassen; $r++) {
+        for ($s = 0; $s < $sv_anz_schiffe + $sv_anz_tuerme; $s++) {
+            $atterrassen[$r][$s] = 0;
+            $defferrassen[$r][$s] = 0;
+            $atterrassen_geblockt[$r][$s] = 0;
+            $defferrassen_geblockt[$r][$s] = 0;
+            $atterrassen_zer[$r][$s] = 0;
+            $defferrassen_zer[$r][$s] = 0;
         }
     }
 
-    for ($i = 0;$i < $sv_anz_rassen;$i++) {
-        for ($s = 0;$s < $sv_anz_schiffe;$s++) {
-            $defferrassen[$i][$s] = 0;
+    // pro-Flotte-Arrays (Angreifer)
+    for ($i = 0; $i < max(1, isset($anz_atter) ? $anz_atter : 0); $i++) {
+        for ($s = 0; $s < $sv_anz_schiffe; $s++) {
+            $atter[$i][$s] = isset($atter[$i][$s]) ? $atter[$i][$s] : 0;
+            $atter_geb[$i][$s] = isset($atter_geb[$i][$s]) ? $atter_geb[$i][$s] : 0;
+            $atter_zer[$i][$s] = isset($atter_zer[$i][$s]) ? $atter_zer[$i][$s] : 0;
         }
+        $atter_exp[$i] = isset($atter_exp[$i]) ? $atter_exp[$i] : 0;
+        $atter_sk[$i]  = isset($atter_sk[$i]) ? $atter_sk[$i] : 0;
+        $atter_whg[$i] = isset($atter_whg[$i]) ? $atter_whg[$i] : 0;
+        $atter_rec[$i] = isset($atter_rec[$i]) ? $atter_rec[$i] : array(0,0);
     }
+
+    // pro-Flotte-Arrays (Deffer inkl. Heimflotten + Hilfsflotten)
+    for ($i = 0; $i < max(1, isset($anz_deffer) ? $anz_deffer : 0); $i++) {
+        for ($s = 0; $s < $sv_anz_schiffe; $s++) {
+            $deffer[$i][$s] = isset($deffer[$i][$s]) ? $deffer[$i][$s] : 0;
+            $deffer_geb[$i][$s] = isset($deffer_geb[$i][$s]) ? $deffer_geb[$i][$s] : 0;
+            $deffer_zer[$i][$s] = isset($deffer_zer[$i][$s]) ? $deffer_zer[$i][$s] : 0;
+        }
+        $deffer_exp[$i] = isset($deffer_exp[$i]) ? $deffer_exp[$i] : 0;
+        $deffer_whg[$i] = isset($deffer_whg[$i]) ? $deffer_whg[$i] : 0;
+        $deffer_rec[$i] = isset($deffer_rec[$i]) ? $deffer_rec[$i] : array(0,0);
+    }
+
+    // Türme (als Arrays mit sv_anz_tuerme Einträgen)
+    for ($s = 0; $s < $sv_anz_tuerme; $s++) {
+        $turm[$s] = isset($turm[$s]) ? $turm[$s] : 0;
+        $deffertuerme_geblockt[$s] = isset($deffertuerme_geblockt[$s]) ? $deffertuerme_geblockt[$s] : 0;
+        $deffertuerme_zer[$s] = isset($deffertuerme_zer[$s]) ? $deffertuerme_zer[$s] : 0;
+    }
+
+    // aggregierte Werte pro Einheitenklasse (Schiffe + Türme)
+    $total_classes = $sv_anz_schiffe + $sv_anz_tuerme;
+    for ($i = 0; $i < $total_classes; $i++) {
+        $atter_awges[$i] = isset($atter_awges[$i]) ? $atter_awges[$i] : 0;
+        $atter_bwges[$i] = isset($atter_bwges[$i]) ? $atter_bwges[$i] : 0;
+        $deffer_awges[$i] = isset($deffer_awges[$i]) ? $deffer_awges[$i] : 0;
+        $deffer_bwges[$i] = isset($deffer_bwges[$i]) ? $deffer_bwges[$i] : 0;
+        $atter_hpges[$i]  = isset($atter_hpges[$i])  ? $atter_hpges[$i]  : 0;
+        $deffer_hpges[$i] = isset($deffer_hpges[$i]) ? $deffer_hpges[$i] : 0;
+        $atter_hprest[$i] = isset($atter_hprest[$i]) ? $atter_hprest[$i] : 0;
+        $deffer_hprest[$i]= isset($deffer_hprest[$i])? $deffer_hprest[$i]: 0;
+        $atter_awrest[$i] = isset($atter_awrest[$i]) ? $atter_awrest[$i] : 0;
+        $deffer_awrest[$i]= isset($deffer_awrest[$i])? $deffer_awrest[$i]: 0;
+    }
+
+    // KB-Sammelarrays initialisieren
+    $deffer_kbsum = isset($deffer_kbsum) ? $deffer_kbsum : array();
+    $kb_einheiten_atter = isset($kb_einheiten_atter) ? $kb_einheiten_atter : array();
+    $kb_einheiten_deffer = isset($kb_einheiten_deffer) ? $kb_einheiten_deffer : array();
+    $kb_tuerme = isset($kb_tuerme) ? $kb_tuerme : array();
+    $kb_daten = isset($kb_daten) ? $kb_daten : array();
+    $kb_daten_spieler = isset($kb_daten_spieler) ? $kb_daten_spieler : array();
+    $kb_einheiten_spieler = isset($kb_einheiten_spieler) ? $kb_einheiten_spieler : array();
+    $anteil = isset($anteil) ? $anteil : array();
+    // Ende Initialisierung
+
+    
 
     //die einheiten nach rassen aufteilen
     $rassenvorhanden = array(0,0,0,0,0);
@@ -986,6 +1068,7 @@ for ($c = 0; $c < $z; $c++) {
     }
     //die gesamtzerst�rten schiffe auf die einzelnen flotten verteilen und die erfahrungspunkte berechnen
     for ($i = 0;$i < $anz_atter;$i++) {
+        $atter_exp[$i] = 0;
         $rasse = $a_userdata[$i][3] - 1;
         for ($j = 0; $j < $sv_anz_schiffe; $j++) {
             if ($atter[$i][$j] > 0) {
@@ -996,7 +1079,7 @@ for ($c = 0; $c < $z; $c++) {
             $atter_zer[$i][$j] = floor($atterrassen_zer[$rasse][$j] * $prozent);
             $atter_exp[$i] = floor($atter_exp[$i] + ($atter_zer[$i][$j] * $unit[$rasse][$j][4] / 100));
         }
-        //spezialisierung mehr exp f�r die flotte
+        //spezialisierung mehr exp für die flotte
         if ($a_userdata[$i]['spec2'] == 2) {
             $atter_exp[$i] = floor($atter_exp[$i] * 1.1);
         }
@@ -1005,10 +1088,10 @@ for ($c = 0; $c < $z; $c++) {
     for ($i = 0;$i < $anz_atter;$i++) {
         //nur recyceln wenn eine whg vorhanden ist
         if ($atter_whg[$i] == 1) {
-            //maximal 10% der zerst�rten kleineinheiten werden recycelt, dazu kann ein schlachter maximal das f�nfache seiner punktezahl recyceln
+            //maximal 10% der zerstörten kleineinheiten werden recycelt, dazu kann ein schlachter maximal das fünfache seiner punktezahl recyceln
             $rasse = $a_userdata[$i][3] - 1;
             $schlachter = $atter[$i][4] - $atter_zer[$i][4];
-            //schauen wievie max. recycelt werden kann, berechnet sich aus den schiffspunkten f�r schlachtschiffe mal einen wert x
+            //schauen wievie max. recycelt werden kann, berechnet sich aus den schiffspunkten für schlachtschiffe mal einen wert x
             $maxrecmenge = $schlachter * $unit[$rasse][4][4] * 6;
 
             //schauen wieviel rohstoffe von zerst�rten schiffen existieren
@@ -1075,6 +1158,7 @@ for ($c = 0; $c < $z; $c++) {
     }
     //die gesamtzerst�rten schiffe auf die einzelnen flotten verteilen und die erfahrungspunkte berechnen
     for ($i = 0;$i < $anz_deffer;$i++) {
+        $deffer_exp[$i]=0;
         $rasse = $d_userdata[$i][3] - 1;
         for ($j = 0; $j < $sv_anz_schiffe; $j++) {
             if ($deffer[$i][$j] > 0) {
@@ -1291,7 +1375,7 @@ for ($c = 0; $c < $z; $c++) {
         // der angreifer erhält ein zufälliges artefakt bei den npc
         /////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////
-        if ($npc == 1) {
+        if ($npc == 1 || $npc == 2) {
 
             //den größten angreifer bestimmen
             $biggestatter = 0;
@@ -1312,7 +1396,7 @@ for ($c = 0; $c < $z; $c++) {
                 //artefakt per zufall aussuchen
                 $ai = mt_rand(1, $ua_index + 1);
 
-                //artefakt dem spieler im geb�ude hinterlegen
+                //artefakt dem spieler im gebäude hinterlegen
                 mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_artefact (user_id, id, level) VALUES ('$uid', '$ai', '1')");
 
                 //artefakt info  für die news
@@ -1815,8 +1899,7 @@ for ($c = 0; $c < $z; $c++) {
                 $col_angriffsgrenze_final = $sv_min_col_attgrenze;
             }
 
-            //if ($col*$col_angriffsgrenze_final<=$kollies OR $npc==1)//man erh�lt kollektoren
-            if ($col * $col_angriffsgrenze_final <= $kollies) {//man erh�lt kollektoren
+            if ($col * $col_angriffsgrenze_final <= $kollies) {//man erhält kollektoren
                 echo 'Kollektoren erbeutet.';
                 mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_data SET col = col + '$atter_sk[$i]' WHERE user_id = '$uid'");
                 //fix für br, jeder kollektor gibt x M
@@ -1832,17 +1915,19 @@ for ($c = 0; $c < $z; $c++) {
 
                 }*/
 
-                if ($allyid > 0 and $npc == 0) {
+                //Statistik updaten
+                if ($allyid > 0 && $npc == 0) {
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_allys SET colstolen = colstolen + '".$atter_sk[$i]."' WHERE id='$allyid'");
                 }
-                if ($allyid > 0 and $npc == 1) {
+                if ($allyid > 0 && ($npc == 1 || $npc == 2)) {
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_allys SET colstolennpc = colstolennpc + '".$atter_sk[$i]."' WHERE id='$allyid'");
                 }
+
                 //allyaufgabe erbeute kollektoren allgemein gutschreiben
-                if ($allyid > 0 and $npc == 0) {
+                if ($allyid > 0 && $npc == 0) {
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_allys SET questreach = questreach + '".$atter_sk[$i]."' WHERE id='$allyid' AND questtyp=1");
                 }
-                if ($allyid > 0 and $npc == 1) {
+                if ($allyid > 0 && ($npc == 1 || $npc == 2)) {
                     mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_allys SET questreach = questreach + '".$atter_sk[$i]."' WHERE id='$allyid' AND questtyp=3");
                 }
             } else { //die kollektoren werden vernichtet
@@ -1881,7 +1966,7 @@ for ($c = 0; $c < $z; $c++) {
         $kb_daten_spieler['recycling2'] = $atter_rec[$i][1];
 
         echo '<br>Out: '.$atterstring.'<br>Out: '.$defferstring.'<br>Out: '.$spielerstring.'<br>Out: '.$datenstring;
-        echo '<br>L�nge: '.strlen($atterststring.$defferstring.$spielerstring.$datenstring);
+        echo '<br>Länge: '.strlen($atterstring.$defferstring.$spielerstring.$datenstring);
 
         ///////////////////////////////////////////////////////
         // Kopfgeld aussetzen
@@ -2027,7 +2112,11 @@ for ($c = 0; $c < $z; $c++) {
         unset($kb_daten_spieler);
 
         //insg
-        for ($s = 0;$s < $sv_anz_schiffe;$s++) {
+        for ($s = 0;$s < $sv_anz_schiffe; $s++) {
+            if(!isset($deffer_kbsum[0][$s])) {
+                $deffer_kbsum[0][$s] = 0;
+            }
+
             $deffer_kbsum[0][$s] += $deffer[$i][$s];
         }
 
@@ -2038,17 +2127,29 @@ for ($c = 0; $c < $z; $c++) {
             if ($wert > $deffer[$i][$s]) {
                 $wert = $deffer[$i][$s];
             }
+            if(!isset($deffer_kbsum[1][$s])) {
+                $deffer_kbsum[1][$s] = 0;
+            }
             $deffer_kbsum[1][$s] += $wert;
         }
         //�berlebt
         for ($s = 0;$s < $sv_anz_schiffe;$s++) {
+            if(!isset($deffer_kbsum[2][$s])) {
+                $deffer_kbsum[2][$s] = 0;
+            }
             $deffer_kbsum[2][$s] += ($deffer[$i][$s] - $deffer_zer[$i][$s]);
         }
 
         //erfahrungspunkte
-        $deffer_kbsum[3][1] += $deffer_exp[$i].';';
+        if(!isset($deffer_kbsum[3][1])) {
+            $deffer_kbsum[3][1] = 0;
+        }
+        $deffer_kbsum[3][1] += $deffer_exp[$i];
 
         //schlachterrecycling
+        if(!isset($deffer_kbsum[3][3])) {
+            $deffer_kbsum[3][3] = 0;
+        }
         $deffer_kbsum[3][3] += $deffer_rec[$i][0];
         $deffer_kbsum[3][3] += $deffer_rec[$i][1];
 
@@ -2099,7 +2200,6 @@ for ($c = 0; $c < $z; $c++) {
         if ($i == $anz_heimatflotten - 1) {
             //insg
             for ($s = 0;$s < $sv_anz_schiffe;$s++) {
-                //$spielerstring=$spielerstring.$deffer_kbsum[0][$s].';';
                 $kb_einheiten_spieler[0][$s] = $deffer_kbsum[0][$s];
             }
 
@@ -2151,11 +2251,15 @@ for ($c = 0; $c < $z; $c++) {
             //kriegsartefakte
             //$spielerstring=$spielerstring.$deffer_kbsum[3][2].';';
 
+            if(!isset($deffer_kbsum[3][4])) {
+                $deffer_kbsum[3][4] = 0;
+            }
+
             //schlachterrecycling
             $spielerstring = $spielerstring.$deffer_kbsum[3][3].';'.$deffer_kbsum[3][4].';';
 
             echo '<br>Out: '.$atterstring.'<br>Out: '.$defferstring.'<br>Out: '.$spielerstring.'<br>Out: '.$datenstring;
-            echo '<br>L�nge: '.strlen($defferststring.$defferstring.$spielerstring.$datenstring);
+            echo '<br>L�nge: '.strlen($defferstring.$defferstring.$spielerstring.$datenstring);
 
             //$nachricht=$atterstring.$defferstring.$spielerstring.$datenstring;
             unset($kb_array);
@@ -2239,7 +2343,7 @@ for ($c = 0; $c < $z; $c++) {
 
 
         echo '<br>Out: '.$atterstring.'<br>Out: '.$defferstring.'<br>Out: '.$spielerstring.'<br>Out: '.$datenstring;
-        echo '<br>Länge: '.strlen($defferststring.$defferstring.$spielerstring.$datenstring);
+        echo '<br>Länge: '.strlen($defferstring.$spielerstring.$datenstring);
 
         $hv = explode("-", $d_userdata[$i][0]);
         $uid = $hv[0]; //so stellt man die user_id der flotte fest, einfach splitten
@@ -2498,3 +2602,4 @@ for ($c = 0; $c < $z; $c++) {
     unset($deffertuerme_geb);
     unset($deffer_kbsum);
 }
+
