@@ -33,6 +33,7 @@ jobs:
             sound
             tickler
             trade
+            gp
       - run: |
           rm .gitignore
           rm README.md

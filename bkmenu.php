@@ -7,7 +7,7 @@ include 'inc/lang/'.$sv_server_lang.'_politics.lang.php';
 include 'functions.php';
 
 $db_daten = mysqli_execute_query($GLOBALS['dbi'],
-    "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, system, newtrans, newnews FROM de_user_data WHERE user_id=?", 
+    "SELECT restyp01, restyp02, restyp03, restyp04, restyp05, score, sector, `system`, newtrans, newnews FROM de_user_data WHERE user_id=?",
     [$_SESSION['ums_user_id']]);
 $row = mysqli_fetch_assoc($db_daten);
 $restyp01=$row["restyp01"];$restyp02=$row["restyp02"];$restyp03=$row["restyp03"];$restyp04=$row["restyp04"];
