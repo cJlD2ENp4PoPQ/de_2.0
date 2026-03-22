@@ -1,4 +1,6 @@
 <?php
+ob_start();
+
 require_once __DIR__ . '/../vendor/autoload.php';
 use DieEwigen\DE2\Model\Alliance\AllyMemberLimitCalc;
 use DieEwigen\DE2\Model\Tick\TickSpendCollectorFromSector1;
@@ -528,7 +530,7 @@ if ($doetick == 1) {
                 $sqltcount = ', tcount = '.$r;
             } else {
                 //wenn der counter auf 1 ist, dann gibts tronic
-                if ($tcount == 1 and $npc == 0) {
+                if ($tcount == 1 && ($npc == 0 || $npc == 2)) {
                     //festellen wieviel tronic man bekommt
                     $r = mt_rand(1, 100);
                     if ($r <= 1) {
@@ -1796,3 +1798,18 @@ if ($doetick == 1) {
 ?>
 </body>
 </html>
+<?php
+$log_content = ob_get_clean();
+echo $log_content;
+$log_dir = __DIR__ . '/logs';
+if (!is_dir($log_dir)) {
+    mkdir($log_dir, 0755, true);
+}
+$log_file = $log_dir . '/wt_' . date("Ymd") . '.log';
+$log_entry = "\n" . str_repeat('=', 80) . "\n";
+$log_entry .= "WT Tick: " . date("Y-m-d H:i:s") . "\n";
+$log_entry .= str_repeat('=', 80) . "\n" . $log_content . "\n";
+$result = file_put_contents($log_file, $log_entry, FILE_APPEND);
+if ($result === false) {
+    error_log("WT: Konnte Log-Datei nicht schreiben: " . $log_file);
+}

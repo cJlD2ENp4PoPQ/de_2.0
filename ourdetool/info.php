@@ -4,19 +4,19 @@ include "../inc/sv.inc.php";
 include "det_userdata.inc.php";
 
 $uid=$_REQUEST['uid'];
-$sendhyperfunk = isset($_POST['sendhyperfunk']) ? $_POST['sendhyperfunk'] : false;
-$sendmailregdaten = isset($_POST['sendmailregdaten']) ? $_POST['sendmailregdaten'] : false;
-$activateaccount = isset($_POST['activateaccount']) ? $_POST['activateaccount'] : false;
-$stataktiv = isset($_POST['stataktiv']) ? $_POST['stataktiv'] : false;
-$statgesperrt = isset($_POST['statgesperrt']) ? $_POST['statgesperrt'] : false;
-$staturlaub = isset($_POST['staturlaub']) ? $_POST['staturlaub'] : false;
-$locktrade = isset($_POST['locktrade']) ? $_POST['locktrade'] : false;
-$unlocktrade = isset($_POST['unlocktrade']) ? $_POST['unlocktrade'] : false;
-$statbk = isset($_POST['statbk']) ? $_POST['statbk'] : false;
-$observationgo = isset($_POST['observationgo']) ? $_POST['observationgo'] : false;
-$kommentar = isset($_POST['kommentar']) ? $_POST['kommentar'] : false;
-$infostomail = isset($_POST['infostomail']) ? $_POST['infostomail'] : false;
-$mail = isset($_POST['mail']) ? $_POST['mail'] : "none";
+$sendhyperfunk = isset($_REQUEST['sendhyperfunk']) ? $_REQUEST['sendhyperfunk'] : false;
+$sendmailregdaten = isset($_REQUEST['sendmailregdaten']) ? $_REQUEST['sendmailregdaten'] : false;
+$activateaccount = isset($_REQUEST['activateaccount']) ? $_REQUEST['activateaccount'] : false;
+$stataktiv = isset($_REQUEST['stataktiv']) ? $_REQUEST['stataktiv'] : false;
+$statgesperrt = isset($_REQUEST['statgesperrt']) ? $_REQUEST['statgesperrt'] : false;
+$staturlaub = isset($_REQUEST['staturlaub']) ? $_REQUEST['staturlaub'] : false;
+$locktrade = isset($_REQUEST['locktrade']) ? $_REQUEST['locktrade'] : false;
+$unlocktrade = isset($_REQUEST['unlocktrade']) ? $_REQUEST['unlocktrade'] : false;
+$statbk = isset($_REQUEST['statbk']) ? $_REQUEST['statbk'] : false;
+$observationgo = isset($_REQUEST['observationgo']) ? $_REQUEST['observationgo'] : false;
+$kommentar = isset($_REQUEST['kommentar']) ? $_REQUEST['kommentar'] : false;
+$infostomail = isset($_REQUEST['infostomail']) ? $_REQUEST['infostomail'] : false;
+$mail = isset($_REQUEST['mail']) ? $_REQUEST['mail'] : "none";
 $savedata = 0; // Initialisiere $savedata
 
 // Initialisiere weitere Variablen aus Formulardaten
@@ -439,24 +439,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
   while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird ausgegeben
   {
 
-    /*
-    $row[text]=eregi_replace("\\[img\\]([^\\[]*)\\[/img\\]","<img src=\"\\1\" border=0>",$row[text]);
 
-    $row[text]= eregi_replace("\[b\]", "<b>",$row[text]);
-    $row[text]= eregi_replace("\[/b\]", "</b>",$row[text]);
-
-    $row[text]= eregi_replace("\[i\]", "<i>",$row[text]);
-    $row[text]= eregi_replace("\[/i\]", "</i>",$row[text]);
-
-    $row[text]= eregi_replace("\[u\]", "<u>",$row[text]);
-    $row[text]= eregi_replace("\[/u\]", "</u>",$row[text]);
-
-    $row[text]= eregi_replace("\[center\]", "<center>",$row[text]);
-    $row[text]= eregi_replace("\[/center\]", "</center>",$row[text]);
-
-    $row[text]= eregi_replace("\[pre\]", "<pre>",$row[text]);
-    $row[text]= eregi_replace("\[/pre\]", "</pre>",$row[text]);
-*/
     $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
     $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);
     $row['text'] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row['text']);
@@ -495,37 +478,27 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
 
   while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird ausgegeben
   {
-    /*
-    $row[text]=eregi_replace("\\[img\\]([^\\[]*)\\[/img\\]","<img src=\"\\1\" border=0>",$row[text]);
+    $row['text'] = preg_replace('/\[img\]([^\[]*)\[\/img\]/i', '<img src="$1" border=0>', $row['text']);
 
-    $row[text]= eregi_replace("\[b\]", "<b>",$row[text]);
-    $row[text]= eregi_replace("\[/b\]", "</b>",$row[text]);
+    $row['text'] = preg_replace('/\[b\]/i', '<b>', $row['text']);
+    $row['text'] = preg_replace('/\[\/b\]/i', '</b>', $row['text']);
 
-    $row[text]= eregi_replace("\[i\]", "<i>",$row[text]);
-    $row[text]= eregi_replace("\[/i\]", "</i>",$row[text]);
+    $row['text'] = preg_replace('/\[i\]/i', '<i>', $row['text']);
+    $row['text'] = preg_replace('/\[\/i\]/i', '</i>', $row['text']);
 
-    $row[text]= eregi_replace("\[u\]", "<u>",$row[text]);
-    $row[text]= eregi_replace("\[/u\]", "</u>",$row[text]);
+    $row['text'] = preg_replace('/\[u\]/i', '<u>', $row['text']);
+    $row['text'] = preg_replace('/\[\/u\]/i', '</u>', $row['text']);
 
-    $row[text]= eregi_replace("\[center\]", "<center>",$row[text]);
-    $row[text]= eregi_replace("\[/center\]", "</center>",$row[text]);
+    $row['text'] = preg_replace('/\[center\]/i', '<center>', $row['text']);
+    $row['text'] = preg_replace('/\[\/center\]/i', '</center>', $row['text']);
 
-    $row[text]= eregi_replace("\[pre\]", "<pre>",$row[text]);
-    $row[text]= eregi_replace("\[/pre\]", "</pre>",$row[text]);
-    */
+    $row['text'] = preg_replace('/\[pre\]/i', '<pre>', $row['text']);
+    $row['text'] = preg_replace('/\[\/pre\]/i', '</pre>', $row['text']);
 
     $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
     $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);
     $row['text'] = str_replace("[CW]","<font color=\"#FFFFFF\">",$row['text']);
     $row['text'] = str_replace("[CGELB]","<font color=\"#FDFB59\">",$row['text']);
-
-    /*
-    $row[text]=eregi_replace("\\[email\\]([^\\[]*)\\[/email\\]","<a href=\"mailto:\\1\">\\1</a>",$row[text]);
-    $row[text]=eregi_replace("\\[url\\]www.([^\\[]*)\\[/url\\]","<a href=\"http://www.\\1\" target=\"_blank\">\\1</a>",$row[text]);
-    $row[text]=eregi_replace("\\[url\\]([^\\[]*)\\[/url\\]","<a href=\"\\1\" target=\"_blank\">\\1</a>",$row[text]);
-    $row[text]=eregi_replace("\\[url=http://([^\\[]+)\\]([^\\[]*)\\[/url\\]","<a href=\"http://\\1\" target=\"_blank\">\\2</a>",$row[text]);
-    */
-
 
     $infos.= '<table border="0" cellpadding="0" cellspacing="2" width="500">';
     $infos.= '<tr>';
@@ -552,25 +525,7 @@ $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT fromsec, fromsys, fromni
 
   while($row = mysqli_fetch_array($result)) //jeder gefundene datensatz wird ausgegeben
   {
-    /*
-    $row[text]=eregi_replace("\\[img\\]([^\\[]*)\\[/img\\]","<img src=\"\\1\" border=0>",$row[text]);
 
-    $row[text]= eregi_replace("\[b\]", "<b>",$row[text]);
-    $row[text]= eregi_replace("\[/b\]", "</b>",$row[text]);
-
-    $row[text]= eregi_replace("\[i\]", "<i>",$row[text]);
-    $row[text]= eregi_replace("\[/i\]", "</i>",$row[text]);
-
-    $row[text]= eregi_replace("\[u\]", "<u>",$row[text]);
-    $row[text]= eregi_replace("\[/u\]", "</u>",$row[text]);
-
-    $row[text]= eregi_replace("\[center\]", "<center>",$row[text]);
-    $row[text]= eregi_replace("\[/center\]", "</center>",$row[text]);
-
-    $row[text]= eregi_replace("\[pre\]", "<pre>",$row[text]);
-    $row[text]= eregi_replace("\[/pre\]", "</pre>",$row[text]);
-
-    */
 
     $row['text'] = str_replace("[CGRUEN]","<font color=\"#28FF50\">",$row['text']);
     $row['text'] = str_replace("[CROT]","<font color=\"#F10505\">",$row['text']);

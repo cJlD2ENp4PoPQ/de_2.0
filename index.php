@@ -41,8 +41,7 @@ if (isset($_REQUEST['loginkey']) && $_REQUEST['loginkey'] != '') {
         $_REQUEST['loginkey'] = '';
     }
 
-    $sql = "SELECT * FROM de_login WHERE loginkey='".$_REQUEST['loginkey']."' AND loginkeytime > UNIX_TIMESTAMP( ) - 600;";
-    $result = mysqli_execute_query($GLOBALS['dbi'], $sql, []) or die(mysqli_error($GLOBALS['dbi']));
+    $result = mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_login WHERE loginkey=? AND loginkeytime > UNIX_TIMESTAMP() - 600", [$_REQUEST['loginkey']]) or die(mysqli_error($GLOBALS['dbi']));
     $num = mysqli_num_rows($result);
 
     if ($num == 1) {
@@ -94,7 +93,7 @@ if (isset($_REQUEST['loginkey']) && $_REQUEST['loginkey'] != '') {
             $datum = date("Y-m-d H:i:s", time());
             $comment = mysqli_execute_query($GLOBALS['dbi'], "SELECT kommentar FROM de_user_info WHERE user_id=?", [$row['user_id']]);
             $rowz = mysqli_fetch_array($comment);
-            $eintrag = "$rowz[kommentar]\n$datum Loginversuch Account Status 3(Umode/L&ouml;schmode)! $zstatus\n$time";
+            $eintrag = "$rowz[kommentar]\n$datum Loginversuch Account Status 3(Umode/L&ouml;schmode)! $zstatus\n$datum";
             mysqli_execute_query($GLOBALS['dbi'], "UPDATE de_user_info SET kommentar=? WHERE user_id=?", [$eintrag, $row['user_id']]);
 
 
@@ -173,8 +172,8 @@ if (isset($_REQUEST['loginkey']) && $_REQUEST['loginkey'] != '') {
             $db_umfrage = mysqli_execute_query($GLOBALS['dbi'], "SELECT de_vote_umfragen.id, de_vote_umfragen.frage,de_vote_umfragen.startdatum FROM de_vote_umfragen, de_login WHERE de_vote_umfragen.status=1 AND UNIX_TIMESTAMP(de_login.register)<UNIX_TIMESTAMP(de_vote_umfragen.startdatum) AND de_login.user_id=? ORDER BY de_vote_umfragen.id", [$_SESSION['ums_user_id']]);
             while ($row = mysqli_fetch_array($db_umfrage)) {
                 $i = 0;
-                while ($i <= count($gevotetevotes) + 1) {
-                    if ($gevotetevotes[$i] == $row['id']) {
+                while ($i < count($gevotetevotes)) {
+                    if (isset($gevotetevotes[$i]) && $gevotetevotes[$i] == $row['id']) {
                         $schongestimmt = 1;
                     }
                     $i++;

@@ -296,9 +296,6 @@ echo '
         <td align="center">
             <a href="hyperfunk.php?action=alli" class="btn">' . $hyperfunk_lang['allianz'] . '</a>
         </td>
-        <td align="center">
-            <a href="hyperfunk.php?action=freunde" class="btn">' . $hyperfunk_lang['freunde'] . '</a>
-        </td>
         <td width="13" height="25" class="rr"></td>
     </tr>
     <tr>
@@ -507,75 +504,7 @@ if (isset($_POST['allimsg'])) {
     }
 
 }
-// Insert fuer die Freunde
-if (isset($_POST['freundemsg'])) {
-    $db_freunde = mysqli_execute_query($GLOBALS['dbi'], "SELECT sector, `system` FROM de_hfn_buddy_ignore WHERE user_id=? AND status=1", [$_SESSION['ums_user_id']]);
 
-    $time = date("YmdHis");
-
-    $anzahl_freunde = mysqli_num_rows($db_freunde);
-
-    $betreff = $_REQUEST['betreff'];
-    $betreff = str_replace('<', '&lt;', $betreff);
-    $betreff = str_replace('>', '&gt;', $betreff);
-    $betreff = nl2br($betreff);
-    $betreff = str_replace('\"', '&quot;', $betreff);
-    $betreff = str_replace('\'', '&acute;', $betreff);
-    $betreff = str_replace('script', 'schkript', $betreff);
-    $betreff = str_replace('Script', 'Schkript', $betreff);
-
-    $nachricht = $_REQUEST['nachricht'];
-    $nachricht = str_replace('<', '&lt;', $nachricht);
-    $nachricht = str_replace('>', '&gt;', $nachricht);
-    $nachricht = nl2br($nachricht);
-    $nachricht = str_replace('\"', '&quot;', $nachricht);
-    $nachricht = str_replace('\'', '&acute;', $nachricht);
-    $nachricht = str_replace('script', 'schkript', $nachricht);
-    $nachricht = str_replace('Script', 'Schkript', $nachricht);
-
-    if ($nachricht == "") {
-        echo insertmessage($hyperfunk_lang['msg_1'], "r", $hyperfunk_lang['systemnachricht']);
-    } else {
-
-        $fc = 1;
-        $fi = 0;
-        $igmsg = 0;
-        while ($fi < $anzahl_freunde) {
-            $oldfriend = '\$freund$fc';
-            eval("\$oldfriend = \"$oldfriend\";");
-            eval("\$oldfriend = \"$oldfriend\";");
-            if ($oldfriend != "") {
-                $oldfriendcoords = explode(":", $oldfriend);
-
-                $db_daten = mysqli_execute_query($GLOBALS['dbi'], "SELECT user_id FROM de_user_data WHERE sector=? AND `system`=?", [$oldfriendcoords[0], $oldfriendcoords[1]]);
-                $uid_row = mysqli_fetch_array($db_daten);
-                $uid = $uid_row ? $uid_row['user_id'] : null;
-
-                $db_ignore = mysqli_execute_query($GLOBALS['dbi'], "SELECT * FROM de_hfn_buddy_ignore WHERE user_id=? and `system`=? and sector=? and status=2", [$uid, $asys, $asec]);
-                $numignore = mysqli_num_rows($db_ignore);
-
-                if ($numignore == 0) {
-                    mysqli_execute_query($GLOBALS['dbi'], "update de_user_data set newtrans = 1 where user_id=?", [$uid]);
-                    mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_hyper (empfaenger, absender, fromsec, fromsys, fromnic, time, betreff, text, sender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)", [$uid, $_SESSION['ums_user_id'], $asec, $asys, $_SESSION['ums_spielername'], $time, $betreff, $nachricht]);
-                    mysqli_execute_query($GLOBALS['dbi'], "INSERT INTO de_user_hyper (empfaenger, absender, fromsec, fromsys, fromnic, time, betreff, text, sender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)", [$uid, $_SESSION['ums_user_id'], $asec, $asys, $_SESSION['ums_spielername'], $time, $betreff, $nachricht]);
-                } else {
-                    $igmsg++;
-                }
-            }
-
-            $fc++;
-            $fi++;
-        }
-
-        if ($igmsg == 0) {
-            echo insertmessage($hyperfunk_lang['msg_12'], "g", $hyperfunk_lang['systemnachricht']);
-        } else {
-            echo insertmessage($hyperfunk_lang['msg_13'], "g", $hyperfunk_lang['systemnachricht']);
-        }
-
-
-    }
-}
 //Loeschen einzelner HFNs
 if ($action == "del") {//nachricht l&ouml;schen
     $id = intval($_REQUEST['id']);
@@ -1184,58 +1113,6 @@ if ($action == "delene") {
 //Optionen Menu
 if ($action == "optionen") {
     ?>
-<br>
-<form action=hyperfunk.php?action=optionen method=post>
-<table border=0 cellspacing=0 cellpadding=0 width=300>
-<tr>
-<td width='13' height='25' class='rml'></td>
-<td align=center height='35' colspan=2 class='ro'><div class="cellu"><?php echo $hyperfunk_lang['meine_freunde']?></div></td>
-<td width='13' height='25' class='rmr'></td>
-</tr>
-
-
-
-    <?php
-        $db_friends = mysqli_execute_query($GLOBALS['dbi'], "SELECT sector, `system`, name FROM de_hfn_buddy_ignore WHERE user_id=? and status=1", [$_SESSION['ums_user_id']]);
-
-    $num = mysqli_num_rows($db_friends);
-
-    $counter = 1;
-
-    if ($num == "0") {
-
-        echo '<tr><td width="13" class="rl" height="25"></td><td align="center" colspan="2" class="cell"><div class="cellu">'.$hyperfunk_lang['keine_freunde'].'</div></td><td width="13" height="25" class="rr"></td></tr>';
-
-    } else {
-        while ($rowf = mysqli_fetch_array($db_friends)) {
-            if ($counter == 1) {
-                echo '<tr><td width="13" class="rl" height="25"></td><td align="right" class="cell">'.$rowf['sector'].':'.$rowf['system'].'&nbsp;&nbsp;&nbsp;('.$rowf['name'].')&nbsp;&nbsp;&nbsp;</td><td class="cell">&nbsp;&nbsp;&nbsp;<a href="hyperfunk.php?se='.$rowf['sector'].'&sy='.$rowf['system'].'&action=delbuddy">'.$hyperfunk_lang['loeschen'].'</a></td><td width="13" height="25" class="rr"></td></tr>';
-                $counter = 0;
-            } else {
-                echo '<tr><td width="13" class="rl" height="25"></td><td align="right" class="cell1">'.$rowf['sector'].':'.$rowf['system'].'&nbsp;&nbsp;&nbsp;('.$rowf['name'].')&nbsp;&nbsp;&nbsp;</td><td class="cell1">&nbsp;&nbsp;&nbsp;<a href="hyperfunk.php?se='.$rowf['sector'].'&sy='.$rowf['system'].'&action=delbuddy">'.$hyperfunk_lang['loeschen'].'</a></td><td width="13" height="25" class="rr"></td></tr>';
-                $counter = 1;
-            }
-        }
-    }
-
-    ?>
-<tr>
-    <td width="13" class="rl" height="20"></td>
-    <td class="cell" align="right" width="120" height="30"><div class="fett"><?php echo $hyperfunk_lang['koordinaten']?>&nbsp;&nbsp;&nbsp;</div></td><td class="cell">&nbsp;&nbsp;&nbsp;<input type="text" name="freundsector" size="3" style="border-style:solid;height:21;">&nbsp;:&nbsp;<input type="text" name="freundsystem" size="2" style="border-style:solid;height:21;"></td>
-    <td width="13" height="20" class="rr"></td>
-</tr>
-<tr>
-    <td width='13' class='rl' height='25'></td>
-    <td colspan=2 align=center class=cell><input type="submit" name="friendbtn"  value="<?php echo $hyperfunk_lang['freund_adden']?>"></td>
-    <td width='13' height='25' class='rr'></td>
-</tr>
-<tr>
- <td width="13" class="rul">&nbsp;</td>
- <td colspan="2" class="ru">&nbsp;</td>
- <td width="13" class="rur">&nbsp;</td>
-</tr>
-</table>
-</form>
 <br>
 <form action="hyperfunk.php?action=optionen" method="post">
 <table border="0" cellspacing="0" cellpadding="0" width="300">
