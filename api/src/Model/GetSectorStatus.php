@@ -10,7 +10,7 @@ use DieEwigen\Api\Types\SystemFleetStatus;
 class GetSectorStatus
 {
     const string GET_SECTOR_STATUS_SQL = "SELECT dud_source.user_id AS s_user_id, dud_source.rasse, dud_target.user_id AS t_user_id,
-                                    dud_source.ally_id AS s_allyId, dud_target.ally_id AS t_allyId,
+                                    dud_source.ally_id AS s_allyId, dud_target.ally_id AS t_allyId, dud_target.status AS t_status,
                                     duf.zielsec, duf.zielsys, duf.hsec, duf.hsys, duf.zeit, duf.fleetsize,
                                     duf.e81, duf.e82, duf.e83, duf.e83, duf.e84, duf.e85, duf.e86, duf.e87, duf.e88, 
                                     duf.e89, duf.e90, duf.aktion
@@ -43,8 +43,10 @@ class GetSectorStatus
         if ($requestingNpcData[2] > 0) {
             $metaQuery = mysqli_execute_query($GLOBALS['dbi'], $this::GET_PARTNERSHIP,[$requestingNpcData[2], $requestingNpcData[2]]);
             $result = $metaQuery->fetch_assoc();
-            $allyId1 = $result['ally_id_1'];
-            $allyId2 = $result['ally_id_2'];
+            if ($result !== null) {
+                $allyId1 = $result['ally_id_1'];
+                $allyId2 = $result['ally_id_2'];
+            }
         }
 
         $stmt = mysqli_prepare($GLOBALS['dbi'], self::GET_SECTOR_STATUS_SQL);
@@ -112,7 +114,8 @@ class GetSectorStatus
     {
         $result = array();
         foreach ($rows as $row) {
-            $result[$row['zielsys'].'-'.$row['t_user_id'].'-'.$row['t_allyId'].'-'.$row['zielsec']][] = $row;
+            $targetAllyId = $row['t_status'] == 1 && $row['t_allyId'] > 0 ? $row['t_allyId'] : 0;
+            $result[$row['zielsys'].'-'.$row['t_user_id'].'-'.$targetAllyId.'-'.$row['zielsec']][] = $row;
         }
         return $result;
     }
