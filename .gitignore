@@ -20,3 +20,6 @@ claude.MD
 /vendor
 .idea/*
 *.iml
+
+# Admintool: CSRF-Secret nie versionieren
+ourdetool/.ht_csrf_secret
